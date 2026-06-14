@@ -1,74 +1,83 @@
 <div align="center">
-    <h1>【 end_4's Hyprland dotfiles 】</h1>
-    <h3></h3>
+    <h1>【 end_4's dotfiles — KDE Plasma Port 】</h1>
+    <h3>A KDE adaptation of the illogical-impulse aesthetic</h3>
 </div>
 
 <div align="center"> 
 
-![](https://img.shields.io/github/last-commit/end-4/dots-hyprland?&style=for-the-badge&color=8ad7eb&logo=git&logoColor=D9E0EE&labelColor=1E202B)
-![](https://img.shields.io/github/stars/end-4/dots-hyprland?style=for-the-badge&logo=andela&color=86dbd7&logoColor=D9E0EE&labelColor=1E202B)
-![](https://img.shields.io/github/repo-size/end-4/dots-hyprland?color=86dbce&label=SIZE&logo=protondrive&style=for-the-badge&logoColor=D9E0EE&labelColor=1E202B)
-<a href="https://discord.gg/GtdRBXgMwq"> <img alt="Dynamic JSON Badge" src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdiscordapp.com%2Fapi%2Finvites%2FGtdRBXgMwq%3Fwith_counts%3Dtrue&query=approximate_member_count&style=for-the-badge&logo=discord&logoColor=D9E0EE&label=discord&labelColor=%231E202B&color=86dbc0&link=https%3A%2F%2Fdiscord.gg%2FGtdRBXgMwq"> </a>
+![Arch Linux](https://img.shields.io/badge/Arch_Linux-1793d1?logo=arch-linux&logoColor=white&style=for-the-badge)
+![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-1D99F3?logo=kde&logoColor=white&style=for-the-badge)
+![Quickshell](https://img.shields.io/badge/Quickshell-FF6B6B?style=for-the-badge)
+![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge&color=86dbce)
 
 </div>
 
 <div align="center">
-    <h2>• overview •</h2>
+    <h2>• what is this •</h2>
     <h3></h3>
 </div>
 
-> [!WARNING]  
-> Hyprland 0.55 update:
-> If your distro has not shipped Hyprland 0.55 and/or you're not ready for it, you should switch to the Pre-Hyprland Luaification release (or not update yet, if you're going to do that). See the wiki for more info: [Install](https://ii.clsty.link/en/ii-qs/01setup/#automated-installation) | [Update](https://ii.clsty.link/en/ii-qs/01setup/#updating)
+> [!NOTE]  
+> This is a **community KDE port** of [end-4's Hyprland dotfiles](https://github.com/end-4/dots-hyprland), adapted by **ladybug-me** to run on **KDE Plasma** instead of Hyprland.
 
 <details> 
   <summary>What this is/isn't</summary>
 
-  - Technically, configuration files
-  - Realistically, mostly the custom graphical shell
-  - NOT a system setup script: no graphic drivers, no zram setup, etc.
+  - Technically: A collection of KDE Plasma configuration files, custom widgets, and installation scripts
+  - Visually: The illogical-impulse aesthetic ported to KDE Plasma with Quickshell widgets
+  - NOT: A replacement for the original Hyprland dotfiles (which are superior for minimal window managers)
+  - NOT: A system setup script (only packages and configs, no drivers, zram, etc.)
   
 </details>
 
 <details> 
-  <summary>Notable features</summary>
+  <summary>Why KDE instead of Hyprland?</summary>
+
+  - KDE Plasma offers better compatibility with existing tools and ecosystems
+  - Familiar desktop environment for users transitioning from Windows/GNOME
+  - Strong integration with Arch Linux community and AUR
+  - Still maintains the illogical-impulse aesthetic and customization spirit
+  
+</details>
+
+<details> 
+  <summary>Key features</summary>
      
-  - **Overview**: Shows open apps with live previews
-  - **AI**: Gemini, Ollama, and more
-  - **QoL**: screen translation, anti-flashbang, Google Lens
-  - **Material themes**: Choose your wallpaper, done, enjoy
-  - **Transparent installation**: Every command is shown before it's run
+  - **Material Design 3 theming**: Cohesive dark theme with Darkly + Kvantum + custom colors
+  - **Quickshell widgets**: Native KDE integration with modern Qt-based widget system
+  - **10 virtual desktops**: Pre-configured with Meta+0–9 shortcuts
+  - **Custom KDE bridge**: Quickshell-KDE integration via KWin script for seamless widget interaction
+  - **Custom hyprctl**: Rewritten to integrate with hyprland calls by quickshell
+  - **Transparent installation**: Every command shown before execution; idempotent and safe to run multiple times
+  - **AI integration**: Ready for Gemini, Ollama, and other AI backends
+  - **QoL features**: Screen translation, anti-flashbang, color-picked themes
+  
 </details>
 
 <details> 
   <summary>Installation</summary>
 
-   - **IMPORTANT: Hyprland 0.55 Update**: If your distro has not shipped Hyprland 0.55 and/or you're not ready for it, you should switch to the Pre-Hyprland Luaification release. See [the wiki](https://ii.clsty.link/en/ii-qs/01setup/) for more info
-   - Just run `bash <(curl -s https://ii.clsty.link/get)`
-     - Or, clone this repo and run `./setup install`
-     - See [the wiki](https://ii.clsty.link/en/ii-qs/01setup/) for more details
-   - **Keybinds**: Should be somewhat familiar to Windows or GNOME users. Important ones:
-     - `Super`+`/` = keybind list
-     - `Super`+`Enter` = terminal
-
-
+  1. Clone this repo:
+     ```bash
+     git clone https://github.com/ladybug-me/end-4dotsKDE ~/end-4dotsKDE
+     cd ~/end-4dotsKDE
+     ```
+  2. Run the installer:
+     ```bash
+     bash ./setup.sh
+     ```
+  3. Follow the interactive prompts (you can retry/ignore errors)
+  
+  **Requirements:**
+  - Arch Linux or Arch-based distro (Endeavour OS, Manjaro, etc.)
+  - KDE Plasma 6.0+
+  - `yay` or similar AUR helper (installer will set up if missing)
+  
+  **Optional:** 
+  - Hyprpicker for color picking
+  - Matugen for color generation from wallpaper
+  
 </details>
-
-<details>
-  <summary>Software overview</summary>
-
-  | Software | Purpose |
-  | ------------- | ------------- |
-  | [Hyprland](https://github.com/hyprwm/hyprland) | The compositor (manages and renders windows) |
-  | [Quickshell](https://quickshell.outfoxxed.me/) | A QtQuick-based widget system, used for the status bar, sidebars, etc. |
-  | Others | See [deps-info.md](https://github.com/end-4/dots-hyprland/blob/main/sdata/deps-info.md) |
-
-</details>
-
-<details>
-    <summary>Discord</summary>
-        <a href="https://discord.gg/GtdRBXgMwq"> Server link</a> | I hope this provides a friendlier environment for support without needing me to personally accept every friend request/DM. For real issues, prefer GitHub
-
 </details>
 
 <div align="center">
@@ -77,102 +86,138 @@
 </div>
 
 <div align="center">
-    <img src="assets/illogical-impulse.svg" alt="illogical-impulse logo" style="float:left; width:400;">
+    <img src="assets/illogical-impulse.svg" alt="illogical-impulse logo" style="max-width: 400px;">
 </div>
 
-Widget system: Quickshell | Support: Yes
-
-[Showcase video](https://www.youtube.com/watch?v=RPwovTInagE)
-
-| AI, settings app | Some widgets |
-|:---|:---------------|
-| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/5d4e7d07-d0b4-4406-a4c9-ed7ba90e3fe4" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/6a32395f-9437-4192-8faf-2951a9e84cbe" /> |
-| Window management | wow look its orange |
-| <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/c51bed8b-3670-4d4c-9074-873be224fb8e" /> | <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/98703a66-0743-439f-a721-cef7afa6ab95" /> |
+| Screenshot 1 | Screenshot 2 |
+|:---|:---|
+| ![Screenshot 1](assets/screenshot1.png) | ![Screenshot 2](assets/screenshot2.png) |
+| **Screenshot 3** | **Screenshot 4** |
+| ![Screenshot 3](assets/screenshot3.png) | ![Screenshot 4](assets/screenshot4.png) |
 
 <div align="center">
-    <h2>• thank you •</h2>
+    <h2>• software stack •</h2>
     <h3></h3>
 </div>
 
- - [@clsty](https://github.com/clsty) for making the dotfiles accessible by taking care of the install script and many other things
- - [@midn8hustlr](https://github.com/midn8hustlr) for greatly improving the color generation system
- - [@outfoxxed](https://github.com/outfoxxed/) for being extremely supportive in my Quickshell journey
- - Quickshell: [Soramane](https://github.com/caelestia-dots/shell/), [FridayFaerie](https://github.com/FridayFaerie/quickshell), [nydragon](https://github.com/nydragon/nysh)
- - AGS: [Aylur](https://github.com/Aylur/dotfiles/tree/ags-pre-ts), [kotontrion](https://github.com/kotontrion/dotfiles)
- - EWW: [fufexan](https://github.com/fufexan/dotfiles)
+| Component | Purpose | Notes |
+| --- | --- | --- |
+| [KDE Plasma](https://kde.org/plasma/) | Desktop environment | Full-featured modern DE |
+| [Quickshell](https://quickshell.outfoxxed.me/) | Widget system | Qt-based, replaces AGS for this port |
+| [Darkly](https://github.com/vinceliuice/Darkly) | Theme framework | Used for Plasma style + window decoration |
+| [Kvantum](https://github.com/tsujan/Kvantum) | Qt theme engine | For consistent application styling |
+| [KWin](https://invent.kde.org/plasma/kwin) | Window manager | KDE's compositing window manager |
+| [Hyprpicker](https://github.com/hyprwm/hyprpicker) | Color picker | For wallpaper color extraction |
+| [Matugen](https://github.com/InioX/matugen) | Color generation | Generates Material Design 3 palettes |
+
+<details> 
+  <summary>Full dependencies</summary>
+
+  See [sdata/arch-dist/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/sdata/arch-dist/) for custom PKGBUILDs:
+  
+  - **illogical-impulse-audio**: PipeWire + Wireplumber audio setup
+  - **illogical-impulse-basic**: Core utilities and system tools
+  - **illogical-impulse-backlight**: Backlight control utilities
+  - **illogical-impulse-fonts-themes**: Material Design 3 themes and fonts
+  - **illogical-impulse-kde**: KDE Plasma specific packages
+  - **illogical-impulse-python**: Python environment for scripts
+  - **illogical-impulse-quickshell-git**: Quickshell from git (latest)
+  - **illogical-impulse-toolkit**: Development tools and utilities
+  
+</details>
 
 <div align="center">
-    <h2>• stonks •</h2>
+    <h2>• keybinds •</h2>
     <h3></h3>
 </div>
 
-- I promise not to attempt an +ULTRARICOSHOT irl... Coins can go here: https://github.com/sponsors/end-4
-- Tentacle cat hub twinkle internet points
-
-[![Stargazers over time](https://starchart.cc/end-4/dots-hyprland.svg?variant=adaptive)](https://starchart.cc/end-4/dots-hyprland)
-
-
----
+| Key | Action |
+| --- | --- |
+| `Super` + `/` | Show keybind list |
+| `Super` + `Enter` | Open terminal (Kitty) |
+| `Super` + `1`–`0` | Switch to workspace 1–10 |
+| `Super` + `Shift` + `1`–`0` | Move window to workspace 1–10 |
+| `Super` + `Space` | Application launcher (Fuzzel) |
+| `Super` + `V` | Clipboard picker |
+| Color picker | Available via right-click menu or keybind |
 
 <div align="center">
-    <h2>• previous styles •</h2>
+    <h2>• customization •</h2>
     <h3></h3>
 </div>
 
-- **Unsupported!**
-- **Source**: illogical-impulse AGS in `ii-ags` branch, others in `archive` branch.
-- List is in reverse chronological order
-
-### illogical-impulse (AGS)
-
-Widget system: AGS | Support: No
-
-| AI | Common widgets |
-|:---|:---------------|
-| ![image](https://github.com/user-attachments/assets/9d7af13f-89ef-470d-ba78-d2288b79cf60) | ![image](https://github.com/end-4/dots-hyprland/assets/97237370/406b72b6-fa38-4f0d-a6c4-4d7d5d5ddcb7) |
-| Window management | Weeb power |
-| ![image](https://github.com/user-attachments/assets/02983b9b-79ba-4c25-8717-90bef2357ae5) | ![image](https://github.com/user-attachments/assets/bbb332ec-962a-4e88-a95b-486d0bd8ce76) |
-
-#### m3ww
-
-Widget system: EWW | Support: No
-
-<a href="https://streamable.com/85ch8x">
-<img src="https://github.com/end-4/dots-hyprland/assets/97237370/09533e64-b6d7-47eb-a840-ee90c6776adf" alt="Material Eww!">
-</a>
-
-#### NovelKnock
-
-Widget system: EWW | Support: No
-
-<a href="https://streamable.com/7vo61k">
-<img src="https://github.com/end-4/dots-hyprland/assets/97237370/42903d03-bf6f-49d4-be7f-dd77e6cb389d" alt="Desktop Preview">
-</a>
-
-#### Hybrid
-
-Widget system: EWW | Support: No
-
-<a href="https://streamable.com/4oogot">
-<img src="https://github.com/end-4/dots-hyprland/assets/97237370/190deb1e-f6f5-46ce-8cf0-9b39944c079d" alt="click the circles!">
-</a>
-
-#### Windoes
-
-Widget system: EWW | Support: No
-
-<a href="https://streamable.com/5qx614">
-<img src="https://github.com/end-4/dots-hyprland/assets/97237370/b15317b1-f295-49f5-b90c-fb6328b8d886" alt="Desktop Preview">
-</a>
-
-
+- **Wallpaper**: Place a wallpaper in `~/Pictures/wallpapers/` and re-run Matugen to auto-generate Material Design 3 colors
+- **Theme colors**: Edit [src/config/matugen/templates/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/src/config/matugen/templates/) to customize color generation
+- **KDE settings**: Modify [scripts/04-deploy-kde.sh](https://github.com/ladybug-me/end-4dotsKDE/blob/main/scripts/04-deploy-kde.sh) for Plasma configuration
+- **Widgets**: Edit Quickshell configs in [src/quickshell/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/src/quickshell/)
 
 <div align="center">
-    <h2>• inspirations/copying •</h2>
+    <h2>• troubleshooting •</h2>
     <h3></h3>
 </div>
 
- - Inspiration: osu!lazer (Hybrid), Windows 11 (Windoes), AvdanOS (NovelKnock), Material Design 3 (m3ww & later)
- - Copying: Absolutely, feel free. Just follow the license and it's all good
+<details>
+  <summary>Quickshell widgets not appearing</summary>
+  
+  - Log out and log back in.
+  - Run: `qs -c ii` and check for any errors.
+  
+</details>
+
+<details>
+  <summary>Colors not applying</summary>
+  
+  - DO NOT USE KDE WALLPAPER MANAGER. Use quickshell built in wallpaper manager (Super + Ctrl + T).
+  - Check for errors in: `System Settings -> Autostart -> KDE Material You Colors`
+  - For Konsole, use Profile1
+  
+</details>
+
+<details>
+  <summary>Installation failed at step X</summary>
+  
+  - The installer is idempotent — safe to re-run: `bash ./setup.sh`
+  - It will prompt you to retry, ignore, or exit on errors
+  - Report in Issues with logs.
+  
+</details>
+
+<div align="center">
+    <h2>• credits •</h2>
+    <h3></h3>
+</div>
+
+**Original project:**
+- [end-4](https://github.com/end-4) for the incredible illogical-impulse design and original dotfiles
+
+**This KDE port:**
+- [ladybug-me](https://github.com/ladybug-me) for adapting the dotfiles to KDE Plasma
+
+**Related projects & inspiration:**
+- [Quickshell](https://quickshell.outfoxxed.me/) — Qt widget framework
+- [Matugen](https://github.com/InioX/matugen) — Material Design 3 color generation
+- [Darkly](https://github.com/vinceliuice/Darkly) — KDE theme
+- [KDE Plasma](https://kde.org/plasma/) — Desktop environment
+- Original acknowledgments in [dots-hyprland](https://github.com/end-4/dots-hyprland)
+
+<div align="center">
+    <h2>• support & community •</h2>
+    <h3></h3>
+</div>
+
+- **Issues & bugs**: [GitHub Issues](https://github.com/ladybug-me/end-4dotsKDE/issues)
+- **Original project**: [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland)
+- **Quickshell docs**: [outfoxxed.me](https://quickshell.outfoxxed.me/)
+- **KDE community**: [KDE Forums](https://www.reddit.com/r/kde/)
+
+<div align="center">
+    <h2>• license •</h2>
+    <h3></h3>
+</div>
+
+This project is licensed under the **GNU General Public License v3.0** — the same license as the original [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland) project.
+
+- You are free to use, modify, and distribute this project
+- Any derivative work must also be licensed under GPLv3
+- See [LICENSE](https://github.com/ladybug-me/end-4dotsKDE/blob/main/LICENSE) for the full text
  
