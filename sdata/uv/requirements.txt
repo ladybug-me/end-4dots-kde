@@ -4,7 +4,7 @@ build==1.2.2.post1
     # via -r requirements.in
 certifi==2026.2.25
     # via requests
-cffi==1.17.1
+cffi==2.0.0
     # via
     #   cryptography
     #   pywayland
