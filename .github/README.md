@@ -91,11 +91,11 @@
     <img src="assets/illogical-impulse.svg" alt="illogical-impulse logo" style="max-width: 400px;">
 </div>
 
-| Screenshot 1 | Screenshot 2 |
+| KDE Plasma | MaterialYouColor with Icons |
 |:---|:---|
-| ![Screenshot 1](assets/screenshot1.png) | ![Screenshot 2](assets/screenshot2.png) |
-| **Screenshot 3** | **Screenshot 4** |
-| ![Screenshot 3](assets/screenshot3.png) | ![Screenshot 4](assets/screenshot4.png) |
+| <img width="1920" height="1080" alt="screenshot1" src="https://github.com/user-attachments/assets/475bf418-c68f-4411-9c26-c6eaac2f2f49" /> | <img width="1920" height="1080" alt="screenshot2" src="https://github.com/user-attachments/assets/46958e34-c675-4daf-b53f-ec14b8d5ba65" /> |
+| **Illogical Impulse Settings** | **KDE + Keyd Shortcuts** |
+| <img width="1920" height="1080" alt="screenshot3" src="https://github.com/user-attachments/assets/3c6d4dfc-17a4-475c-aa78-753342d5f2f4" /> | <img width="1920" height="1080" alt="screenshot4" src="https://github.com/user-attachments/assets/cb205aa6-2ade-4d28-ba27-afe7f1f82e8f" /> |
 
 <div align="center">
     <h2>• software stack •</h2>
