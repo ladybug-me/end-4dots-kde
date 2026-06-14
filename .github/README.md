@@ -51,6 +51,7 @@
   - **Transparent installation**: Every command shown before execution; idempotent and safe to run multiple times
   - **AI integration**: Ready for Gemini, Ollama, and other AI backends
   - **QoL features**: Screen translation, anti-flashbang, color-picked themes
+  - **Window tiling**: Optional Polonium support for tiling window management
   
 </details>
 
@@ -76,6 +77,7 @@
   **Optional:** 
   - Hyprpicker for color picking
   - Matugen for color generation from wallpaper
+  - Polonium for window tiling capabilities
   
 </details>
 </details>
@@ -107,6 +109,7 @@
 | [Darkly](https://github.com/vinceliuice/Darkly) | Theme framework | Used for Plasma style + window decoration |
 | [Kvantum](https://github.com/tsujan/Kvantum) | Qt theme engine | For consistent application styling |
 | [KWin](https://invent.kde.org/plasma/kwin) | Window manager | KDE's compositing window manager |
+| [Polonium](https://github.com/zeroxoneafour/polonium) | Window tiling | Optional KDE tiling plugin (available during install) |
 | [Hyprpicker](https://github.com/hyprwm/hyprpicker) | Color picker | For wallpaper color extraction |
 | [Matugen](https://github.com/InioX/matugen) | Color generation | Generates Material Design 3 palettes |
 
@@ -220,4 +223,3 @@ This project is licensed under the **GNU General Public License v3.0** — the s
 - You are free to use, modify, and distribute this project
 - Any derivative work must also be licensed under GPLv3
 - See [LICENSE](https://github.com/ladybug-me/end-4dotsKDE/blob/main/LICENSE) for the full text
- 
