@@ -138,6 +138,7 @@
 | --- | --- |
 | `Super` + `/` | Show keybind list |
 | `Super` + `Enter` | Open terminal (Kitty) |
+| `Super` + `Ctrl` + `T` | Open Wallpaper picker |
 | `Super` + `1`–`0` | Switch to workspace 1–10 |
 | `Super` + `Shift` + `1`–`0` | Move window to workspace 1–10 |
 | `Super` + `Space` | Application launcher (Fuzzel) |
