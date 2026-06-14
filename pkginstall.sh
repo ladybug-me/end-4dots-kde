@@ -140,6 +140,35 @@ install_python_packages() {
     deactivate
 }
 
+# ── Polonium ──────────────────────────────────────────────────────────────────
+install_polonium() {
+    if [[ "${POLONIUM_ENABLED:-false}" == "true" ]]; then
+        log "Polonium tiling WM plugin"
+        
+        if [ -d "$HOME/.local/share/kwin/scripts/polonium" ] || \
+           [ -d "/usr/share/kwin/scripts/polonium" ]; then
+            step_skip "Polonium already installed"
+            return 0
+        fi
+
+        if install_pkg kwin-polonium; then
+            return 0
+        fi
+        
+        warn "kwin-polonium AUR package failed — falling back to GitHub release"
+        local file="$CACHE_DIR/polonium.kwinscript"
+        local url="https://github.com/zeroxoneafour/polonium/releases/latest/download/polonium.kwinscript"
+        
+        if curl -fL --retry 3 -o "$file" "$url"; then
+            kpackagetool6 --type=KWin/Script -i "$file" 2>/dev/null || \
+            kpackagetool6 --type=KWin/Script -u "$file" >/dev/null 2>&1
+            step_ok "Polonium installed from GitHub release"
+        else
+            warn "Polonium download failed — skipping"
+        fi
+    fi
+}
+
 # ── Main ─────────────────────────────────────────────────────────────────────
 main() {
     install_rubik    || true
@@ -147,6 +176,7 @@ main() {
     install_bibata   || true
 
     install_python_packages || true
+    install_polonium        || true
 
     echo
     echo "Supplemental packages step complete."
