@@ -299,37 +299,39 @@
 
   The installer creates automatic backups before modifying critical KDE configuration files. These backups are stored in:
   ```
-  ~/end-4dotsKDE/.backup/
+  end-4dotsKDE/backups/
   ```
 
   **Backed up files include:**
+  - `config/` — Your .config folder before the installer was run.
   - `kglobalshortcutsrc` — KDE global keyboard shortcuts configuration
   - `kwinrc` — KWin window manager configuration
   - `local/` — Local KDE configuration files
+### Restoring Your Previous KDE Configuration
 
-  **To safely restore your previous KDE configuration:**
+Follow these steps to safely backup your current setup and restore your previous configuration.
 
-  1. **Restore all backed-up files:**
-     ```bash
-     cp -v ~/end-4dotsKDE/.backup/* ~/.config/
-     ```
+#### 1. Backup Existing Configurations
+Rename your current configuration folders to prevent data loss:
+```bash
+mv ~/.config ~/.configBACKUP
+mv ~/.local ~/.localBACKUP
+```
 
-  2. **Restore specific files if needed:**
-     ```bash
-     # Restore only shortcuts
-     cp -v ~/end-4dotsKDE/.backup/kglobalshortcutsrc ~/.config/
+#### 2. Restore Configuration Folders
+Copy the backup directories from the installer's root directory to your home folder:
+```bash
+cp -r config ~/.config
+cp -r local ~/.local
+```
 
-     # Restore only window manager config
-     cp -v ~/end-4dotsKDE/.backup/kwinrc ~/.config/
+#### 3. Restore Specific Configuration Files
+Copy the remaining shortcut and window manager settings into place:
+```bash
+cp kglobalshortcutsrc ~/.config/
+cp kwinrc ~/.config/
+```
 
-     # Restore local KDE configuration
-     cp -rv ~/end-4dotsKDE/.backup/local/* ~/.local/
-     ```
-
-  3. **Log out and log back in** for changes to take effect.
-
-  > [!CAUTION]
-  > Always back up your `~/.config/` directory before running the installer if you have critical custom configurations.
 
 </details>
 
