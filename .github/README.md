@@ -299,7 +299,7 @@
 
   The installer creates automatic backups before modifying critical KDE configuration files. These backups are stored in:
   ```
-  end-4dotsKDE/backups/
+  end-4dots-KDE/backups/
   ```
 
   **Backed up files include:**
