@@ -80,7 +80,6 @@
   - Polonium for window tiling capabilities
   
 </details>
-</details>
 
 <div align="center">
     <h2>• screenshots •</h2>
@@ -126,7 +125,116 @@
   - **illogical-impulse-python**: Python environment for scripts
   - **illogical-impulse-quickshell-git**: Quickshell from git (latest)
   - **illogical-impulse-toolkit**: Development tools and utilities
-  
+
+</details>
+
+<details>
+  <summary>Packages installed by the installer</summary>
+
+  The setup scripts install a comprehensive suite of packages organized by category. This list is provided for reference and tracking purposes.
+
+  #### Audio System
+  - **cava** — Audio visualizer used in Quickshell widgets
+  - **pavucontrol-qt** — Qt-based PulseAudio volume control
+  - **wireplumber** — PipeWire session and policy manager
+  - **pipewire-pulse** — PipeWire PulseAudio compatibility layer
+  - **libdbusmenu-gtk3** — DBus menu support library
+  - **playerctl** — Media player control utility
+
+  #### Backlight & Power
+  - **geoclue** — Geolocation service for automatic color temperature
+  - **brightnessctl** — Backlight brightness control
+  - **ddcutil** — Monitor brightness control via DDC
+
+  #### Core Utilities
+  - **bc** — Basic calculator for scripts
+  - **coreutils** — GNU core utilities
+  - **cliphist** — Clipboard history manager
+  - **cmake** — Build system generator
+  - **curl** — Data transfer tool
+  - **wget** — HTTP/HTTPS file downloader
+  - **ripgrep** — Fast text search utility
+  - **jq** — JSON query processor (widely used)
+  - **xdg-user-dirs** — XDG user directory manager
+  - **rsync** — File synchronization tool
+  - **go-yq** — YAML/JSON/XML processor
+
+  #### Fonts & Themes
+  - **adw-gtk-theme-git** — Adwaita GTK theme variant
+  - **breeze** — KDE Breeze theme
+  - **breeze-plus** — Enhanced Breeze theme
+  - **darkly-bin** — Modern dark Qt theme
+  - **eza** — Modern `ls` replacement with icons
+  - **fish** — User-friendly shell (used throughout config)
+  - **fontconfig** — Font configuration library
+  - **kitty** — GPU-based terminal emulator (configs included)
+  - **matugen-bin** — Material Design 3 color generator from wallpaper
+  - **otf-space-grotesk** — Space Grotesk font
+  - **starship** — Customizable shell prompt
+  - **ttf-jetbrains-mono-nerd** — JetBrains Mono with Nerd Font glyphs
+  - **ttf-material-symbols-variable-git** — Material Design symbols font
+  - **ttf-readex-pro** — Readex Pro font family
+  - **ttf-rubik-vf** — Rubik variable font
+  - **ttf-gabarito** — Gabarito geometric font
+  - **ttf-twemoji** — Twitter emoji font (emoji fallback support)
+
+  #### KDE & Desktop
+  - **bluedevil** — KDE Bluetooth manager
+  - **gnome-keyring** — Credential storage and management
+  - **networkmanager** — Network connection manager
+  - **plasma-nm** — KDE NetworkManager integration
+  - **polkit-kde-agent** — KDE PolicyKit authentication agent
+  - **dolphin** — KDE file manager
+  - **systemsettings** — KDE system configuration tool
+  - **kvantum** — Qt style engine for consistent app theming
+  - **kvantum-qt5** — Kvantum Qt5 support
+  - **kde-material-you-colors** — Dynamic Material You color theming
+
+  #### Desktop Portal
+  - **xdg-desktop-portal** — Desktop integration standardization
+  - **xdg-desktop-portal-kde** — KDE portal backend
+  - **xdg-desktop-portal-gtk** — GTK portal backend
+  - **xdg-desktop-portal-hyprland** — Hyprland portal backend
+
+  #### Python Environment
+  - **clang** — C/C++ compiler (for building Python packages)
+  - **uv** — Fast Python package manager and venv tool
+  - **gtk4** — GTK4 library
+  - **libadwaita** — Adwaita widgets library
+  - **libsoup3** — HTTP library
+  - **libportal-gtk4** — XDG portal GTK4 support
+  - **gobject-introspection** — GObject introspection framework
+
+  #### Screen Capture & OCR
+  - **hyprshot** — Hyprland screenshot tool
+  - **slurp** — Screen area selection tool
+  - **swappy** — Screenshot annotation tool
+  - **tesseract** — Optical character recognition engine
+  - **tesseract-data-eng** — English language data for Tesseract
+  - **wf-recorder** — Wayland screen recorder
+
+  #### Utilities & Tools
+  - **upower** — Power management interface
+  - **wtype** — Type text on Wayland
+  - **ydotool** — Keyboard/mouse automation tool
+  - **fuzzel** — Application launcher (used in Quickshell)
+  - **glib2** — GLib utilities (provides `gsettings`)
+  - **imagemagick** — Image manipulation suite
+  - **hypridle** — Idle timeout manager
+  - **hyprlock** — Screen locker (fallback)
+  - **hyprpicker** — Color picker for wallpaper extraction
+  - **songrec** — Music recognition tool
+  - **translate-shell** — Command-line translation utility
+  - **wlogout** — Wayland logout interface
+  - **libqalculate** — Advanced calculator library (for searchbar math)
+
+  #### Optional Features
+  - **polonium** — KDE tiling window manager plugin (optional, enabled during install)
+  - **bibata-cursor-theme** — Modern cursor theme
+
+  #### Custom KDE Packages
+  - **illogical-impulse-quickshell-git** — Quickshell widget system from latest git (includes Qt6 deps)
+
 </details>
 
 <div align="center">
@@ -184,6 +292,45 @@
   - It will prompt you to retry, ignore, or exit on errors
   - Report in Issues with logs.
   
+</details>
+
+<details>
+  <summary>Reverting changes & backup restoration</summary>
+
+  The installer creates automatic backups before modifying critical KDE configuration files. These backups are stored in:
+  ```
+  ~/end-4dotsKDE/.backup/
+  ```
+
+  **Backed up files include:**
+  - `kglobalshortcutsrc` — KDE global keyboard shortcuts configuration
+  - `kwinrc` — KWin window manager configuration
+  - `local/` — Local KDE configuration files
+
+  **To safely restore your previous KDE configuration:**
+
+  1. **Restore all backed-up files:**
+     ```bash
+     cp -v ~/end-4dotsKDE/.backup/* ~/.config/
+     ```
+
+  2. **Restore specific files if needed:**
+     ```bash
+     # Restore only shortcuts
+     cp -v ~/end-4dotsKDE/.backup/kglobalshortcutsrc ~/.config/
+
+     # Restore only window manager config
+     cp -v ~/end-4dotsKDE/.backup/kwinrc ~/.config/
+
+     # Restore local KDE configuration
+     cp -rv ~/end-4dotsKDE/.backup/local/* ~/.local/
+     ```
+
+  3. **Log out and log back in** for changes to take effect.
+
+  > [!CAUTION]
+  > Always back up your `~/.config/` directory before running the installer if you have critical custom configurations.
+
 </details>
 
 <div align="center">
