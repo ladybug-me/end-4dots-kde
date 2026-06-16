@@ -278,17 +278,29 @@
 
 <details>
   <summary>Colors not applying</summary>
-  
+    
+  - Run `kde-material-you-colors` in terminal and check for errors.
+    If its installation failed, check instructions at [Kde-material-you-colors](https://github.com/luisbocanegra/kde-material-you-colors)
+  - Reruning the installer is the best choice, see `Installation failed at step X` instructions.
   - DO NOT USE KDE WALLPAPER MANAGER. Use quickshell built in wallpaper manager (Super + Ctrl + T).
-  - Check for errors in: `System Settings -> Autostart -> KDE Material You Colors`
-  - For Konsole, use Profile1
   
 </details>
 
 <details>
-  <summary>Installation failed at step X</summary>
-  
-  - The installer is idempotent — safe to re-run: `bash ./setup.sh`
+  <summary>Installation failed at step X / something's not right</summary>
+
+  - sudo timeout: If system update took a long time, sudo must have timedout incase no passwd was provided again, `causing many packages' installation to fail`
+  - Rerun the installer: `bash ./setup.sh` and **RED colored errors**. Manual intervention might be required there. There is also a message that tells about installation of all packages
+    
+        ======================================================
+          Installation summary
+        ======================================================
+          Installed : 60
+          Skipped   : 38 (already present)
+          Failed    : 0
+        ======================================================
+
+
   - It will prompt you to retry, ignore, or exit on errors
   - Report in Issues with logs.
   
@@ -335,6 +347,13 @@ cp kwinrc ~/.config/
 
 </details>
 
+<details>
+  <summary>Shell shortcuts not working</summary>
+  
+  Most probable cause is `keyd` service failure.
+  Run: `systemctl restart keyd`.
+
+</details>
 <div align="center">
     <h2>• credits •</h2>
     <h3></h3>
