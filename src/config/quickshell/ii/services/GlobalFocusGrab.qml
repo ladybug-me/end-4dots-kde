@@ -60,6 +60,37 @@ Singleton {
         );
     }
 
+    property bool _wasActive: false
+
+    Timer {
+        id: kdeFocusGrab
+        interval: 100
+        repeat: true
+        running: root.dismissable.length > 0
+        onRunningChanged: {
+            if (!running) {
+                root._wasActive = false;
+            }
+        }
+        onTriggered: {
+            let anyActive = false;
+            for (let i = 0; i < root.dismissable.length; i++) {
+                let w = root.dismissable[i];
+                if (w && (w.active || w.activeFocusItem || root.hasActive(w?.contentItem))) {
+                    anyActive = true;
+                    break;
+                }
+            }
+            
+            if (anyActive) {
+                root._wasActive = true;
+            } else if (root._wasActive && !anyActive) {
+                root._wasActive = false;
+                root.dismiss();
+            }
+        }
+    }
+    
     HyprlandFocusGrab {
         id: grab
         windows: root.dismissable.every(w => !w?.focusable) || root.dismissable.some(w => hasActive(w?.contentItem)) ? [...root.dismissable, ...root.persistent] : [...root.dismissable]
