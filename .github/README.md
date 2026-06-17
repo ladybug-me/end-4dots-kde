@@ -295,7 +295,7 @@
   <summary>Installation failed at step X / something's not right</summary>
 
   - sudo timeout: If system update took a long time, sudo must have timedout incase no passwd was provided again, `causing many packages' installation to fail`
-  - Rerun the installer: `bash ./setup.sh` and **RED colored errors**. Manual intervention might be required there. There is also a message that tells about installation of all packages
+  - Rerun the installer: `bash ./setup.sh` and check for **RED colored errors**. Manual intervention might be required there. There is also a message that tells about installation of all packages
     
         ======================================================
           Installation summary
