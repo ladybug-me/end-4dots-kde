@@ -61,8 +61,8 @@
 
   1. Clone this repo:
      ```bash
-     git clone https://github.com/ladybug-me/end-4dotsKDE ~/end-4dotsKDE
-     cd ~/end-4dotsKDE
+     git clone https://github.com/ladybug-me/end-4dots-KDE ~/end-4dots-KDE
+     cd ~/end-4dots-KDE
      ```
   2. Run the installer:
      ```bash
