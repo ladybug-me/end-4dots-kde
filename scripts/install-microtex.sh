@@ -20,7 +20,7 @@ if [[ -f "$BUNDLE_DIR/pkginstall.sh" ]]; then
 fi
 
 log() { echo -e "\n\033[1;34m==>\033[0m \033[1m$1\033[0m"; }
-warn() { echo -e "\033[1;33m[WARN]\033[0m $1" >&2; }
+warn() { echo -e "\033[0;31m[WARN]\033[0m $1" >&2; }
 step_ok() { echo -e "  \033[1;32m[OK]\033[0m  $1"; }
 step_skip() { echo -e "  \033[1;30m[SKIP]\033[0m $1"; }
 
@@ -41,10 +41,17 @@ if [[ -x /opt/MicroTeX/LaTeX ]] || command -v LaTeX >/dev/null 2>&1 || command -
     exit 0
 fi
 
-# Check if installed via PKGBUILD already
-if pacman -Qi illogical-impulse-microtex-git >/dev/null 2>&1 || pacman -Qi microtex-git >/dev/null 2>&1; then
-    step_skip "MicroTeX installed via PKGBUILD"
-    exit 0
+# Check if installed via PKGBUILD/RPM already
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    if pacman -Qi illogical-impulse-microtex-git >/dev/null 2>&1 || pacman -Qi microtex-git >/dev/null 2>&1; then
+        step_skip "MicroTeX installed via PKGBUILD"
+        exit 0
+    fi
+elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+    if dnf list --installed illogical-impulse-microtex-git >/dev/null 2>&1 || dnf list --installed microtex-git >/dev/null 2>&1 || dnf list --installed microtex >/dev/null 2>&1; then
+        step_skip "MicroTeX installed via RPM"
+        exit 0
+    fi
 fi
 
 dir="$CACHE_DIR/MicroTeX"

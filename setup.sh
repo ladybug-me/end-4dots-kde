@@ -32,11 +32,50 @@ CYAN="\033[0;36m"; RST="\033[0m"
 die()  { echo -e "${RED}[FATAL] $*${RST}" >&2; exit 1; }
 info() { echo -e "${CYAN}[INFO]  $*${RST}"; }
 ok()   { echo -e "${GREEN}[OK]    $*${RST}"; }
-warn() { echo -e "${YELLOW}[WARN]  $*${RST}"; }
+warn() { echo -e "${RED}[WARN]  $*${RST}"; }
 
-# ── Pre-flight checks ──────────────────────────────────────────────────────────
-if ! command -v pacman >/dev/null 2>&1; then
+# ── Pre-flight checks & OS Detection ───────────────────────────────────────────
+if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    case "$ID" in
+        arch|cachyos|endeavouros|manjaro|artix)
+            export BASE_DISTRO="arch"
+            ;;
+        fedora|nobara|bazzite|rhel|centos|almalinux|rocky)
+            export BASE_DISTRO="fedora"
+            ;;
+        *)
+            if echo "$ID_LIKE" | grep -iq "arch"; then
+                export BASE_DISTRO="arch"
+            elif echo "$ID_LIKE" | grep -iq "fedora"; then
+                export BASE_DISTRO="fedora"
+            else
+                export BASE_DISTRO="unknown"
+            fi
+            ;;
+    esac
+else
+    export BASE_DISTRO="unknown"
+fi
+
+if [[ "$BASE_DISTRO" == "unknown" ]]; then
+    echo -e "${YELLOW}[WARN] Could not automatically detect your distribution base.${RST}"
+    echo "Please select your base distribution:"
+    echo "  1) Arch-based"
+    echo "  2) Fedora"
+    echo "  3) Exit"
+    read -r -p "Enter choice [1-3]: " distro_choice
+    case "$distro_choice" in
+        1) export BASE_DISTRO="arch" ;;
+        2) export BASE_DISTRO="fedora" ;;
+        *) die "Exiting installer." ;;
+    esac
+fi
+
+if [[ "$BASE_DISTRO" == "arch" ]] && ! command -v pacman >/dev/null 2>&1; then
     die "pacman not found. This installer requires Arch Linux or an Arch-based distro."
+elif [[ "$BASE_DISTRO" == "fedora" ]] && ! command -v dnf >/dev/null 2>&1; then
+    die "dnf not found. This installer requires Fedora or a Fedora-based distro."
 fi
 
 # ── Step runner ────────────────────────────────────────────────────────────────
@@ -78,29 +117,49 @@ bash "$SCRIPTS_DIR/00-banner.sh"
 #  ONE-TIME SUDO PASSWORD (kept alive for the full install)
 # ══════════════════════════════════════════════════════════════
 echo -e "${YELLOW}This installer needs sudo for package installation.${RST}"
-read -s -p "Please enter your sudo password: " SUDO_PASS
-echo
+while true; do
+    IFS= read -s -p "Please enter your sudo password: " SUDO_PASS
+    echo
+    sudo -k
+    if printf '%s\n' "$SUDO_PASS" | sudo -S -v &>/dev/null; then
+        break
+    else
+        echo -e "${RED}[ERROR] Incorrect password. Please try again.${RST}"
+    fi
+done
 export SUDO_PASS
 
 # Temporarily grant NOPASSWD to the user to prevent yay/makepkg from prompting
-echo "$SUDO_PASS" | sudo -S sh -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/end4-installer-temp"
-sudo -S chmod 0440 /etc/sudoers.d/end4-installer-temp
+printf '%s\n' "$SUDO_PASS" | sudo -S sh -c "echo '$USER ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/end4-installer-temp && chmod 0440 /etc/sudoers.d/end4-installer-temp"
 
-trap 'echo "$SUDO_PASS" | sudo -S rm -f /etc/sudoers.d/end4-installer-temp 2>/dev/null' EXIT
+trap 'printf "%s\n" "$SUDO_PASS" | sudo -S rm -f /etc/sudoers.d/end4-installer-temp 2>/dev/null' EXIT
 
 # ══════════════════════════════════════════════════════════════
 #  STEP 0 — System update (first thing after auth)
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 0 — System Update (pacman -Syu)${RST}"
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    echo -e "${CYAN}  Step 0 — System Update (pacman -Syu)${RST}"
+else
+    echo -e "${CYAN}  Step 0 — System Update (dnf upgrade)${RST}"
+fi
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 echo
-info "Running sudo pacman -Syu to bring the system up to date first..."
-if sudo pacman -Syu --noconfirm; then
-    ok "System is up to date."
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    info "Running sudo pacman -Syu to bring the system up to date first..."
+    if sudo pacman -Syu --noconfirm; then
+        ok "System is up to date."
+    else
+        warn "pacman -Syu encountered errors. Continuing anyway..."
+    fi
 else
-    warn "pacman -Syu encountered errors. Continuing anyway..."
+    info "Running sudo dnf upgrade --refresh -y to bring the system up to date first..."
+    if sudo dnf upgrade --refresh -y; then
+        ok "System is up to date."
+    else
+        warn "dnf upgrade encountered errors. Continuing anyway..."
+    fi
 fi
 
 # ══════════════════════════════════════════════════════════════
@@ -124,7 +183,11 @@ esac
 # Auto-confirm package installation — ask user
 echo
 echo -e "${YELLOW}Would you like package installation to proceed automatically without confirmation?${RST}"
-echo -e "If you select No, you will be prompted to confirm each pacman/yay transaction. [Y/n]: "
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    echo -e "If you select No, you will be prompted to confirm each pacman/yay transaction. [Y/n]: "
+else
+    echo -e "If you select No, you will be prompted to confirm each dnf transaction. [Y/n]: "
+fi
 read -r -t 15 confirm_answer || confirm_answer="y"
 case "${confirm_answer,,}" in
     n|no) export CONFIRM_ARG="";            echo "  → Manual confirmation ENABLED." ;;
@@ -142,77 +205,80 @@ esac
 
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 1 — Ensure yay is installed
+#  STEP 1 — Ensure prerequisites
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 1/9 — AUR Helper (yay)${RST}"
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    echo -e "${CYAN}  Step 1/9 — Prerequisites (yay)${RST}"
+else
+    echo -e "${CYAN}  Step 1/9 — Prerequisites (dnf, yq, createrepo_c)${RST}"
+fi
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-run_step "Ensure yay" "$SCRIPTS_DIR/01-ensure-yay.sh"
+run_step "Ensure prerequisites" "$SCRIPTS_DIR/01-ensure-prereqs.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 2 — Install KDE extra apps (kvantum, darkly, kde-material-you-colors)
-#           Done BEFORE packages so theming is available
+#  STEP 2 — Packages (PKGBUILDs + supplemental)
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 2/9 — KDE Theme Apps${RST}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-run_step "KDE theme apps" "$SCRIPTS_DIR/08-kde-apps.sh"
-
-# ══════════════════════════════════════════════════════════════
-#  STEP 3 — Packages (PKGBUILDs + supplemental)
-# ══════════════════════════════════════════════════════════════
-echo
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 3/9 — Package Installation${RST}"
+echo -e "${CYAN}  Step 2/9 — Package Installation${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "Package installation" "$SCRIPTS_DIR/02-packages.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 4 — Deploy configs
+#  STEP 3 — Deploy configs
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 4/9 — Config Deployment${RST}"
+echo -e "${CYAN}  Step 3/9 — Config Deployment${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "Config deployment" "$SCRIPTS_DIR/03-deploy-configs.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 5 — Apply KDE settings (Darkly, Kvantum, polonium)
+#  STEP 4 — Apply KDE settings (Darkly, Kvantum, polonium)
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 5/9 — KDE Settings${RST}"
+echo -e "${CYAN}  Step 4/9 — KDE Settings${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "KDE settings" "$SCRIPTS_DIR/04-deploy-kde.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 6 — Keyboard shortcuts & workspaces
+#  STEP 5 — Keyboard shortcuts & workspaces
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 6/9 — Keyboard Shortcuts & Workspaces${RST}"
+echo -e "${CYAN}  Step 5/9 — Keyboard Shortcuts & Workspaces${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "Keyboard shortcuts" "$BUNDLE_DIR/src/keyboardshortcuts/register.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 7 — Autostart (Quickshell + kde-material-you-colors)
+#  STEP 6 — Autostart (Quickshell + kde-material-you-colors)
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 7/9 — Autostart${RST}"
+echo -e "${CYAN}  Step 6/9 — Autostart${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "Autostart" "$SCRIPTS_DIR/06-autostart.sh"
 
 # ══════════════════════════════════════════════════════════════
-#  STEP 8 — Enable services & reload KWin
+#  STEP 7 — Enable services & reload KWin
 # ══════════════════════════════════════════════════════════════
 echo
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
-echo -e "${CYAN}  Step 8/9 — Services${RST}"
+echo -e "${CYAN}  Step 7/9 — Services${RST}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
 run_step "Services" "$SCRIPTS_DIR/07-services.sh"
+
+# ══════════════════════════════════════════════════════════════
+#  STEP 8 — Install KDE extra apps (kvantum, darkly, kde-material-you-colors)
+# ══════════════════════════════════════════════════════════════
+echo
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
+echo -e "${CYAN}  Step 8/9 — KDE Theme Apps${RST}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${RST}"
+run_step "KDE theme apps" "$SCRIPTS_DIR/08-kde-apps.sh"
 
 # ══════════════════════════════════════════════════════════════
 #  STEP 8.5 — Apply live system tweaks

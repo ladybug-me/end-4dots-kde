@@ -13,7 +13,11 @@ echo -e "${GREEN}║${RST}                                                      
 echo -e "${GREEN}║${RST}  ${GREEN}✅  Installation complete!${RST}                              ${GREEN}║${RST}"
 echo -e "${GREEN}║                                                          ║${RST}"
 echo -e "${GREEN}║${RST}  What was set up:                                        ${GREEN}║${RST}"
-echo -e "${GREEN}║${RST}  • System updated (pacman -Syu)                          ${GREEN}║${RST}"
+if [[ "$BASE_DISTRO" == "arch" ]]; then
+    echo -e "${GREEN}║${RST}  • System updated (pacman -Syu)                          ${GREEN}║${RST}"
+else
+    echo -e "${GREEN}║${RST}  • System updated (dnf upgrade)                          ${GREEN}║${RST}"
+fi
 echo -e "${GREEN}║${RST}  • Packages installed (PKGBUILDs + fonts + dependencies) ${GREEN}║${RST}"
 echo -e "${GREEN}║${RST}  • Configs (repo-base + KDE overrides, clean deploy)     ${GREEN}║${RST}"
 echo -e "${GREEN}║${RST}  • Default wallpaper configured                          ${GREEN}║${RST}"
@@ -34,6 +38,7 @@ echo
 echo -e "  ${MAGENTA}1. LOG OUT now${RST} and log back in."
 echo -e "     A fresh login is required to fully apply all KDE and"
 echo -e "     Quickshell changes."
+echo -e "  ${YELLOW}WARNING:${RST}If a kernel update occured, ${YELLOW}===reboot===${RST} immediately."
 echo
 echo -e "  ${MAGENTA}2. REMOVE ALL KDE PANELS${RST} after logging back in."
 echo -e "     Right-click the panel → \"Panel configuration\" → remove"
@@ -46,6 +51,8 @@ echo -e "     Press Super+D → \"Right Click on Desktop\" → Enter Edit mode"
 echo
 echo -e "${CYAN}  You can re-run this installer at any time — it is idempotent.${RST}"
 echo
+echo -e "${CYAN}  Shortcuts not working or other problems? Check the troubleshooting steps on github."
+echo -e
 
 # Prompt user for immediate logout
 read -p "Would you like to log out now? (y/N): " response

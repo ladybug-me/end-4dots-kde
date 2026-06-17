@@ -168,7 +168,81 @@ Item {
                                 onPressed: {
                                     if (root.draggingTargetWorkspace === -1) {
                                         GlobalStates.overviewOpen = false
-                                        // TODO: Change workspace in KDE
+                                        // KDE: switch to the clicked workspace via qdbus6
+                                        Quickshell.execDetached(["bash", "-c",
+                                            `qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop ${workspace.workspaceValue} 2>/dev/null || true`
+                                        ])
+                                    }
+                                }
+                            }
+
+                            Grid {
+                                id: iconGrid
+                                anchors.centerIn: parent
+                                property int itemCount: windowRepeater.model.values.length
+                                property int cols: Math.max(1, Math.ceil(Math.sqrt(itemCount)))
+                                property int rows: Math.ceil(itemCount / cols)
+                                columns: cols
+                                spacing: 12
+                                
+                                property real maxW: workspace.width - 32
+                                property real maxH: workspace.height - 32
+                                property real targetW: cols * 64 + Math.max(0, cols - 1) * spacing
+                                property real targetH: rows * 64 + Math.max(0, rows - 1) * spacing
+                                
+                                scale: Math.min(1.0, Math.min(maxW / Math.max(1, targetW), maxH / Math.max(1, targetH)))
+                                transformOrigin: Item.Center
+                                
+                                Repeater {
+                                    id: windowRepeater
+                                    model: ScriptModel {
+                                        values: {
+                                            return root.kwinWindows.filter((win) => win.workspace.id === workspace.workspaceValue);
+                                        }
+                                    }
+                                    delegate: OverviewWindow {
+                                        id: window
+                                        required property var modelData
+                                        property var address: modelData.internalId
+                                        windowData: modelData
+                                        
+                                        z: Drag.active ? root.windowDraggingZ : root.windowZ
+                                        Drag.hotSpot.x: width / 2
+                                        Drag.hotSpot.y: height / 2
+                                        
+                                        MouseArea {
+                                            id: dragArea
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                                            drag.target: parent
+                                            onPressed: (mouse) => {
+                                                root.draggingFromWorkspace = windowData?.workspace.id
+                                                window.pressed = true
+                                                window.Drag.active = true
+                                                window.Drag.source = window
+                                                window.Drag.hotSpot.x = mouse.x
+                                                window.Drag.hotSpot.y = mouse.y
+                                            }
+                                            onReleased: {
+                                                const targetWorkspace = root.draggingTargetWorkspace
+                                                window.pressed = false
+                                                window.Drag.active = false
+                                                root.draggingFromWorkspace = -1
+                                                if (targetWorkspace !== -1 && targetWorkspace !== windowData?.workspace.id) {
+                                                    Quickshell.execDetached(["bash", "-c",
+                                                        `qdbus6 org.kde.KWin /KWin org.kde.KWin.moveWindowToDesktop ` +
+                                                        `'${window.windowData?.internalId}' ${targetWorkspace} 2>/dev/null || true`
+                                                    ])
+                                                }
+                                            }
+                                            onClicked: (event) => {
+                                                if (event.button === Qt.LeftButton) {
+                                                    GlobalStates.overviewOpen = false
+                                                    event.accepted = true
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -197,128 +271,6 @@ Item {
             anchors.centerIn: parent
             implicitWidth: workspaceColumnLayout.implicitWidth
             implicitHeight: workspaceColumnLayout.implicitHeight
-
-            Repeater { // Window repeater
-                model: ScriptModel {
-                    values: {
-                        return root.kwinWindows.filter((win) => {
-                            const inWorkspaceGroup = (root.workspaceGroup * root.workspacesShown < win.workspace.id && win.workspace.id <= (root.workspaceGroup + 1) * root.workspacesShown)
-                            return inWorkspaceGroup;
-                        });
-                    }
-                }
-                delegate: OverviewWindow {
-                    id: window
-                    required property var modelData
-                    property int monitorId: 0
-                    property var address: modelData.internalId
-                    windowData: modelData
-                    monitorData: root.monitorData
-                    scale: root.scale
-                    widgetMonitor: null
-
-                    property bool atInitPosition: (initX == x && initY == y)
-
-                    // Offset on the canvas
-                    property int workspaceColIndex: getWsColumn(windowData?.workspace.id)
-                    property int workspaceRowIndex: getWsRow(windowData?.workspace.id)
-                    xOffset: (root.workspaceImplicitWidth + workspaceSpacing) * workspaceColIndex
-                    yOffset: (root.workspaceImplicitHeight + workspaceSpacing) * workspaceRowIndex
-                    property real xWithinWorkspaceWidget: Math.max((windowData?.at[0] - (monitor?.x ?? 0) - monitorData?.reserved[0]) * root.scale, 0)
-                    property real yWithinWorkspaceWidget: Math.max((windowData?.at[1] - (monitor?.y ?? 0) - monitorData?.reserved[1]) * root.scale, 0)
-
-                    // Radius
-                    property real minRadius: Appearance.rounding.small
-                    property bool workspaceAtLeft: workspaceColIndex === 0
-                    property bool workspaceAtRight: workspaceColIndex === Config.options.overview.columns - 1
-                    property bool workspaceAtTop: workspaceRowIndex === 0
-                    property bool workspaceAtBottom: workspaceRowIndex === Config.options.overview.rows - 1
-                    property bool workspaceAtTopLeft: (workspaceAtLeft && workspaceAtTop) 
-                    property bool workspaceAtTopRight: (workspaceAtRight && workspaceAtTop) 
-                    property bool workspaceAtBottomLeft: (workspaceAtLeft && workspaceAtBottom) 
-                    property bool workspaceAtBottomRight: (workspaceAtRight && workspaceAtBottom) 
-                    property real distanceFromLeftEdge: xWithinWorkspaceWidget
-                    property real distanceFromRightEdge: root.workspaceImplicitWidth - (xWithinWorkspaceWidget + targetWindowWidth)
-                    property real distanceFromTopEdge: yWithinWorkspaceWidget
-                    property real distanceFromBottomEdge: root.workspaceImplicitHeight - (yWithinWorkspaceWidget + targetWindowHeight)
-                    property real distanceFromTopLeftCorner: Math.max(distanceFromLeftEdge, distanceFromTopEdge)
-                    property real distanceFromTopRightCorner: Math.max(distanceFromRightEdge, distanceFromTopEdge)
-                    property real distanceFromBottomLeftCorner: Math.max(distanceFromLeftEdge, distanceFromBottomEdge)
-                    property real distanceFromBottomRightCorner: Math.max(distanceFromRightEdge, distanceFromBottomEdge)
-                    topLeftRadius: Math.max((workspaceAtTopLeft ? root.largeWorkspaceRadius : root.smallWorkspaceRadius) - distanceFromTopLeftCorner, minRadius)
-                    topRightRadius: Math.max((workspaceAtTopRight ? root.largeWorkspaceRadius : root.smallWorkspaceRadius) - distanceFromTopRightCorner, minRadius)
-                    bottomLeftRadius: Math.max((workspaceAtBottomLeft ? root.largeWorkspaceRadius : root.smallWorkspaceRadius) - distanceFromBottomLeftCorner, minRadius)
-                    bottomRightRadius: Math.max((workspaceAtBottomRight ? root.largeWorkspaceRadius : root.smallWorkspaceRadius) - distanceFromBottomRightCorner, minRadius)
-
-                    Timer {
-                        id: updateWindowPosition
-                        interval: Config.options.hacks.arbitraryRaceConditionDelay
-                        repeat: false
-                        running: false
-                        onTriggered: {
-                            window.x = Math.round(xWithinWorkspaceWidget + xOffset)
-                            window.y = Math.round(yWithinWorkspaceWidget + yOffset)
-                        }
-                    }
-
-                    z: Drag.active ? root.windowDraggingZ : (root.windowZ + windowData?.floating + windowData?.fullscreen * 2)
-                    Drag.hotSpot.x: width / 2
-                    Drag.hotSpot.y: height / 2
-                    MouseArea {
-                        id: dragArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        onEntered: hovered = true // For hover color change
-                        onExited: hovered = false // For hover color change
-                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                        drag.target: parent
-                        onPressed: (mouse) => {
-                            root.draggingFromWorkspace = windowData?.workspace.id
-                            window.pressed = true
-                            window.Drag.active = true
-                            window.Drag.source = window
-                            window.Drag.hotSpot.x = mouse.x
-                            window.Drag.hotSpot.y = mouse.y
-                            // console.log(`[OverviewWindow] Dragging window ${windowData?.address} from position (${window.x}, ${window.y})`)
-                        }
-                        onReleased: {
-                            const targetWorkspace = root.draggingTargetWorkspace
-                            window.pressed = false
-                            window.Drag.active = false
-                            root.draggingFromWorkspace = -1
-                            if (targetWorkspace !== -1 && targetWorkspace !== windowData?.workspace.id) {
-                                Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${targetWorkspace}, follow = false, window = "address:${window.windowData?.address}" })`)
-                                updateWindowPosition.restart()
-                            }
-                            else {
-                                if (!window.windowData.floating) {
-                                    updateWindowPosition.restart()
-                                    return
-                                }
-                                const percentageX = (window.x - xOffset) / root.workspaceImplicitWidth
-                                const percentageY = (window.y - yOffset) / root.workspaceImplicitHeight
-                                Hyprland.dispatch(`hl.dsp.window.move({ x = "${percentageX * root.screen.width}", y = "${percentageY * root.screen.height}", window = "address:${window.windowData?.address}" })`)
-                            }
-                        }
-                        onClicked: (event) => {
-                            if (!windowData) return;
-
-                            if (event.button === Qt.LeftButton) {
-                                GlobalStates.overviewOpen = false
-                                event.accepted = true
-                            } else if (event.button === Qt.MiddleButton) {
-                                event.accepted = true
-                            }
-                        }
-
-                        StyledToolTip {
-                            extraVisibleCondition: false
-                            alternativeVisibleCondition: dragArea.containsMouse && !window.Drag.active
-                            text: `${windowData?.title}\n[${windowData?.class}] ${windowData?.xwayland ? "[XWayland] " : ""}`
-                        }
-                    }
-                }
-            }
 
             Rectangle { // Focused workspace indicator
                 id: focusedWorkspaceIndicator

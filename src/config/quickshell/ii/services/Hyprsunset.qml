@@ -66,13 +66,13 @@ Singleton {
     property int clockHour: DateTime.clock.hours
     property int clockMinute: DateTime.clock.minutes
 
-    // ── Automatic scheduling ─────────────────────────────────────────────────
-    onClockMinuteChanged: reEvaluate()
-    onAutomaticChanged: {
-        root.manualActive = undefined;
-        root.firstEvaluation = true;
-        reEvaluate();
-    }
+    // ── Automatic scheduling (Disabled on KDE to respect KWin's native scheduler) ───
+    // onClockMinuteChanged: reEvaluate()
+    // onAutomaticChanged: {
+    //     root.manualActive = undefined;
+    //     root.firstEvaluation = true;
+    //     reEvaluate();
+    // }
 
     function inBetween(t, from, to) {
         if (from < to) {
@@ -83,30 +83,12 @@ Singleton {
     }
 
     function reEvaluate() {
-        const t = clockHour * 60 + clockMinute;
-        const from = fromHour * 60 + fromMinute;
-        const to = toHour * 60 + toMinute;
-        const manualActive = manualActiveHour * 60 + manualActiveMinute;
-
-        if (root.manualActive !== undefined &&
-            (inBetween(from, manualActive, t) || inBetween(to, manualActive, t))) {
-            root.manualActive = undefined;
-        }
-        root.shouldBeOn = inBetween(t, from, to);
-        if (firstEvaluation) {
-            firstEvaluation = false;
-            root.ensureState();
-        }
+        // Disabled: KDE manages its own NightLight scheduling.
     }
 
-    onShouldBeOnChanged: ensureState()
+    // onShouldBeOnChanged: ensureState()
     function ensureState() {
-        if (!root.automatic || root.manualActive !== undefined) return;
-        if (root.shouldBeOn) {
-            root.enableTemperature();
-        } else {
-            root.disableTemperature();
-        }
+        // Disabled: Prevent Quickshell from aggressively overwriting KWin's manual settings
     }
 
     // ── DBus Processes ───────────────────────────────────────────────────────
@@ -242,15 +224,52 @@ Singleton {
         }
     }
 
-    // ── Gamma (API compat) ───────────────────────────────────────────────────
-    // Maps gamma 25..100 → approximately 2500K..6500K for the KWin NightLight
+    // ── Gamma via xrandr (display dimming) ───────────────────────────────────
+    // Maps gamma 25..100 → xrandr gamma 0.25..1.0 for software display dimming.
+    // This is completely independent of KDE NightLight / colour temperature.
+    // Applies to all connected X11 outputs detected by xrandr.
+    //
+    // Usage: Brightness.qml calls setGamma() when the brightness slider goes
+    // below the 0.3 threshold. gamma=100 = full brightness, gamma=25 = minimum.
+
+    Process {
+        id: gammaProc
+        environment: {
+            // Ensure DISPLAY is set for xrandr (X11 tool used under Wayland/XWayland)
+            var env = ({});
+            env["DISPLAY"] = Quickshell.env("DISPLAY") || ":0";
+            return env;
+        }
+    }
+
+    // On startup, reset gamma to 1.0 (full) so stale gamma from previous session
+    // doesn't persist across restarts
+    Component.onCompleted: {
+        _applyXrandrGamma(1.0);
+    }
+
+    function _applyXrandrGamma(value) {
+        // Apply gamma to all connected outputs via xrandr
+        // value: 0.0..1.0 (1.0 = full brightness, no dimming)
+        const g = value.toFixed(3);
+        gammaProc.command = [
+            "bash", "-c",
+            `DISPLAY="\${DISPLAY:-:0}" xrandr --listmonitors 2>/dev/null ` +
+            `| awk '/[0-9]+:/{print $NF}' ` +
+            `| while read -r out; do ` +
+            `  DISPLAY="\${DISPLAY:-:0}" xrandr --output "$out" --gamma ${g}:${g}:${g} 2>/dev/null || true; ` +
+            `done`
+        ];
+        gammaProc.running = false;
+        gammaProc.running = true;
+    }
+
     function setGamma(newGamma) {
         root.gamma = Math.max(root.gammaLowerLimit, Math.min(100, newGamma));
         root.gammaChangeAttempt();
-        const mappedTemp = Math.round(2500 + (root.gamma - 25) * (4000 / 75));
-        if (root.temperatureActive) {
-            sliderPreview(mappedTemp);
-        }
+        // Map gamma 25..100 → xrandr value 0.25..1.0
+        const xrandrVal = root.gamma / 100.0;
+        _applyXrandrGamma(xrandrVal);
     }
 
     // ── React to config changes ──────────────────────────────────────────────

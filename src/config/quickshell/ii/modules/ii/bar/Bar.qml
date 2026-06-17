@@ -62,6 +62,16 @@ Scope {
                 }
                 color: "transparent"
 
+                // KDE: Request compositor blur behind this layer shell surface.
+                // Uses the org.kde.kwin.blur Wayland protocol via Quickshell's
+                // BackgroundEffect attachment. When transparency is enabled this
+                // prevents the rectangular fallback by giving KWin a proper blur
+                // region that matches the bar's visible pill area.
+                Region {
+                    id: barBlurRegion
+                    item: Config.options.appearance.transparency.enable ? barContent : null
+                }
+
                 // Positioning
                 anchors {
                     top: !Config.options.bar.bottom

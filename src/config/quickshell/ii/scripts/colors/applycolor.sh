@@ -66,9 +66,12 @@ apply_anyterm() {
 
   for file in /dev/pts/*; do
     if [[ $file =~ ^/dev/pts/[0-9]+$ ]]; then
-      {
-      cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
-      } & disown || true
+      local pts_num="${file#/dev/pts/}"
+      if ps -t "$pts_num" -o comm= 2>/dev/null | grep -qE '^(bash|zsh|fish|sh|dash|mksh|tcsh|csh|ksh)$'; then
+        {
+        cat "$STATE_DIR"/user/generated/terminal/sequences.txt >"$file"
+        } & disown || true
+      fi
     fi
   done
 }

@@ -16,7 +16,7 @@ set -uo pipefail
 CYAN="\033[0;36m"; GREEN="\033[0;32m"; YELLOW="\033[1;33m"; RST="\033[0m"
 info() { echo -e "${CYAN}[INFO]  $*${RST}"; }
 ok()   { echo -e "${GREEN}[OK]    $*${RST}"; }
-warn() { echo -e "${YELLOW}[WARN]  $*${RST}"; }
+warn() { echo -e "${RED}[WARN]  $*${RST}"; }
 
 echo
 echo "════════════════════════════════════════════════════════"

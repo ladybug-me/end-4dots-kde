@@ -64,9 +64,9 @@ PanelWindow {
 
     // Screen & interaction vars
     readonly property HyprlandMonitor hyprlandMonitor: Hyprland.monitorFor(screen)
-    readonly property real monitorScale: hyprlandMonitor.scale
-    readonly property real monitorOffsetX: hyprlandMonitor.x
-    readonly property real monitorOffsetY: hyprlandMonitor.y
+    readonly property real monitorScale: (hyprlandMonitor && hyprlandMonitor.scale > 0) ? hyprlandMonitor.scale : (screen.devicePixelRatio || 1.0)
+    readonly property real monitorOffsetX: hyprlandMonitor ? (hyprlandMonitor.x || 0) : 0
+    readonly property real monitorOffsetY: hyprlandMonitor ? (hyprlandMonitor.y || 0) : 0
     property int activeWorkspaceId: hyprlandMonitor.activeWorkspace?.id ?? 0
     property string screenshotPath: `${root.screenshotDir}/image-${screen.name}`
     property real dragStartX: 0
@@ -81,7 +81,7 @@ PanelWindow {
     property var mouseButton: null
     property var imageRegions: []
     readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
-        root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
+        root.windows.filter(w => w.workspace.id === root.activeWorkspaceId || root.activeWorkspaceId === 0),
         root.layerRegions
     ).map(window => {
         return {
@@ -259,11 +259,6 @@ PanelWindow {
 
     // Execution after selection
     function snip() {
-        // Validity check
-        if (root.regionWidth <= 0 || root.regionHeight <= 0) {
-            console.warn("[Region Selector] Invalid region size, skipping snip.");
-            root.dismiss();
-        }
 
         // Clamp region to screen bounds
         root.regionX = Math.max(0, Math.min(root.regionX, root.screen.width - root.regionWidth));
@@ -280,8 +275,8 @@ PanelWindow {
             Config.options.screenSnip.savePath : "";
         var screenshotAction = root.getScreenshotAction();
         const command = ScreenshotAction.getCommand(
-            root.regionX * root.monitorScale, //
-            root.regionY * root.monitorScale, //
+            (root.regionX + root.monitorOffsetX) * root.monitorScale, //
+            (root.regionY + root.monitorOffsetY) * root.monitorScale, //
             root.regionWidth * root.monitorScale,// 
             root.regionHeight * root.monitorScale, //
             root.screenshotPath, //
@@ -322,7 +317,7 @@ PanelWindow {
     MouseArea {
         id: mouseArea
         anchors.fill: parent
-        cursorShape: Qt.CrossCursor
+        cursorShape: root.draggedAway ? Qt.ArrowCursor : Qt.CrossCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
         hoverEnabled: true
 
@@ -336,6 +331,7 @@ PanelWindow {
             root.mouseButton = mouse.button;
         }
         onReleased: (mouse) => {
+            root.dragging = false;
             // Detect if it was a click -> Try to select targeted region
             if (root.draggingX === root.dragStartX && root.draggingY === root.dragStartY) {
                 if (root.targetedRegionValid()) {
@@ -528,12 +524,31 @@ PanelWindow {
                 }
                 onDismiss: root.dismiss();
             }
+            // Confirm snip button — appears after a region is drawn
+            ToolbarPairedFab {
+                anchors.verticalCenter: parent.verticalCenter
+                visible: root.regionConfirmPending
+                iconText: "check"
+                onClicked: root.snip();
+                StyledToolTip {
+                    text: Translation.tr("Snip selected region (Enter)")
+                }
+            }
             ToolbarPairedFab {
                 anchors.verticalCenter: parent.verticalCenter
                 iconText: "close"
-                onClicked: root.dismiss();
+                onClicked: {
+                    if (root.regionConfirmPending) {
+                        // Reset selection — let user redraw
+                        root.regionConfirmPending = false;
+                        root.regionWidth = 0;
+                        root.regionHeight = 0;
+                    } else {
+                        root.dismiss();
+                    }
+                }
                 StyledToolTip {
-                    text: Translation.tr("Close")
+                    text: root.regionConfirmPending ? Translation.tr("Clear selection") : Translation.tr("Close")
                 }
             }
         }

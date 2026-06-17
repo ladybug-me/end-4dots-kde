@@ -133,7 +133,7 @@ def parse_keyd():
                     desc = "Custom shortcut"
                     category = "Keyd"
                     
-                    if "zen-browser" in v:
+                    if "firefox" in v:
                         category, desc = "App", "Browser"
                     elif "code" in v:
                         category, desc = "App", "Code editor"
@@ -207,7 +207,7 @@ def parse_keyd():
                         category, desc = "Utilities", "Character recognition >> clipboard"
                     elif "region search" in v:
                         category, desc = "Utilities", "Google Lens"
-                    elif "hyprpicker" in v:
+                    elif "kcolorpicker" in v:
                         category, desc = "Utilities", "Pick color #RRGGBB >> clipboard"
                     elif "record.sh --fullscreen --sound" in v:
                         category, desc = "Utilities", "Record screen (with sound)"
@@ -231,6 +231,8 @@ def parse_keyd():
                         category, desc = "App", "Volume mixer"
                     elif "plasma-systemmonitor" in v:
                         category, desc = "App", "Task manager"
+                    elif "qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop" in v:
+                        category, desc = "Window", "Change workspace"
                     
                     binds.append({
                         "description": f"{category}: {desc}",

@@ -113,6 +113,8 @@ Singleton {
         property bool ready: false
         property bool animateChanges: !monitor.isDdc
 
+        property bool isExternalUpdate: false
+
         onBrightnessChanged: {
             if (!monitor.ready) return;
             root.brightnessChanged();
@@ -127,7 +129,8 @@ Singleton {
             }
         }
         onMultipliedBrightnessChanged: {
-            if (monitor.animationEnabled) syncBrightness();
+            if (monitor.isExternalUpdate) return;
+            if (monitor.animateChanges) syncBrightness();
             else setTimer.restart();
         }
 
@@ -151,6 +154,31 @@ Singleton {
             }
             onExited: (exitCode, exitStatus) => {
                 initializeMonitor(root.monitors.indexOf(monitor) + 1);
+            }
+        }
+
+        function fetchBrightness() {
+            if (monitor.ready) {
+                updateProc.command = isDdc ? ["ddcutil", "-b", busNum, "getvcp", "10", "--brief"] : ["sh", "-c", `echo "a b c $(brightnessctl g) $(brightnessctl m)"`];
+                updateProc.running = true;
+            }
+        }
+
+        readonly property Process updateProc: Process {
+            stdout: SplitParser {
+                onRead: data => {
+                    const [, , , current, max] = data.split(" ");
+                    monitor.rawMaxBrightness = parseInt(max);
+                    
+                    const wasAnimating = monitor.animateChanges;
+                    monitor.animateChanges = false;
+                    monitor.isExternalUpdate = true;
+                    
+                    monitor.brightness = parseInt(current) / monitor.rawMaxBrightness;
+                    
+                    monitor.isExternalUpdate = false;
+                    monitor.animateChanges = wasAnimating;
+                }
             }
         }
 
@@ -236,5 +264,34 @@ Singleton {
         name: "brightnessDecrease"
         description: "Decrease brightness"
         onPressed: root.decreaseBrightness()
+    }
+
+    // ── External DBus Listeners ───────────────────────────────────────────────
+    // Listen to KDE PowerDevil brightness changes (e.g. via KDE shortcut manager)
+    Process {
+        id: dbusBrightnessListener
+        running: true
+        command: ["dbus-monitor", "type='signal',interface='org.kde.Solid.PowerManagement.Actions.BrightnessControl',member='brightnessChanged'"]
+        stdout: StdioCollector {
+            waitForEnd: false
+            onDataChanged: {
+                // Throttle fetch to avoid spam
+                if (!dbusSyncTimer.running) {
+                    dbusSyncTimer.start();
+                }
+            }
+        }
+    }
+
+    Timer {
+        id: dbusSyncTimer
+        interval: 100
+        repeat: false
+        onTriggered: {
+            const monitor = root.getPrimaryMonitor();
+            if (monitor) {
+                monitor.fetchBrightness();
+            }
+        }
     }
 }

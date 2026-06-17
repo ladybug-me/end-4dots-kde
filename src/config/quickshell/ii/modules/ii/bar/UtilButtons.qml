@@ -57,7 +57,7 @@ Item {
             visible: Config.options.bar.utilButtons.showColorPicker
             sourceComponent: CircleUtilButton {
                 Layout.alignment: Qt.AlignVCenter
-                onClicked: Quickshell.execDetached(["hyprpicker", "-a"])
+                onClicked: Quickshell.execDetached(["bash", "-c", "~/.local/bin/kcolorpicker -a"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 1

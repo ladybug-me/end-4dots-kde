@@ -10,5 +10,5 @@ Process {
     property string screenshotDir: Directories.screenshotTemp
     required property ShellScreen screen
     property string screenshotPath: `${screenshotDir}/image-${screen.name}`
-    command: ["bash", "-c", `mkdir -p '${StringUtils.shellSingleQuoteEscape(screenshotDir)}' && spectacle -b -n -m -o '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`]
+    command: ["bash", "-c", `mkdir -p '${StringUtils.shellSingleQuoteEscape(screenshotDir)}' && spectacle -b -n -f -o '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`]
 }

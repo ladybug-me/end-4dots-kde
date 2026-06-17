@@ -31,13 +31,13 @@
     },
     "palette": {
       "accentColor": "",
-      "type": "scheme-expressive"
+      "type": "scheme-fidelity"
     },
     "transparency": {
       "automatic": true,
       "backgroundTransparency": 0.11,
       "contentTransparency": 0.57,
-      "enable": true
+      "enable": false
     },
     "wallpaperTheming": {
       "enableAppsAndShell": true,
@@ -80,7 +80,7 @@
       "workspaceZoom": 1.07
     },
     "thumbnailPath": "",
-    "wallpaperPath": "/home/ladybug-me/Pictures/Wallpapers/voyager-nogymx-marauders.jpg",
+    "wallpaperPath": "",
     "widgets": {
       "clock": {
         "cookie": {
@@ -163,9 +163,9 @@
     },
     "topLeftIcon": "spark",
     "utilButtons": {
-      "showColorPicker": false,
+      "showColorPicker": true,
       "showDarkModeToggle": true,
-      "showKeyboardToggle": false,
+      "showKeyboardToggle": true,
       "showMicToggle": false,
       "showPerformanceProfileToggle": false,
       "showScreenRecord": false,
@@ -322,11 +322,11 @@
   },
   "overview": {
     "centerIcons": true,
-    "columns": 4,
+    "columns": 5,
     "enable": false,
     "orderBottomUp": false,
     "orderRightLeft": false,
-    "rows": 1,
+    "rows": 2,
     "scale": 0.16
   },
   "panelFamily": "ii",
@@ -360,10 +360,10 @@
     "updateInterval": 3000
   },
   "screenRecord": {
-    "savePath": "/home/ladybug-me/Videos"
+    "savePath": "~/Videos"
   },
   "screenSnip": {
-    "savePath": ""
+    "savePath": "~/Pictures/Screenshots"
   },
   "search": {
     "engineBaseUrl": "https://www.google.com/search?q=",
@@ -401,10 +401,10 @@
       }
     },
     "cornerOpen": {
-      "bottom": false,
-      "clickless": false,
-      "clicklessCornerEnd": true,
-      "clicklessCornerVerticalOffset": 1,
+      "bottom": true,
+      "clickless": true,
+      "clicklessCornerEnd": false,
+      "clicklessCornerVerticalOffset": 0,
       "cornerRegionHeight": 5,
       "cornerRegionWidth": 250,
       "enable": true,
@@ -413,7 +413,7 @@
     },
     "keepRightSidebarLoaded": true,
     "quickSliders": {
-      "enable": false,
+      "enable": true,
       "showBrightness": true,
       "showMic": false,
       "showVolume": true

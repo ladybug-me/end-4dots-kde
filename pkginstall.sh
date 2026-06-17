@@ -14,21 +14,34 @@ mkdir -p "$CACHE_DIR"
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 log()      { echo; echo "==> $*"; }
-warn()     { echo "[WARN] $*" >&2; }
+warn()     { echo -e "\033[0;31m[WARN] $*\033[0m" >&2; }
 step_ok()  { echo "  [OK]  $*"; }
 step_skip(){ echo "  [SKIP] $*"; }
 
-# Try pacman, then yay. Returns 0 on success.
+# Try pacman, then yay for Arch. Try dnf for Fedora. Returns 0 on success.
 install_pkg() {
     local pkg="$1"
-    if sudo pacman -S --needed ${CONFIRM_ARG:-} "$pkg" >/dev/null 2>&1; then
-        step_ok "$pkg (pacman)"; return 0
-    fi
-    if command -v yay >/dev/null 2>&1; then
-        if yay -S --needed ${CONFIRM_ARG:-} "$pkg" >/dev/null 2>&1; then
-            step_ok "$pkg (AUR)"; return 0
+    
+    if [[ "$BASE_DISTRO" == "arch" ]]; then
+        if sudo pacman -S --needed ${CONFIRM_ARG:-} "$pkg" >/dev/null 2>&1; then
+            step_ok "$pkg (pacman)"; return 0
+        fi
+        if command -v yay >/dev/null 2>&1; then
+            if yay -S --needed ${CONFIRM_ARG:-} "$pkg" >/dev/null 2>&1; then
+                step_ok "$pkg (AUR)"; return 0
+            fi
+        fi
+    elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+        if dnf list --installed "$pkg" >/dev/null 2>&1; then
+            step_ok "$pkg (already installed)"
+            return 0
+        fi
+        if sudo dnf install -y "$pkg" >/dev/null 2>&1; then
+            step_ok "$pkg (dnf)"
+            return 0
         fi
     fi
+    
     warn "Could not install $pkg — skipping."
     return 1
 }
@@ -58,7 +71,11 @@ install_rubik() {
     if fc-list | grep -qi "Rubik"; then
         step_skip "Rubik already installed"; return 0
     fi
-    install_pkg ttf-rubik-vf && return 0
+    if [[ "$BASE_DISTRO" == "arch" ]]; then
+        install_pkg ttf-rubik-vf && return 0
+    elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+        install_pkg google-rubik-vf-fonts && return 0
+    fi
 
     local dir="$CACHE_DIR/Rubik"
     clone_or_update https://github.com/googlefonts/rubik.git "$dir" || { warn "Rubik clone failed"; return 1; }
@@ -76,7 +93,11 @@ install_gabarito() {
     if fc-list | grep -qi "Gabarito"; then
         step_skip "Gabarito already installed"; return 0
     fi
-    install_pkg ttf-gabarito && return 0
+    if [[ "$BASE_DISTRO" == "arch" ]]; then
+        install_pkg ttf-gabarito && return 0
+    elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+        install_pkg gabarito-fonts && return 0
+    fi
 
     local dir="$CACHE_DIR/Gabarito"
     clone_or_update https://github.com/naipefoundry/gabarito.git "$dir" || { warn "Gabarito clone failed"; return 1; }
@@ -155,7 +176,7 @@ install_polonium() {
             return 0
         fi
         
-        warn "kwin-polonium AUR package failed — falling back to GitHub release"
+        warn "kwin-polonium package failed — falling back to GitHub release"
         local file="$CACHE_DIR/polonium.kwinscript"
         local url="https://github.com/zeroxoneafour/polonium/releases/latest/download/polonium.kwinscript"
         

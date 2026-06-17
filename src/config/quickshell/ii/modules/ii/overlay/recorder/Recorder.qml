@@ -40,7 +40,10 @@ StyledOverlayWidget {
                     name: "Screenshot"
                     onClicked: {
                         GlobalStates.overlayOpen = false;
-                        Quickshell.execDetached(["bash", "-c", "grim - | wl-copy"]);
+                        // KDE: use spectacle for full-screen screenshot to clipboard
+                        // -b = background (no GUI), -n = no notification, -f = full screen, -c = copy to clipboard
+                        Quickshell.execDetached(["bash", "-c", "spectacle -b -n -f -c 2>/dev/null || " +
+                            "import -window root /tmp/qs-fullshot.png && wl-copy < /tmp/qs-fullshot.png"]);
                     }
                 }
 

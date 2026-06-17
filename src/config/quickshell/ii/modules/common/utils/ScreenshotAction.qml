@@ -31,48 +31,69 @@ Singleton {
         const ry = Math.round(y);
         const rw = Math.round(width);
         const rh = Math.round(height);
-        const cropBase = `magick ${StringUtils.shellSingleQuoteEscape(screenshotPath)} `
+
+        const cropBase = `magick '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' `
             + `-crop ${rw}x${rh}+${rx}+${ry} +repage`
-        const cropToStdout = `${cropBase} -`
-        const cropInPlace = `${cropBase} '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`
-        const cleanup = `rm '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`
-        const slurpRegion = `${rx},${ry} ${rw}x${rh}`
+        const cropToFile = (outPath) => `${cropBase} '${StringUtils.shellSingleQuoteEscape(outPath)}'`
+        const cropToStdout = `${cropBase} png:-`
+        const cleanup = `rm -f '${StringUtils.shellSingleQuoteEscape(screenshotPath)}'`
+        const annotationCommand = `${Config.options.regionSelector.annotation.useSatty ? "satty" : "swappy"} -f -`;
         const uploadAndGetUrl = (filePath) => {
             return `curl -sF files[]=@'${StringUtils.shellSingleQuoteEscape(filePath)}' ${root.fileUploadApiEndpoint} | jq -r '.files[0].url'`
         }
-        const annotationCommand = `${Config.options.regionSelector.annotation.useSatty ? "satty" : "swappy"} -f -`;
+        // saveDir may contain ~/ — pass it to bash and let bash expand via ${var/#\~/$HOME}
+        const rawSaveDir = saveDir;
+
         switch (action) {
-            case ScreenshotAction.Action.Copy:
-                if (saveDir === "") {
-                    // not saving the screenshot, just copy to clipboard
-                    return ["bash", "-c", `${cropToStdout} | wl-copy && ${cleanup}`]
-                    break;
-                }
+            case ScreenshotAction.Action.Copy: {
+                // If savePath config is empty, fallback to a default failproof directory
+                let saveDir = rawSaveDir === "" ? "~/Pictures/Screenshots" : rawSaveDir;
+                
                 return [
                     "bash", "-c",
-                    `mkdir -p '${StringUtils.shellSingleQuoteEscape(saveDir)}' && \
-                    saveFileName="screenshot-$(date '+%Y-%m-%d_%H.%M.%S').png" && \
-                    savePath="${saveDir}/$saveFileName" && \
-                    ${cropToStdout} | tee >(wl-copy) > "$savePath" && \
-                    ${cleanup}`
+                    `set -euo pipefail; ` +
+                    `SAVE_DIR='${StringUtils.shellSingleQuoteEscape(saveDir)}'; ` +
+                    `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
+                    `mkdir -p "$SAVE_DIR" && ` +
+                    `saveFile="$SAVE_DIR/screenshot-$(date +%Y-%m-%d_%H.%M.%S).png" && ` +
+                    `${cropBase} "$saveFile" && ` +
+                    `wl-copy -t image/png < "$saveFile"; ` +
+                    `${cleanup}`
+                ]
+            }
+
+            case ScreenshotAction.Action.Edit:
+                return ["bash", "-c",
+                    `set -euo pipefail; TMPF=$(mktemp /tmp/qs-snip-XXXXXX.png); ` +
+                    `${cropBase} "$TMPF" && ` +
+                    `${annotationCommand} < "$TMPF"; ` +
+                    `rm -f "$TMPF"; ${cleanup}`
                 ]
 
-                break;
-            case ScreenshotAction.Action.Edit:
-                return ["bash", "-c", `${cropToStdout} | ${annotationCommand} && ${cleanup}`]
-                break;
-            case ScreenshotAction.Action.Search:
-                return ["bash", "-c", `${cropInPlace} && xdg-open "${root.imageSearchEngineBaseUrl}$(${uploadAndGetUrl(screenshotPath)})" && ${cleanup}`]
-                break;
+            case ScreenshotAction.Action.Search: {
+                const tmpFile = "/tmp/qs-snip-search.png"
+                return ["bash", "-c",
+                    `set -euo pipefail; ` +
+                    `${cropToFile(tmpFile)} && ` +
+                    `xdg-open "${root.imageSearchEngineBaseUrl}$(${uploadAndGetUrl(tmpFile)})"; ` +
+                    `rm -f '${tmpFile}'; ${cleanup}`
+                ]
+            }
+
             case ScreenshotAction.Action.CharRecognition:
-                return ["bash", "-c", `${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy && ${cleanup}`]
-                break;
+                return ["bash", "-c",
+                    `set -euo pipefail; TMPF=$(mktemp /tmp/qs-snip-XXXXXX.png); ` +
+                    `${cropBase} "$TMPF" && ` +
+                    `tesseract "$TMPF" stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy; ` +
+                    `rm -f "$TMPF"; ${cleanup}`
+                ]
+
             case ScreenshotAction.Action.Record:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}'`]
-                break;
+                return ["bash", "-c", `${Directories.recordScriptPath} --region '${rx},${ry} ${rw}x${rh}'`]
+
             case ScreenshotAction.Action.RecordWithSound:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}' --sound`]
-                break;
+                return ["bash", "-c", `${Directories.recordScriptPath} --region '${rx},${ry} ${rw}x${rh}' --sound`]
+
             default:
                 console.warn("[Region Selector] Unknown snip action, skipping snip.");
                 return;

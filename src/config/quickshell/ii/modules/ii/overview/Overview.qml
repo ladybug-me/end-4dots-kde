@@ -17,15 +17,43 @@ Scope {
     property var kwinWindows: []
 
     Process {
+        id: preCaptureProc
+        command: ["bash", "-c", "spectacle -b -n -f -o /tmp/qs-desktop-cache.png 2>/dev/null"]
+        onRunningChanged: {
+            if (!running) {
+                GlobalStates.overviewOpen = true;
+            }
+        }
+    }
+
+    function openOverview() {
+        if (!GlobalStates.overviewOpen) {
+            preCaptureProc.running = false;
+            preCaptureProc.running = true;
+        }
+    }
+
+    function toggleOverview() {
+        if (GlobalStates.overviewOpen) {
+            GlobalStates.overviewOpen = false;
+        } else {
+            openOverview();
+        }
+    }
+
+    Process {
         id: kwinBridgeProcess
-        command: ["python3", Config.configDir + "/scripts/qs-kwin-bridge.py"]
+        command: ["journalctl", "--user", "-u", "plasma-kwin_wayland", "-f", "-n", "0"]
         running: true
         stdout: SplitParser {
             onRead: (line) => {
-                try {
-                    var parsed = JSON.parse(line);
-                    if (Array.isArray(parsed)) overviewScope.kwinWindows = parsed;
-                } catch(e) {}
+                if (line.includes("QS_WINDOWS:")) {
+                    try {
+                        var jsonStr = line.split("QS_WINDOWS:")[1].trim();
+                        var parsed = JSON.parse(jsonStr);
+                        if (Array.isArray(parsed)) overviewScope.kwinWindows = parsed;
+                    } catch(e) {}
+                }
             }
         }
     }
@@ -125,7 +153,7 @@ Scope {
         }
         overviewScope.dontAutoCancelSearch = true;
         panelWindow.setSearchingText(Config.options.search.prefix.clipboard);
-        GlobalStates.overviewOpen = true;
+        openOverview();
     }
 
     function toggleEmojis() {
@@ -135,20 +163,20 @@ Scope {
         }
         overviewScope.dontAutoCancelSearch = true;
         panelWindow.setSearchingText(Config.options.search.prefix.emojis);
-        GlobalStates.overviewOpen = true;
+        openOverview();
     }
 
     IpcHandler {
         target: "overviewWorkspaces"
 
         function toggle() {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
         function close() {
             GlobalStates.overviewOpen = false;
         }
         function open() {
-            GlobalStates.overviewOpen = true;
+            openOverview();
         }
     }
 
@@ -156,16 +184,16 @@ Scope {
         target: "search"
 
         function toggle() {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
         function workspacesToggle() {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
         function close() {
             GlobalStates.overviewOpen = false;
         }
         function open() {
-            GlobalStates.overviewOpen = true;
+            openOverview();
         }
         function toggleReleaseInterrupt() {
             GlobalStates.superReleaseMightTrigger = false;
@@ -180,7 +208,7 @@ Scope {
         description: "Toggles search on press"
 
         onPressed: {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
     }
     GlobalShortcut {
@@ -196,7 +224,7 @@ Scope {
         description: "Toggles overview on press"
 
         onPressed: {
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
     }
     GlobalShortcut {
@@ -212,7 +240,7 @@ Scope {
                 GlobalStates.superReleaseMightTrigger = true;
                 return;
             }
-            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+            toggleOverview();
         }
     }
     GlobalShortcut {

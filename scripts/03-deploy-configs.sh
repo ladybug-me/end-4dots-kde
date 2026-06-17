@@ -105,7 +105,7 @@ mkdir -p \
 if [[ -d "$SRC_DIR/bin" ]]; then
     cp "$SRC_DIR/bin/"* "$HOME/.local/bin/" 2>/dev/null || true
     chmod +x "$HOME/.local/bin/hyprctl" \
-              "$HOME/.local/bin/hyprpicker" \
+              "$HOME/.local/bin/kcolorpicker" \
               "$HOME/.local/bin/qs-kwin-bridge.py" 2>/dev/null || true
 fi
 
@@ -162,9 +162,9 @@ print(f"  Wrote wallpaperPath: {wallpaper_path}")
 PYEOF
     echo "  [OK]  Quickshell default wallpaper set."
 elif [[ ! -f "$DEFAULT_WALLPAPER" ]]; then
-    echo "  [WARN] Default wallpaper not found at: $DEFAULT_WALLPAPER"
+    echo -e "  \033[0;31m[WARN] Default wallpaper not found at: $DEFAULT_WALLPAPER\033[0m"
 else
-    echo "  [WARN] Quickshell config.json not found (will be created on first run)."
+    echo -e "  \033[0;31m[WARN] Quickshell config.json not found (will be created on first run).\033[0m"
 fi
 
 # ── Step G: Set wallpaper for kde-material-you-colors ─────────────────────────

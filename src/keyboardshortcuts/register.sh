@@ -13,7 +13,7 @@ set -uo pipefail
 CYAN="\033[0;36m"; GREEN="\033[0;32m"; YELLOW="\033[1;33m"; RED="\033[0;31m"; RST="\033[0m"
 info() { echo -e "${CYAN}[INFO]  $*${RST}"; }
 ok()   { echo -e "${GREEN}[OK]    $*${RST}"; }
-warn() { echo -e "${YELLOW}[WARN]  $*${RST}"; }
+warn() { echo -e "${RED}[WARN]  $*${RST}"; }
 err()  { echo -e "${RED}[ERR]   $*${RST}"; }
 
 CONFIG_FILE="$HOME/.config/kglobalshortcutsrc"
@@ -30,12 +30,26 @@ echo "  Quickshell Keyboard Shortcut Deployment (keyd)"
 echo "════════════════════════════════════════════════════════"
 
 # ─────────────────────────────────────────────────────────────────────────────
+# SUDO Setup (Inherited or Standalone)
+# ─────────────────────────────────────────────────────────────────────────────
+sudo -v || exit 1
+(while true; do sudo -n true; sleep 55; done) 2>/dev/null &
+SUDO_LOOP_PID=$!
+trap 'kill $SUDO_LOOP_PID 2>/dev/null || true' EXIT
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Step 0: Ensure keyd is installed and running
 # ─────────────────────────────────────────────────────────────────────────────
 info "Step 0: Checking for keyd..."
 if ! command -v keyd &> /dev/null; then
-    warn "keyd not found. Attempting to install keyd via yay..."
-    sudo -u "$USER" yay -S --noconfirm keyd || { err "Failed to install keyd."; exit 1; }
+    if [[ "$BASE_DISTRO" == "arch" ]]; then
+        warn "keyd not found. Attempting to install keyd via yay..."
+        yay -S --noconfirm keyd || { err "Failed to install keyd."; exit 1; }
+    elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+        warn "keyd not found. Attempting to install keyd via dnf from COPR..."
+        sudo dnf copr enable alternateved/keyd -y || true
+        sudo dnf install -y keyd || { err "Failed to install keyd."; exit 1; }
+    fi
     ok "keyd installed."
 else
     ok "keyd is already installed."

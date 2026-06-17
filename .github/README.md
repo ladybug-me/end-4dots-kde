@@ -6,6 +6,7 @@
 <div align="center"> 
 
 ![Arch Linux](https://img.shields.io/badge/Arch_Linux-1793d1?logo=arch-linux&logoColor=white&style=for-the-badge)
+![Fedora](https://img.shields.io/badge/Fedora-51A2DA?logo=fedora&logoColor=white&style=for-the-badge)
 ![KDE Plasma](https://img.shields.io/badge/KDE_Plasma-1D99F3?logo=kde&logoColor=white&style=for-the-badge)
 ![Quickshell](https://img.shields.io/badge/Quickshell-FF6B6B?style=for-the-badge)
 ![License: GPLv3](https://img.shields.io/badge/License-GPLv3-blue?style=for-the-badge&color=86dbce)
@@ -73,9 +74,14 @@
      This will be fixed in future. **Please contribute to fixing this issue.**
   
   **Requirements:**
-  - Arch Linux or Arch-based distro (Endeavour OS, Manjaro, etc.)
+  - Arch Linux or Arch-based distro (Endeavour OS, Manjaro, etc.), or Fedora Linux
   - KDE Plasma 6.0+
-  - `yay` or similar AUR helper (installer will set up if missing)
+
+  **Tested on:**
+  - CachyOS
+  - Manjaro KDE
+  - Fedora 44 KDE Edition
+
   
   **Optional:** 
   - Hyprpicker for color picking
@@ -251,20 +257,20 @@
 | `Super` + `Enter` | Open terminal (Kitty) |
 | `Super` + `Ctrl` + `T` | Open Wallpaper picker |
 | `Super` + `1`–`0` | Switch to workspace 1–10 |
-| `Super` + `Shift` + `1`–`0` | Move window to workspace 1–10 |
 | `Super` + `Space` | Application launcher (Fuzzel) |
-| `Super` + `V` | Clipboard picker |
-| Color picker | Available via right-click menu or keybind |
+| `Super` + `V` | Clipboard History |
+| Color picker | Available via the widgets|
 
 <div align="center">
     <h2>• customization •</h2>
     <h3></h3>
 </div>
 
-- **Wallpaper**: Place a wallpaper in `~/Pictures/wallpapers/` and re-run Matugen to auto-generate Material Design 3 colors
+- **Wallpaper**: Press `Super + Ctrl + T` to change the wallpaper and update the theme colors. (Press `Super + Ctrl + Alt + T` for random wallpapers in `~/Pictures/Wallpapers/`)
 - **Theme colors**: Edit [src/config/matugen/templates/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/src/config/matugen/templates/) to customize color generation
-- **KDE settings**: Modify [scripts/04-deploy-kde.sh](https://github.com/ladybug-me/end-4dotsKDE/blob/main/scripts/04-deploy-kde.sh) for Plasma configuration
-- **Widgets**: Edit Quickshell configs in [src/quickshell/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/src/quickshell/)
+- **Keyboard shortcuts**: Modify [src/keyboardshortcuts/shortcuts.md](https://github.com/ladybug-me/end-4dotsKDE/blob/main/src/keyboardshortcuts/shortcuts.md) and then run [src/keyboardshortcuts/register.sh](https://github.com/ladybug-me/end-4dotsKDE/blob/main/src/keyboardshortcuts/register.sh)
+  - **Note**: You may need to update ~/.local/bin/hyprctl for `Super + /` keybindings display
+- **Widgets**: Edit Quickshell configs in [src/quickshell/](https://github.com/ladybug-me/end-4dotsKDE/tree/main/src/quickshell/) or in `~/.config/quickshell/`
 
 <div align="center">
     <h2>• troubleshooting •</h2>

@@ -6,6 +6,36 @@ super + enter
    kitty
 ```
 
+# Workspaces (Experimental)
+```ini
+super + 1
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 1
+super + 2
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 2
+super + 3
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 3
+super + 4
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 4
+super + 5
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 5
+super + 6
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 6
+super + 7
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 7
+super + 8
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 8
+super + 9
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 9
+super + 0
+    qdbus6 org.kde.KWin /KWin org.kde.KWin.setCurrentDesktop 10
+```
+
+## For brightness (to apply later)
+##   xf86monbrightnessup
+##	     brightnessctl set +10% && ddcutil setvcp 10 + 10
+##   xf86monbrightnessdown
+##	     brightnessctl set -10% && ddcutil setvcp 10 - 10
+
 ## System & Session
 ```ini
 xf86audioraisevolume
@@ -14,10 +44,6 @@ xf86audiolowervolume
 	wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
 xf86audiomute
 	wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
-xf86monbrightnessup
-	brightnessctl set +10% && ddcutil setvcp 10 + 10
-xf86monbrightnessdown
-	brightnessctl set -10% && ddcutil setvcp 10 - 10
 ctrl + super + shift + alt + delete
     systemctl poweroff
 super + shift + l
@@ -29,8 +55,6 @@ ctrl + alt + delete
 ## Desktop & Shell UI
 ```ini
 ctrl + super + t
-
-
     qs -c ii ipc call wallpaperSelector toggle
 ctrl + super + alt + t
     qs -c ii ipc call wallpaperSelector random
@@ -67,7 +91,7 @@ super + space
 super + shift + a
     qs -c ii ipc call region search
 super + shift + c
-    hyprpicker -a
+    ~/.local/bin/kcolorpicker -a
 super + shift + x
     qs -c ii ipc call region ocr
 super + shift + t

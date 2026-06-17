@@ -338,7 +338,7 @@ PanelWindow {
         WToolbarIconButton {
             icon.name: "eyedropper"
             onClicked: {
-                Quickshell.execDetached(["bash", "-c", "sleep 0.2; hyprpicker -a"]);
+                Quickshell.execDetached(["bash", "-c", "sleep 0.2; ~/.local/bin/kcolorpicker -a"]);
                 root.closed();
             }
             WToolTip {

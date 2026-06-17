@@ -46,8 +46,8 @@ FAILED_PKGS=()
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 log()  { echo; echo "==> $*"; }
-warn() { echo "[WARN] $*" >&2; }
-err()  { echo "[ERR]  $*" >&2; }
+warn() { echo -e "\033[0;31m[WARN] $*\033[0m" >&2; }
+err()  { echo -e "\033[0;31m[ERR]  $*\033[0m" >&2; }
 
 is_protected() {
     local pkg="$1"

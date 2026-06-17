@@ -377,7 +377,7 @@ main() {
                     set_accent_color ""
                     shift 2
                 else
-                    set_accent_color $(hyprpicker --no-fancy)
+                    set_accent_color $(~/.local/bin/kcolorpicker --no-fancy)
                     shift
                 fi
                 ;;
