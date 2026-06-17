@@ -359,7 +359,7 @@ cp kwinrc ~/.config/
   Most probable cause is `keyd` service failure.
   Run: `systemctl restart keyd`.
   
-  **Special case**: If a kernel update happened, you will see `no uniput device` on running sudo keyd.
+  **Special case**: If a kernel update happened, you will see `no uinput device` on running sudo keyd.
   Rebooting will fix this.
 
 </details>
