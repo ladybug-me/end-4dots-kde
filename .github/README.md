@@ -68,6 +68,9 @@
      bash ./setup.sh
      ```
   3. Follow the interactive prompts (you can retry/ignore errors)
+     
+     **NOTE:** Due to some bugs, the installer might ask you multiple times for passwd or some other interaction.
+     This will be fixed in future. **Please contribute to fixing this issue.**
   
   **Requirements:**
   - Arch Linux or Arch-based distro (Endeavour OS, Manjaro, etc.)
@@ -299,7 +302,8 @@
           Skipped   : 38 (already present)
           Failed    : 0
         ======================================================
-
+    
+     **Number of packages vary in each distribution.**
 
   - It will prompt you to retry, ignore, or exit on errors
   - Report in Issues with logs.
@@ -352,6 +356,9 @@ cp kwinrc ~/.config/
   
   Most probable cause is `keyd` service failure.
   Run: `systemctl restart keyd`.
+  
+  **Special case**: If a kernel update happened, you will see `no uniput device` on running sudo keyd.
+  Rebooting will fix this.
 
 </details>
 <div align="center">
