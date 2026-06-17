@@ -82,11 +82,7 @@
   - Manjaro KDE
   - Fedora 44 KDE Edition
 
-  
-  **Optional:** 
-  - Hyprpicker for color picking
-  - Matugen for color generation from wallpaper
-  - Polonium for window tiling capabilities
+
   
 </details>
 
