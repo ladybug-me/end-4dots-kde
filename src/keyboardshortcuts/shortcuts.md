@@ -39,9 +39,9 @@ super + 0
 ## System & Session
 ```ini
 xf86audioraisevolume
-	wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%+
+    wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%+
 xf86audiolowervolume
-	wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+    wpctl set-volume -l 1.5 @DEFAULT_AUDIO_SINK@ 5%-
 xf86audiomute
 	wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
 ctrl + super + shift + alt + delete
