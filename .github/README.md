@@ -358,6 +358,8 @@ cp kwinrc ~/.config/
   
   Most probable cause is `keyd` service failure.
   Run: `systemctl restart keyd`.
+
+  Another cause is you ran `setup.sh` or `register.sh` with `sudo`. See [Issue#5](https://github.com/ladybug-me/caelestia-dots-kde/issues/5) for this.
   
   **Special case**: If a kernel update happened, you will see `no uinput device` on running sudo keyd.
   Rebooting will fix this.
