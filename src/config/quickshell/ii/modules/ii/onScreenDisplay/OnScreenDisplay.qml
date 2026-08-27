@@ -30,6 +30,18 @@ Scope {
             id: "gamma",
             sourceUrl: "indicators/GammaIndicator.qml"
         },
+        {
+            id: "capslock",
+            sourceUrl: "indicators/CapsLockIndicator.qml"
+        },
+        {
+            id: "numlock",
+            sourceUrl: "indicators/NumLockIndicator.qml"
+        },
+        {
+            id: "scrolllock",
+            sourceUrl: "indicators/ScrollLockIndicator.qml"
+        }
     ]
 
     function triggerOsd() {
@@ -84,11 +96,52 @@ Scope {
     }
 
     Connections {
+        target: KeyboardLocks
+
+        function onCapsLockChanged() {
+            root.currentIndicator = "capslock";
+            root.triggerOsd();
+        }
+
+        function onNumLockChanged() {
+            root.currentIndicator = "numlock";
+            root.triggerOsd();
+        }
+
+        function onScrollLockChanged() {
+            root.currentIndicator = "scrolllock";
+            root.triggerOsd();
+       }
+    }
+
+    Connections {
         // Listen to protection triggers
         target: Audio
         function onSinkProtectionTriggered(reason) {
             root.protectionMessage = reason;
             root.currentIndicator = "volume";
+            root.triggerOsd();
+        }
+    }
+
+    Connections {
+        target: KeyboardLocks
+
+        function onCapsLockChanged() {
+            console.log("CAPS CHANGED:", KeyboardLocks.capsLock);
+            root.currentIndicator = "capslock";
+            root.triggerOsd();
+        }
+
+        function onNumLockChanged() {
+            console.log("NUM CHANGED:", KeyboardLocks.numLock);    
+            root.currentIndicator = "numlock";
+            root.triggerOsd();
+        }
+
+        function onScrollLockChanged() {
+            console.log("SCROLL CHANGED:", KeyboardLocks.scrollLock);
+            root.currentIndicator = "scrolllock";
             root.triggerOsd();
         }
     }
