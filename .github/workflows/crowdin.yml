@@ -22,7 +22,7 @@ concurrency:
 jobs:
   synchronize:
     runs-on: ubuntu-latest
-    if: github.repository == 'ladybug-me/caelestia-kde'
+    if: github.repository == 'ladybug-me/end-4dots-kde'
     permissions:
       contents: write
       pull-requests: write
@@ -90,7 +90,7 @@ jobs:
 
   compile:
     runs-on: ubuntu-latest
-    if: github.repository == 'ladybug-me/caelestia-kde'
+    if: github.repository == 'ladybug-me/end-4dots-kde'
     permissions:
       contents: write
     steps:
