@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs
 import qs.services
 import qs.modules.common
@@ -20,10 +20,10 @@ WMouseAreaButton {
     required property int maxHeight
     required property int maxWidth
 
-    property var hyprlandClient: HyprlandData.clientForToplevel(root.toplevel)
-    property string address: hyprlandClient?.address
+    property var windowData: root.toplevel
+    property string address: windowData?.address
 
-    property string iconName: AppSearch.guessIcon(hyprlandClient?.class)
+    property string iconName: AppSearch.guessIcon(windowData?.class)
 
     color: drag.active ? ColorUtils.transparentize(Looks.colors.bg1Base) : (containsMouse ? Looks.colors.bg1Base : Looks.colors.bgPanelFooterBackground)
     borderColor: ColorUtils.transparentize(Looks.colors.bg2Border, drag.active ? 1 : 0)
@@ -31,8 +31,8 @@ WMouseAreaButton {
 
     property real titleBarImplicitHeight: titleBar.implicitHeight
     property bool scaleSize: true
-    property size openedSize: WindowLayout.scaleWindow(hyprlandClient, maxWidth, maxHeight);
-    property size fullSize: Qt.size(hyprlandClient?.size[0] ?? maxWidth, hyprlandClient?.size[1] ?? maxHeight)
+    property size openedSize: WindowLayout.scaleWindow(windowData, maxWidth, maxHeight);
+    property size fullSize: Qt.size(windowData?.width ?? maxWidth, windowData?.height ?? maxHeight)
     property size size: scaleSize ? openedSize : fullSize
     implicitWidth: Math.max(Math.round(contentItem.implicitWidth), 138)
     implicitHeight: Math.round(contentItem.implicitHeight)
@@ -62,14 +62,14 @@ WMouseAreaButton {
     }
 
     function closeWindow() {
-        Hyprland.dispatch(`hl.dsp.window.close({window = "address:${root.hyprlandClient?.address}"})`)
+        Kwin.closeWindow(root.windowData?.address)
     }
 
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
     onClicked: event => {
         if (event.button === Qt.LeftButton) {
             GlobalStates.overviewOpen = false;
-            Hyprland.dispatch(`hl.dsp.focus({window = "address:${root.hyprlandClient?.address}"})`)
+            Kwin.focusWindow(root.windowData?.address)
             GlobalStates.overviewOpen = false;
         } else if (event.button === Qt.MiddleButton) {
             root.closeWindow();
@@ -104,7 +104,7 @@ WMouseAreaButton {
                 Layout.fillWidth: true
                 Layout.alignment: Qt.AlignVCenter
                 elide: Text.ElideRight
-                text: root.hyprlandClient?.title ?? ""
+                text: root.windowData?.title ?? ""
             }
             CloseButton {
                 implicitWidth: 38
@@ -138,12 +138,12 @@ WMouseAreaButton {
         downDirection: true
 
         Action {
-            enabled: root.hyprlandClient?.floating
-            property bool isPinned: root.hyprlandClient?.pinned
+            enabled: root.windowData?.floating ?? false
+            property bool isPinned: root.windowData?.onAllDesktops ?? false
             icon.name: isPinned ? "checkmark" : "empty"
             text: Translation.tr("Show this window on all desktops")
             onTriggered: {
-                Hyprland.dispatch(`hl.dsp.window.pin({window = "address:${root.hyprlandClient?.address}"})`);
+                console.warn("Pinning window to all desktops natively via Kwin.qml is pending implementation.");
             }
         }
         Action {

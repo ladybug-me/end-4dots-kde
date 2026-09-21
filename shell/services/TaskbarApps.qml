@@ -4,6 +4,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Wayland
 import Caelestia.Services
+import qs.services
 import qs.modules.common
 
 Singleton {
@@ -30,7 +31,7 @@ Singleton {
         const ignoredRegexStrings = Config.options?.dock.ignoredAppRegexes ?? [];
         const ignoredRegexes = ignoredRegexStrings.map(pattern => new RegExp(pattern, "i"));
         // Open windows
-        for (const window of KWinActiveWindowBridge.windowList) {
+        for (const window of Kwin.windowList) {
             let appId = window.class || "";
             if (ignoredRegexes.some(re => re.test(appId))) continue;
             if (!map.has(appId.toLowerCase())) map.set(appId.toLowerCase(), ({
@@ -48,10 +49,10 @@ Singleton {
                 isMaximized: window.maximized,
                 isFullscreen: window.fullscreen,
                 activate: function() {
-                    KWinActiveWindowBridge.focusWindow(window.address);
+                    Kwin.focusWindow(window.address);
                 },
                 close: function() {
-                    KWinActiveWindowBridge.closeWindow(window.address);
+                    Kwin.closeWindow(window.address);
                 }
             };
             

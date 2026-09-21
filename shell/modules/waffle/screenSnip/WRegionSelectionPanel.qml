@@ -6,7 +6,7 @@ import Qt.labs.synchronizer
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs.services
 import qs.modules.common
 import qs.modules.common.functions
@@ -58,9 +58,9 @@ PanelWindow {
     }
 
     // Hyprland stuff
-    readonly property HyprlandMonitor hyprlandMonitor: Hyprland.monitorFor(screen)
-    readonly property real monitorScale: hyprlandMonitor.scale
-    readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
+    readonly property var kwinMonitor: Kwin.monitorFor(screen)
+    readonly property real monitorScale: screen.devicePixelRatio ?? 1.0
+    readonly property var windows: [...Kwin.windowList].sort((a, b) => {
         // Sort floating=true windows before others
         if (a.floating === b.floating)
             return 0;
@@ -144,16 +144,16 @@ PanelWindow {
 
             property bool isWindowSelection: root.selectionMode === WRegionSelectionPanel.SelectionMode.Window
             property var hoveredWindow: root.windows.find(w => {
-                const inCurrentWorkspace = w.workspace.id === HyprlandData.activeWorkspace.id;
-                const withinXRange = w.at[0] <= dragArea.mouseX && dragArea.mouseX <= w.at[0] + w.size[0];
-                const withinYRange = w.at[1] <= dragArea.mouseY && dragArea.mouseY <= w.at[1] + w.size[1];
+                const inCurrentWorkspace = w.workspace?.id === Kwin.activeWsId;
+                const withinXRange = w.x <= dragArea.mouseX && dragArea.mouseX <= w.x + w.width;
+                const withinYRange = w.y <= dragArea.mouseY && dragArea.mouseY <= w.y + w.height;
                 return inCurrentWorkspace && withinXRange && withinYRange;
             })
             property int winPadding: 1
-            property int selectionX: isWindowSelection ? ((hoveredWindow?.at[0] ?? 0) - winPadding) : regionTopLeftX
-            property int selectionY: isWindowSelection ? ((hoveredWindow?.at[1] ?? 0) - winPadding) : regionTopLeftY
-            property int selectionWidth: isWindowSelection ? ((hoveredWindow?.size[0] ?? 0) + winPadding * 2) : regionWidth
-            property int selectionHeight: isWindowSelection ? ((hoveredWindow?.size[1] ?? 0) + winPadding * 2) : regionHeight
+            property int selectionX: isWindowSelection ? ((hoveredWindow?.x ?? 0) - winPadding) : regionTopLeftX
+            property int selectionY: isWindowSelection ? ((hoveredWindow?.y ?? 0) - winPadding) : regionTopLeftY
+            property int selectionWidth: isWindowSelection ? ((hoveredWindow?.width ?? 0) + winPadding * 2) : regionWidth
+            property int selectionHeight: isWindowSelection ? ((hoveredWindow?.height ?? 0) + winPadding * 2) : regionHeight
 
             onDragReleased: (diffX, diffY) => {
                 if (selectionWidth === 0 || selectionHeight === 0) {
@@ -338,7 +338,7 @@ PanelWindow {
         WToolbarIconButton {
             icon.name: "eyedropper"
             onClicked: {
-                Quickshell.execDetached(["bash", "-c", "sleep 0.2; hyprpicker -a"]);
+                Quickshell.execDetached(["bash", "-c", "sleep 0.2; qdbus org.kde.KWin /ColorPicker org.kde.kwin.ColorPicker.pick"]);
                 root.closed();
             }
             WToolTip {

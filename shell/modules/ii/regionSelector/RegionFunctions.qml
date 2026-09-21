@@ -6,10 +6,17 @@ Singleton {
 
     function intersectionOverUnion(regionA, regionB) {
         // region: { at: [x, y], size: [w, h] }
-        const ax1 = regionA.at[0], ay1 = regionA.at[1];
-        const ax2 = ax1 + regionA.size[0], ay2 = ay1 + regionA.size[1];
-        const bx1 = regionB.at[0], by1 = regionB.at[1];
-        const bx2 = bx1 + regionB.size[0], by2 = by1 + regionB.size[1];
+        const ax1 = regionA.at ? regionA.at[0] : regionA.x;
+        const ay1 = regionA.at ? regionA.at[1] : regionA.y;
+        const aw  = regionA.size ? regionA.size[0] : regionA.width;
+        const ah  = regionA.size ? regionA.size[1] : regionA.height;
+        const ax2 = ax1 + aw, ay2 = ay1 + ah;
+
+        const bx1 = regionB.at ? regionB.at[0] : regionB.x;
+        const by1 = regionB.at ? regionB.at[1] : regionB.y;
+        const bw  = regionB.size ? regionB.size[0] : regionB.width;
+        const bh  = regionB.size ? regionB.size[1] : regionB.height;
+        const bx2 = bx1 + bw, by2 = by1 + bh;
 
         const interX1 = Math.max(ax1, bx1);
         const interY1 = Math.max(ay1, by1);

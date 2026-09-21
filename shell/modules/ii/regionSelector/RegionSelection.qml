@@ -10,8 +10,8 @@ import Qt.labs.synchronizer
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
-
+import Quickshell.Wayland
+import qs.services
 PanelWindow {
     id: root
     visible: false
@@ -54,16 +54,16 @@ PanelWindow {
     property bool contentRegionOpacity: Config.options.regionSelector.targetRegions.contentRegionOpacity
 
     // Vars for indicators
-    readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
+    readonly property var windows: [...Kwin.windowList].sort((a, b) => {
         // Sort floating=true windows before others
         if (a.floating === b.floating) return 0;
         return a.floating ? -1 : 1;
     })
-    readonly property var layers: HyprlandData.layers
+    readonly property var layers: Kwin.layers
     readonly property real falsePositivePreventionRatio: 0.5
 
     // Screen & interaction vars
-    readonly property HyprlandMonitor hyprlandMonitor: Hyprland.monitorFor(screen)
+    readonly property var hyprlandMonitor: Kwin.monitorFor(screen)
     readonly property real monitorScale: hyprlandMonitor.scale
     readonly property real monitorOffsetX: hyprlandMonitor.x
     readonly property real monitorOffsetY: hyprlandMonitor.y
@@ -85,8 +85,8 @@ PanelWindow {
         root.layerRegions
     ).map(window => {
         return {
-            at: [window.at[0] - root.monitorOffsetX, window.at[1] - root.monitorOffsetY],
-            size: [window.size[0], window.size[1]],
+            at: [window.x - root.monitorOffsetX, window.y - root.monitorOffsetY],
+            size: [window.width, window.height],
             class: window.class,
             title: window.title,
         }

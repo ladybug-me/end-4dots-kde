@@ -3,7 +3,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import Quickshell.Wayland
 import qs
 import qs.services
 import qs.modules.common
@@ -18,7 +18,7 @@ WMouseAreaButton {
     property bool newWorkspace: false
     property bool droppable: false
 
-    readonly property bool isActiveWorkspace: HyprlandData.activeWorkspace?.id === root.workspace
+    readonly property bool isActiveWorkspace: Kwin.activeWsId === root.workspace
     readonly property real screenWidth: QsWindow.window?.width ?? 0
     readonly property real screenHeight: QsWindow.window?.height ?? 0
     readonly property real screenAspectRatio: screenWidth / screenHeight
@@ -90,17 +90,17 @@ WMouseAreaButton {
 
                     Repeater {
                         model: ScriptModel {
-                            values: HyprlandData.toplevelsForWorkspace(root.workspace)
+                            values: Kwin.windowsForWorkspace({ id: root.workspace }, true)
                         }
                         delegate: ScreencopyView {
                             required property var modelData
-                            readonly property var hyprlandWindowData: HyprlandData.windowByAddress[`0x${modelData.HyprlandToplevel?.address}`]
+                            readonly property var windowData: modelData
                             captureSource: modelData
                             live: true
-                            width: hyprlandWindowData?.size[0] * root.windowScale
-                            height: hyprlandWindowData?.size[1] * root.windowScale
-                            x: hyprlandWindowData?.at[0] * root.windowScale
-                            y: hyprlandWindowData?.at[1] * root.windowScale
+                            width: windowData?.width * root.windowScale
+                            height: windowData?.height * root.windowScale
+                            x: windowData?.x * root.windowScale
+                            y: windowData?.y * root.windowScale
                         }
                     }
                 }

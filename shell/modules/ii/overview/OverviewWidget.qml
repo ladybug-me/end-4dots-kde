@@ -9,22 +9,21 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Item {
     id: root
     required property var screen
-    readonly property HyprlandMonitor monitor: Hyprland.monitorFor(screen)
-    readonly property var toplevels: ToplevelManager.toplevels
+    readonly property var monitor: Kwin.monitorFor(screen)
+    readonly property var toplevels: Kwin.toplevels
     // Clamp to avoid lock-screen temp workspace (2147483647 - N) leaking into UI
     readonly property int effectiveActiveWorkspaceId: Math.max(1, Math.min(100, monitor?.activeWorkspace?.id ?? 1))
     readonly property int workspacesShown: Config.options.overview.rows * Config.options.overview.columns
     readonly property int workspaceGroup: Math.floor((effectiveActiveWorkspaceId - 1) / workspacesShown)
-    property bool monitorIsFocused: (Hyprland.focusedMonitor?.name == monitor.name)
-    property var windows: HyprlandData.windowList
-    property var windowByAddress: HyprlandData.windowByAddress
-    property var windowAddresses: HyprlandData.addresses
-    property var monitorData: HyprlandData.monitors.find(m => m.id === root.monitor?.id)
+    property bool monitorIsFocused: (Kwin.focusedMonitor?.name == monitor.name)
+    property var windows: Kwin.windowList
+    property var windowByAddress: Kwin.windowByAddress
+    property var windowAddresses: Kwin.addresses
+    property var monitorData: Kwin.monitors.find(m => m.id === root.monitor?.id)
     property real scale: Config.options.overview.scale
     property color activeBorderColor: Appearance.colors.colSecondary
 
@@ -136,13 +135,11 @@ Item {
                             }
 
                             MouseArea {
-                                id: workspaceArea
                                 anchors.fill: parent
-                                acceptedButtons: Qt.LeftButton
-                                onPressed: {
+                                onClicked: {
                                     if (root.draggingTargetWorkspace === -1) {
                                         GlobalStates.overviewOpen = false
-                                        Hyprland.dispatch(`hl.dsp.focus({ workspace = ${workspace.workspaceValue} })`)
+                                        Kwin.switchToWorkspace(workspace.workspaceValue)
                                     }
                                 }
                             }
@@ -175,26 +172,25 @@ Item {
             Repeater { // Window repeater
                 model: ScriptModel {
                     values: {
-                        // console.log(JSON.stringify(ToplevelManager.toplevels.values.map(t => t), null, 2))
-                        return ToplevelManager.toplevels.values.filter((toplevel) => {
-                            const address = `0x${toplevel.HyprlandToplevel?.address}`
-                            var win = windowByAddress[address]
+                        return Kwin.windowList.filter((win) => {
                             const inWorkspaceGroup = (root.workspaceGroup * root.workspacesShown < win?.workspace?.id && win?.workspace?.id <= (root.workspaceGroup + 1) * root.workspacesShown)
                             return inWorkspaceGroup;
-                        })
+                        });
                     }
                 }
+
                 delegate: OverviewWindow {
                     id: window
+
                     required property var modelData
-                    property int monitorId: windowData?.monitor
-                    property var monitor: HyprlandData.monitors.find(m => m.id == monitorId)
-                    property var address: `0x${modelData.HyprlandToplevel.address}`
-                    toplevel: modelData
+                    property var address: modelData.address
+                    property var windowData: modelData
+                    property int monitorId: windowData?.monitor ?? -1
+                    property var monitor: Kwin.monitors.find(m => m.id == monitorId)
+                    toplevel: null
                     monitorData: this.monitor
                     scale: root.scale
-                    widgetMonitor: HyprlandData.monitors.find(m => m.id == root.monitor.id)
-                    windowData: windowByAddress[address]
+                    widgetMonitor: Kwin.monitors.find(m => m.id == root.monitor.id)
 
                     property bool atInitPosition: (initX == x && initY == y)
 
@@ -203,8 +199,8 @@ Item {
                     property int workspaceRowIndex: getWsRow(windowData?.workspace.id)
                     xOffset: (root.workspaceImplicitWidth + workspaceSpacing) * workspaceColIndex
                     yOffset: (root.workspaceImplicitHeight + workspaceSpacing) * workspaceRowIndex
-                    property real xWithinWorkspaceWidget: Math.max((windowData?.at[0] - (monitor?.x ?? 0) - monitorData?.reserved[0]) * root.scale, 0)
-                    property real yWithinWorkspaceWidget: Math.max((windowData?.at[1] - (monitor?.y ?? 0) - monitorData?.reserved[1]) * root.scale, 0)
+                    property real xWithinWorkspaceWidget: Math.max((windowData?.x - (monitor?.x ?? 0) - monitorData?.reserved[0]) * root.scale, 0)
+                    property real yWithinWorkspaceWidget: Math.max((windowData?.y - (monitor?.y ?? 0) - monitorData?.reserved[1]) * root.scale, 0)
 
                     // Radius
                     property real minRadius: Appearance.rounding.small
@@ -266,7 +262,7 @@ Item {
                             window.Drag.active = false
                             root.draggingFromWorkspace = -1
                             if (targetWorkspace !== -1 && targetWorkspace !== windowData?.workspace.id) {
-                                Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${targetWorkspace}, follow = false, window = "address:${window.windowData?.address}" })`)
+                                Kwin.setWindowDesktop(window.windowData?.address, targetWorkspace)
                                 updateWindowPosition.restart()
                             }
                             else {
@@ -274,9 +270,8 @@ Item {
                                     updateWindowPosition.restart()
                                     return
                                 }
-                                const percentageX = (window.x - xOffset) / root.workspaceImplicitWidth
-                                const percentageY = (window.y - yOffset) / root.workspaceImplicitHeight
-                                Hyprland.dispatch(`hl.dsp.window.move({ x = "${percentageX * root.screen.width}", y = "${percentageY * root.screen.height}", window = "address:${window.windowData?.address}" })`)
+                                console.warn("Moving window to absolute coordinates not supported natively in KWin module yet.");
+                                // Kwin.moveWindow(...)
                             }
                         }
                         onClicked: (event) => {
@@ -284,10 +279,10 @@ Item {
 
                             if (event.button === Qt.LeftButton) {
                                 GlobalStates.overviewOpen = false
-                                Hyprland.dispatch(`hl.dsp.focus({window = "address:${windowData.address}"})`)
+                                Kwin.focusWindow(windowData.address)
                                 event.accepted = true
                             } else if (event.button === Qt.MiddleButton) {
-                                Hyprland.dispatch(`hl.dsp.window.close({window = "address:${windowData.address}"})`)
+                                Kwin.closeWindow(windowData.address)
                                 event.accepted = true
                             }
                         }
