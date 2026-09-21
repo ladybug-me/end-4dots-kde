@@ -53,13 +53,18 @@ PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 
 CORE_PACKAGES=(
     cmake ninja-build ccache g++ build-essential qt6-l10n-tools qt6-tools-dev extra-cmake-modules
+    libcli11-dev spirv-tools bc coreutils rsync wget libjemalloc-dev libunwind-dev
 
     wl-clipboard cliphist inotify-tools wireplumber trash-cli jq yq libc6
+    pipewire-pulse libdbusmenu-gtk3-dev
 
     libaubio-dev aubio-tools lm-sensors libsensors-dev libpipewire-0.3-dev pipewire libfftw3-dev
 
     qt6-base-dev qt6-base-private-dev qt6-declarative-dev qml6-module-qtquick qt6-wayland qt6-wayland-dev
     qt6-svg-dev qt6-shadertools-dev qt6-multimedia-dev qt6-5compat-dev qt6-image-formats-plugins
+    qt6-positioning-dev qml6-module-qtpositioning qt6-sensors-dev qml6-module-qtsensors
+    qml6-module-qtquick-timeline qt6-translations-l10n qt6-virtualkeyboard-dev qml6-module-qtquick-virtualkeyboard
+    qtwayland5
 
     libkf6globalaccel-dev libkf6windowsystem-dev libkf6guiaddons-dev
     libkf6coreaddons-dev kwin-dev libkf6pulseaudioqt-dev libpulse-dev
@@ -69,14 +74,18 @@ CORE_PACKAGES=(
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev
     libsecret-tools
+    libwayland-dev wayland-protocols libgl1-mesa-dev libegl1-mesa-dev libgbm-dev
+    libxcb1-dev libxcb-cursor-dev libxcb-util-dev
 )
 
 SHELL_PACKAGES=(
-    foot eza fastfetch btop bash
+    clang gobject-introspection libgirepository1.0-dev libgtk-4-dev
+    libadwaita-1-dev libsoup-3.0-dev libportal-gtk4-dev
+    foot kitty eza fastfetch btop bash
 )
 
 THEME_PACKAGES=(
-    adw-gtk3
+    adw-gtk3 bibata-cursor-theme fontconfig fonts-twemoji
 )
 
 UTILITY_PACKAGES=(
@@ -84,6 +93,10 @@ UTILITY_PACKAGES=(
     tesseract-ocr tesseract-ocr-eng kde-spectacle slurp grim
     brightnessctl power-profiles-daemon
     xdg-utils sassc python3-venv uv konsave
+    geoclue-2.0 libglib2.0-dev gnome-keyring playerctl pavucontrol-qt
+    translate-shell upower wf-recorder wtype ydotool
+    libtinyxml2-dev libgtkmm-3.0-dev libgtksourceviewmm-3.0-dev libcairomm-1.0-dev
+    xdg-desktop-portal xdg-desktop-portal-gtk
 )
 
 FALLBACK_PKGS=(

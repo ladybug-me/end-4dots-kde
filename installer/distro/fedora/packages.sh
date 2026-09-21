@@ -37,8 +37,10 @@ PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 
 CORE_PACKAGES=(
     cmake ninja-build ccache qt6-qttools-devel extra-cmake-modules libgcc glibc
+    bc coreutils rsync jemalloc breakpad libunwind-devel
 
     wl-clipboard cliphist wl-clip-persist inotify-tools wireplumber trash-cli jq
+    libdbusmenu-gtk3-devel
 
     aubio aubio-devel lm_sensors lm_sensors-devel pipewire-devel
     pulseaudio-qt-qt6-devel pulseaudio-libs-devel fftw-devel
@@ -46,6 +48,8 @@ CORE_PACKAGES=(
     qt6-qtbase qt6-qtbase-private-devel qt6-qtdeclarative qt6-qtdeclarative-devel
     qt6-qtwayland qt6-qtwayland-devel qt6-qtsvg qt6-qtsvg-devel qt6-qtshadertools-devel
     qt6-qtmultimedia-devel qt6-qt5compat-devel qt6-qtimageformats
+    qt6-qtpositioning qt6-qtquicktimeline qt6-qtsensors qt6-qttranslations qt6-qtvirtualkeyboard
+    qt5-qtwayland
 
     kf6-kglobalaccel-devel kf6-kwindowsystem-devel kf6-kguiaddons-devel
     kf6-kcoreaddons-devel kwin-devel kf6-kconfig-devel
@@ -53,15 +57,19 @@ CORE_PACKAGES=(
     libepoxy-devel libdrm-devel
 
     libqalculate libqalculate-devel libsecret vulkan-headers ksshaskpass libX11-devel
+    wayland-devel libxcb
 )
 
 SHELL_PACKAGES=(
-    foot eza fastfetch starship btop bash matugen
+    clang uv gobject-introspection-devel gtk4-devel
+    libadwaita-devel libsoup3-devel libportal-gtk4
+    foot kitty eza fastfetch starship btop bash matugen
 )
 
 THEME_PACKAGES=(
-    adw-gtk3-theme google-rubik-fonts google-noto-sans-fonts
-    google-noto-sans-cjk-fonts google-noto-emoji-fonts
+    adw-gtk3-theme bibata-cursor-theme breeze-plus-icon-theme fontconfig
+    google-rubik-fonts florian-karsten-space-grotesk-fonts readex-pro-fonts-all twitter-twemoji-fonts
+    google-noto-sans-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts
 )
 
 UTILITY_PACKAGES=(
@@ -69,6 +77,9 @@ UTILITY_PACKAGES=(
     tesseract tesseract-langpack-eng spectacle gpu-screen-recorder
     slurp grim brightnessctl power-profiles-daemon
     xdg-utils sassc bat ripgrep xdg-user-dirs
+    geoclue2 glib2 gnome-keyring microtex playerctl
+    songrec translate-shell upower wf-recorder
+    wlogout wtype xdg-desktop-portal xdg-desktop-portal-gtk ydotool
 )
 
 COPR_CORE=(app2unit libcava)

@@ -35,34 +35,45 @@ PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 
 CORE_PACKAGES=(
     cmake ninja ccache qt6-tools extra-cmake-modules gcc-libs glibc rsync
+    cli11 spirv-tools bc coreutils cpptrace jemalloc
 
     wl-clipboard cliphist wl-clip-persist inotify-tools app2unit wireplumber trash-cli jq
+    pipewire-pulse libdbusmenu-gtk3
 
     aubio lm_sensors libpipewire pulseaudio-qt libpulse fftw
 
     qt6-base qt6-declarative qt6-wayland qt6-shadertools qt6-svg
-    qt6-multimedia qt6-5compat qt6-imageformats
+    qt6-multimedia qt6-5compat qt6-imageformats qt6-avif-image-plugin
+    qt6-positioning qt6-quicktimeline qt6-sensors qt6-translations qt6-virtualkeyboard
 
     kglobalaccel kglobalacceld kguiaddons kwindowsystem
     kcoreaddons kconfig networkmanager-qt kpipewire kwin
 
     ffmpeg libqalculate libsecret ksshaskpass libx11 vulkan-headers
+    wayland wayland-protocols mesa libdrm libxcb
 )
 
 SHELL_PACKAGES=(
-    quickshell matugen python
-    foot eza fastfetch starship btop bash
+    quickshell matugen python uv clang
+    gtk4 libadwaita libsoup3 libportal-gtk4 gobject-introspection
+    foot kitty eza fastfetch starship btop bash
 )
 
 THEME_PACKAGES=(
-    adw-gtk-theme ttf-jetbrains-mono-nerd ttf-material-symbols-variable
-    ttf-rubik-vf ttf-cascadia-code-nerd noto-fonts noto-fonts-cjk noto-fonts-emoji
+    adw-gtk-theme breeze-plus fontconfig
+    ttf-jetbrains-mono-nerd ttf-material-symbols-variable
+    ttf-rubik-vf ttf-cascadia-code-nerd ttf-readex-pro ttf-twemoji otf-space-grotesk
+    noto-fonts noto-fonts-cjk noto-fonts-emoji
 )
 
 UTILITY_PACKAGES=(
     fuzzel swappy ddcutil networkmanager imagemagick tesseract tesseract-data-eng
     satty spectacle gpu-screen-recorder slurp grim brightnessctl power-profiles-daemon
-    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs
+    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs wget go-yq
+    playerctl pavucontrol-qt songrec translate-shell upower geoclue
+    tinyxml2 gtkmm3 gtksourceviewmm cairomm
+    wf-recorder wlogout wtype ydotool glib2 gnome-keyring
+    xdg-desktop-portal xdg-desktop-portal-gtk
 )
 
 PACKAGES=()
