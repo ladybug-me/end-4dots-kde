@@ -1,0 +1,323 @@
+name: Version Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: version-release
+  cancel-in-progress: true
+
+jobs:
+  version-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: true
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Fetch main Branch
+        run: |
+          set -euo pipefail
+          git fetch origin main:refs/remotes/origin/main --force
+
+      - name: Load Version from Config
+        run: |
+          set -euo pipefail
+          source .github/version.env
+
+          if [[ -z "${VERSION:-}" ]]; then
+            echo "VERSION is missing in .github/version.env"
+            exit 1
+          fi
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "VERSION must match vX.Y.Z, got: $VERSION"
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Validate Version Sync (Release-Only)
+        run: |
+          set -euo pipefail
+
+          ABOUT_BINDING=$(grep -F 'text: CUtils.version ? `v${CUtils.version}` : "…"' shell/modules/nexus/pages/AboutPage.qml | head -n 1 || true)
+
+          echo "Config VERSION: $VERSION"
+          echo "About binding:  ${ABOUT_BINDING:-<missing>}"
+
+          if [[ -z "${ABOUT_BINDING:-}" ]]; then
+            echo "Version validation failed. Ensure AboutPage reads CUtils.version before release."
+            exit 1
+          fi
+
+      - name: Create or Update Version Tag
+        run: |
+          set -euo pipefail
+
+          LAST_TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)
+
+          echo "LAST_TAG=$LAST_TAG" >> $GITHUB_ENV
+
+          git tag -f "$VERSION" "$GITHUB_SHA"
+          git push origin "refs/tags/$VERSION" --force
+
+      - name: Create or Update Release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$LAST_TAG" ] && [ "$LAST_TAG" != "$VERSION" ]; then
+            git fetch origin dev:refs/remotes/origin/dev --force || true
+
+            SYNC_COMMIT=$(git rev-list "$LAST_TAG..origin/dev" --ancestry-path --merges | tail -n 1 || true)
+
+            if [ -n "$SYNC_COMMIT" ]; then
+              git log "$SYNC_COMMIT..origin/dev" --no-merges --invert-grep --grep='\[skip ci\]' --pretty='- %s (%h)' > commit_notes.txt
+            else
+              git log "$LAST_TAG..$GITHUB_SHA" --no-merges --invert-grep --grep='\[skip ci\]' --pretty='- %s (%h)' > commit_notes.txt
+            fi
+          else
+            git log origin/main -n 15 --no-merges --invert-grep --grep='\[skip ci\]' --pretty='- %s (%h)' > commit_notes.txt
+          fi
+
+          {
+            echo "### What's New in $VERSION"
+            echo
+
+            if [ -s commit_notes.txt ]; then
+              if grep -qiE '^- (major)(\([^)]*\))?:' commit_notes.txt; then
+                echo "#### Major Changes"
+                grep -iE '^- (major)(\([^)]*\))?:' commit_notes.txt | sed -E 's/^- (major)\(([^)]*)\): /- \2: /i; s/^- (major): /- /i'
+                echo
+              fi
+
+              if grep -qiE '^- (feat|feature)(\([^)]*\))?:' commit_notes.txt; then
+                echo "#### Features"
+                grep -iE '^- (feat|feature)(\([^)]*\))?:' commit_notes.txt | sed -E 's/^- (feat|feature)\(([^)]*)\): /- \2: /i; s/^- (feat|feature): /- /i'
+                echo
+              fi
+
+              if grep -qiE '^- (perf|performance)(\([^)]*\))?:' commit_notes.txt; then
+                echo "#### Performance"
+                grep -iE '^- (perf|performance)(\([^)]*\))?:' commit_notes.txt | sed -E 's/^- (perf|performance)\(([^)]*)\): /- \2: /i; s/^- (perf|performance): /- /i'
+                echo
+              fi
+
+              if grep -qiE '^- (fix|bug)(\([^)]*\))?:' commit_notes.txt; then
+                echo "#### Bug Fixes"
+                grep -iE '^- (fix|bug)(\([^)]*\))?:' commit_notes.txt | sed -E 's/^- (fix|bug)\(([^)]*)\): /- \2: /i; s/^- (fix|bug): /- /i'
+                echo
+              fi
+            else
+              echo "- Maintenance release for $VERSION."
+            fi
+          } > release_notes.md
+
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            gh release edit "$VERSION" \
+              --title "Caelestia $VERSION" \
+              --notes-file release_notes.md \
+              --prerelease=false \
+              --latest
+          else
+            gh release create "$VERSION" \
+              --title "Caelestia $VERSION" \
+              --notes-file release_notes.md \
+              --prerelease=false \
+              --latest
+          fi
+
+      - name: Open Sync PR to dev
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          echo "Attempting to open a PR to sync main into dev..."
+
+          gh pr create \
+            --base dev \
+            --head main \
+            --title "chore: sync main back to dev after $VERSION" \
+            --body "This is an automated PR to sync the new release tags from \`main\` back into \`dev\`." || true
+
+  build-shell:
+    name: Precompile shell artifacts (x86_64)
+    needs: version-release
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Shell Build Dependencies
+        run: |
+          set -euo pipefail
+          pacman -Syu --noconfirm --needed git github-cli cmake ninja meson autoconf-archive \
+            qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools \
+            kwindowsystem kguiaddons kglobalaccel kconfig networkmanager-qt pulseaudio-qt \
+            libqalculate pipewire libpipewire aubio lm_sensors extra-cmake-modules \
+            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
+
+      - name: Install Prebuilt CAVA SDK (Arch)
+        run: |
+          set -euo pipefail
+          source scripts/lib/toolchain.sh
+          install_cava_sdk arch
+
+      - name: Load Release Tag
+        run: |
+          set -euo pipefail
+          source .github/version.env
+          echo "TAG=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Configure Shell
+        run: |
+          set -euo pipefail
+          cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
+            -DINSTALL_LIBDIR=lib/caelestia \
+            -DINSTALL_QMLDIR=lib/qt6/qml
+
+      - name: Build Shell
+        run: |
+          set -euo pipefail
+          cmake --build shell/build -j"$(nproc)"
+
+      - name: Stage Compiled Artifacts
+        run: |
+          set -euo pipefail
+          QT_ABI="$(pkg-config --modversion Qt6Core | grep -oE '^[0-9]+\.[0-9]+')"
+          DESTDIR="$PWD/stage" cmake --install shell/build
+          mkdir -p dist/root/lib/qt6/qml dist/root/lib/caelestia dist/root/quickshell
+          cp -a stage/usr/lib/qt6/qml/Caelestia stage/usr/lib/qt6/qml/M3Shapes dist/root/lib/qt6/qml/
+          cp -a stage/usr/lib/caelestia/version dist/root/lib/caelestia/
+          cp -a stage/usr/etc/xdg/quickshell/caelestia dist/root/quickshell/
+          ARTIFACT="dist/caelestia-kde-x86_64-qt${QT_ABI}.tar.gz"
+          tar -C dist/root -czf "$ARTIFACT" lib quickshell
+          echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
+          CHECKSUM="${ARTIFACT}.sha256"
+          sha256sum "$ARTIFACT" | sed "s|$(dirname "$ARTIFACT")/||" > "$CHECKSUM"
+          echo "CHECKSUM=$CHECKSUM" >> "$GITHUB_ENV"
+
+      - name: Attach Shell Artifacts to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # --repo: inside a container gh's git-based repo detection fails ("not a git
+          gh release upload "$TAG" "$ARTIFACT" "$CHECKSUM" --repo "$GITHUB_REPOSITORY" --clobber
+
+  build-source:
+    name: Build AUR source tarball
+    needs: version-release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Load Release Tag
+        run: |
+          set -euo pipefail
+          source .github/version.env
+          echo "TAG=$VERSION" >> "$GITHUB_ENV"
+          echo "PKGVER=${VERSION#v}" >> "$GITHUB_ENV"
+
+      - name: Stage the Tree
+        run: |
+          set -euo pipefail
+          ROOT="caelestia-kde-$PKGVER"
+          mkdir -p "dist/$ROOT"
+          rsync -a --exclude '.git' --exclude '.gitmodules' \
+            --exclude 'shell/assets/fonts' ./ "dist/$ROOT/"
+          git rev-parse HEAD > "dist/$ROOT/REVISION"
+
+      - name: Build the Tarball
+        run: |
+          set -euo pipefail
+          ARTIFACT="caelestia-kde-v$PKGVER.tar.gz"
+          tar -C dist -czf "$ARTIFACT" "caelestia-kde-$PKGVER"
+          sha256sum "$ARTIFACT" | tee "$ARTIFACT.sha256"
+          du -h "$ARTIFACT"
+          echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
+
+      - name: Attach to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release upload "$TAG" "$ARTIFACT" "$ARTIFACT.sha256" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+
+  build-installer:
+    name: Build installer TUI (${{ matrix.arch }})
+    needs: version-release
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-22.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq cmake g++ make
+
+      - name: Load Release Tag
+        run: |
+          set -euo pipefail
+          source .github/version.env
+          echo "TAG=$VERSION" >> "$GITHUB_ENV"
+
+      - name: Build Installer TUI
+        run: |
+          set -euo pipefail
+          cmake -B installer/build -DCMAKE_BUILD_TYPE=Release installer/tui
+          cmake --build installer/build -- -j"$(nproc)"
+
+      - name: Attach Prebuilt Installer to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TUI_VERSION="$(tr -d '[:space:]' < installer/data/tui.version)"
+          cp installer/build/caelestia-install "caelestia-install-${{ matrix.arch }}-v${TUI_VERSION}"
+          gh release upload "$TAG" "caelestia-install-${{ matrix.arch }}-v${TUI_VERSION}" --repo "$GITHUB_REPOSITORY" --clobber

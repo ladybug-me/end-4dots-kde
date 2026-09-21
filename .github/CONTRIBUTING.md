@@ -1,64 +1,159 @@
-# Contributing
+# Contributing to Caelestia
 
-- Please, please, please, make multiple PRs if you have many features/fixes, and don't shove your personal changes along with the PR, including changed defaults
-- We can accept features that we do not personally want, but in that case we will ask you to make it configurable/optionally loaded.
-- If you want to start working on something _big_ to contribute, it might be a good idea to ask first to not waste your effort (but if you've already done it for yourself, it doesn't hurt to submit).
+We're glad you're here! This guide covers everything you need to start contributing.
 
-# Translations
+## Quick start
 
-See `dots/.config/quickshell/ii/translations/tools`
+```bash
+git clone https://github.com/ladybug-me/caelestia-kde ~/caelestia-kde
+cd ~/caelestia-kde
+bash scripts/setup.sh  # Full install - do this at least once
+```
 
-# Code
+Make your changes in the cloned repo, test them (see below), then open a PR. That's it.
 
-## Dynamic loading
+## What makes a good PR?
 
-- If something's not always necessary, especially when guarded by a config option to enable/disable, put it in a `Loader`
-  - Note that you will need to declare positioning properties (like `anchors`) in the `Loader`, not the `sourceComponent`
-  - When something that's to be dynamically loaded doesn't affect its parent layout, you can have a fading animation by using FadeLoader and set the `shown` prop instead of `active` and `visible`
+> [!WARNING]
+> Only PRs to **dev** branch are accepted!
 
-## Practical concerns
+- **One thing at a time.** If you have three features, send three PRs - it's much faster to review.
+- **Keep your personal config out.** Don't include your wallpaper path, custom keybinds, or local settings.
+- **Experimental features off by default.** If it's flashy or niche, add a config toggle and default it to `false`.
+- **Big ideas? Open an issue first.** It saves you from writing code we might not be able to accept.
 
-- Make sure what you add does not require significant resources for a minor purpose or harm usability just for the sake of looking nice. The dotfiles must remain practical for daily driving.
-- If there is something really fancy and impractical anyway, add a config option for it and make sure it's disabled by default (example: constantly rotating background clock)
+## Where stuff lives
 
-## Style
+| Area | Directory | Tech |
+| ------ | ----------- | ------ |
+| Shell UI (launcher, bar, notifications, etc.) | `shell/` | QML + Quickshell |
+| Lock screen greeter (Plasma 6 shell) | `src/kde/shells/caelestia.desktop/` | QML + KDE ScreenLocker |
+| KWin plugin (window management, shortcuts) | `shell/plugin/` | C++ |
+| TUI installer | `installer/tui/` | C++ |
+| Installer theme & menus | `installer/data/theme.json`, `installer/data/menu.json` | JSON |
+| Install step scripts | `scripts/` | Bash |
+| User-facing update scripts | `src/bin/` | Bash |
 
-- Spaces
-  - Space properties and children data into meaningful groups. (but of course, don't use 2+ blanks in a row)
-  - Put spaces between text and operators: `if (condition) { ... } else { ... }` instead of `if(condition){ ... }else{ ... }`
-- As you can see, it's pretty easy to use lots of nesting. There's no hard limit, end-4 himself nests a lot too, but avoid/mitigate that:
-  - Prefer early return: Use something like `if (!condition) return; doStuff();` instead of `if (condition) { doStuff() }`
-  - If you feel it's a bother to refractor something into a new file, remember there's `component` to declare reusable components in the same file.
+## Development workflow
 
-# Setting up
+### For QML / shell changes
 
-The following instruction assumes that you have an Arch(-based) Linux system.
+Edit files in `~/.config/quickshell/caelestia/`. Restart the shell.
 
-## Complete
+```bash
+# Restart the shell cleanly
+~/.config/quickshell/caelestia/scripts/restart_shell.sh
 
-_Might not be necessary depending on what you change, but this is recommended._
+# View live logs
+caelestia-shell-ipc log
+```
 
-- [Install](https://ii.clsty.link/en/ii-qs/01setup/) the dotfiles (if you don't wanna replace your stuff completely, do it on a new user).
-- Make changes, copy changes to a fork, create PR.
+**Editor setup:**
 
-## Partially working shell
+- Run `touch ~/.config/quickshell/caelestia/.qmlls.ini` for QML language server support
+- In VS Code, install the "Qt Qml" extension and set the `qmlls` path to `/usr/bin/qmlls6`
 
-_Most stuff in the shell will work but not everything._
 
-- Install Hyprland and the development version of Quickshell (`yay -S hyprland quickshell-git`).
-- Copy `dots/.config/quickshell` folder to your home directory.
+### For C++ plugin changes
 
-## Extra setup for Quickshell
-- Quickshell-specific LSP setup: Run `touch ~/.config/quickshell/ii/.qmlls.ini` for proper LSP support.
-- Hint for VSCode: Get the official "Qt Qml" extension, go to its settings and change custom exe path to `/usr/bin/qmlls6`.
+```bash
+bash scripts/08-build-shell.sh   # Recompiles and installs the plugins
+bash shell/scripts/restart_shell.sh  # Restart to pick up the new .so
+```
 
-## Python
-If your changes involves using python package or script, please use the virtual environment created by uv as described in `sdata/uv/README.md`.
+The build keeps one core free and runs at a lower priority so the session stays
+usable. Set `CAELESTIA_BUILD_JOBS` to override the job count.
 
-# Running
+### For Lock screen changes
 
-- Launch Hyprland (not the "uwsm-managed" one)
-- For the shell:
-  - Open `~/.config/quickshell/ii` in your code editor.
-  - In a terminal run `pkill qs; qs -c ii` to start the shell in the terminal (for logs).
-  - Make edits in the opened folder. Changes are reloaded live.
+The lock screen is a native KDE Plasma 6 shell package located in `src/kde/shells/caelestia.desktop/`.
+
+```bash
+# Copy the files to the local Plasma shells directory
+mkdir -p ~/.local/share/plasma/shells/
+cp -r src/kde/shells/caelestia.desktop ~/.local/share/plasma/shells/
+
+# Set the shell package (if not already set)
+kwriteconfig6 --file plasmashellrc --group "Shell" --key "ShellPackage" "caelestia.desktop"
+
+# Test the lock screen safely in an interactive window (without locking your session)
+/usr/lib/kscreenlocker_greet --testing
+```
+
+### For installer changes
+
+```bash
+cmake -B installer/build -S installer/tui && cmake --build installer/build   # Compile
+./installer/build/caelestia-install "$PWD"    # Run from the repo root (use with care!)
+```
+
+The installer reads `installer/data/theme.json` and `installer/data/menu.json`
+relative to its bundle directory, which is the executable's own directory unless
+you pass one as the first argument. That is why the run above passes `$PWD`;
+`setup.sh` copies the binary to the repo root instead, where no argument is
+needed.
+
+Adding, removing or reordering a step means bumping `installer/data/tui.version`.
+The step table is compiled into the TUI binary, and `scripts/setup.sh` keys on that
+number alone: it downloads the prebuilt binary published for the version, and
+otherwise reuses a local binary whose stamp matches it. Both paths can hand you a
+binary built before your change, and then the new step silently never runs on a
+fresh install. Bumping makes the prebuilt lookup miss, so the installer compiles
+the tree instead, and the next release publishes the matching binary.
+
+### For translation changes
+
+```bash
+tools/update-translations.sh          # refresh every catalog
+tools/update-translations.sh es       # start a new one (Spanish here)
+```
+
+Translate `shell/translations/caelestia_<code>.ts`, rebuild the shell, then pick
+the language in Nexus -> Language & region. See
+[Translations](../docs/translations.md) for the full guide.
+
+### For creating plugins
+
+Head to [caelestia-kde-plugins](https://github.com/ladybug-me/caelestia-kde-plugins) for the plugin templates and guidelines.
+
+## Code style (the short version)
+
+**QML:**
+
+- Spaces between operators: `if (condition) {` not `if(condition){`
+- Prefer early returns: `if (!ok) return;` over deep nesting
+- Group related properties with blank lines
+- Import order: QtQuick -> Qt -> Quickshell -> Caelestia -> qs.components -> qs.services -> qs.modules
+- Run `python3 shell/scripts/qml-lint-conventions.py` - it catches most issues
+
+**Shell scripts:**
+
+- Use `set -euo pipefail` at the top
+- Prefer `[[ ]]` over `[ ]`
+- Quote variables: `"$VAR"` not `$VAR`
+- Run `shellcheck` on your scripts
+
+## Security
+
+- When calling shell commands from QML, pass arguments as an array - never
+  concatenate strings:
+
+  ```js
+  // Good
+  Quickshell.execDetached(["bash", "-c", "echo \"$1\"", "--", myVar])
+  // Bad
+  Quickshell.execDetached(["bash", "-c", "echo " + myVar])
+  ```
+
+- Use `Paths.runtimeTemp("filename")` for temporary files - not hardcoded `/tmp/` paths.
+
+## Architecture docs
+
+- [Brand rules](../docs/brand.md) - the name, palette, logo and voice every user-facing change must follow
+- [KWin port architecture](../docs/architecture/kwin_port_architecture.md) - C++ plugin design and QML APIs
+- [Lock screen architecture](../docs/architecture/lockscreen_architecture.md) - native Plasma 6 greeter design and component structure
+- [Translations](../docs/translations.md) - i18n pipeline and how to add a language
+
+## Stuck?
+
+Open a [Discussion](https://github.com/ladybug-me/caelestia-kde/discussions) or ask in an issue - we're happy to help.

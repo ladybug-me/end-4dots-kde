@@ -1,0 +1,45 @@
+name: Label issue type
+
+# Every issue carries exactly one type label: bug, feature, or help me. A type
+# label is never replaced, so re-running on edits is safe, and an issue a human
+# already typed is left alone.
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  issues: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Apply a type label
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+
+          # Read the payload with jq rather than through a workflow
+          # expression: issue bodies contain quotes, backticks and newlines,
+          # and the round-trip mangles them.
+          title="$(jq -r '.issue.title' "$EVENT_PATH")"
+          body_file="$(mktemp)"
+          trap 'rm -f "$body_file"' EXIT
+          jq -r '.issue.body // ""' "$EVENT_PATH" > "$body_file"
+
+          if jq -e '.issue.labels[]
+                   | select(.name == "bug" or .name == "feature" or .name == "help me")' \
+               "$EVENT_PATH" > /dev/null; then
+            echo "issue already carries a type label, leaving it alone"
+            exit 0
+          fi
+
+          label="$(bash .github/scripts/classify_issue_type.sh "$title" < "$body_file")"
+          echo "applying type label: ${label}"
+          gh issue edit "$ISSUE_NUMBER" --repo "$REPO" --add-label "$label"

@@ -1,0 +1,151 @@
+name: Crowdin
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "shell/**/*.qml"
+      - "shell/translations/**"
+      - "crowdin.yml"
+      - ".github/workflows/crowdin.yml"
+  schedule:
+    # Work done on Crowdin's side -- a translator filling in a language, a
+    # machine translation run -- pushes nothing here, so the schedule is what
+    # turns it into a pull request. Runs every day at 03:00 UTC.
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: crowdin
+  cancel-in-progress: false
+
+jobs:
+  synchronize:
+    runs-on: ubuntu-latest
+    if: github.repository == 'ladybug-me/caelestia-kde'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          # A scheduled run has no branch of its own and would check out the
+          # default branch, uploading sources that are behind dev.
+          ref: dev
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+
+      - name: Install Qt Linguist Tools
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y qt6-l10n-tools qt6-tools-dev
+
+      - name: Regenerate the Source Catalog
+        run: |
+          set -euo pipefail
+          tools/update-translations.sh en
+          test -s shell/translations/caelestia_en.ts
+
+      - name: Synchronize with Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: true
+          auto_approve_imported: true
+          download_translations: true
+          # Off on purpose. On, it omits any file that is not fully translated,
+          # which held back every language machine translation left a few
+          # strings short. The languages at 0% come off the project instead, so
+          # there is no untranslated catalogue to leak into the picker.
+          skip_untranslated_files: false
+          # Without these the action checks out GITHUB_REF itself -- main, on a
+          # scheduled run -- and targets the default branch with the PR.
+          skip_ref_checkout: true
+          pull_request_base_branch_name: dev
+          localization_branch_name: i18n/crowdin
+          create_pull_request: true
+          pull_request_title: "i18n: new translations from Crowdin"
+          pull_request_body: |
+            Translations downloaded from Crowdin.
+
+            The compiled `.qm` catalogs are refreshed by the workflow on this
+            branch, so this can be merged as it stands.
+          commit_message: "i18n: new translations from Crowdin"
+          config: crowdin.yml
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+  compile:
+    runs-on: ubuntu-latest
+    if: github.repository == 'ladybug-me/caelestia-kde'
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+          permission-contents: write
+
+      - name: Checkout Localization Branch
+        uses: actions/checkout@v4
+        with:
+          ref: i18n/crowdin
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+        continue-on-error: true
+        id: checkout
+
+      - name: Install Qt Linguist Tools
+        if: steps.checkout.outcome == 'success'
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y qt6-l10n-tools qt6-tools-dev
+
+      - name: Recompile Catalogs
+        if: steps.checkout.outcome == 'success'
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          lrelease=/usr/lib/qt6/bin/lrelease
+          [[ -x "$lrelease" ]] || lrelease=$(command -v lrelease)
+
+          for ts in shell/translations/caelestia_*.ts; do
+            "$lrelease" -silent "$ts" -qm "${ts%.ts}.qm"
+          done
+
+      - name: Commit Compiled Catalogs
+        if: steps.checkout.outcome == 'success'
+        run: |
+          set -euo pipefail
+
+          # Stage before diffing. A language translated for the first time
+          # produces an untracked .qm, and git diff never reports those, so this
+          # step used to exit early and ship a .ts with no compiled pair.
+          git add shell/translations
+          if git diff --cached --quiet; then
+            echo "Catalogs already match their sources."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "i18n: recompile catalogs"
+          git push
+    needs: synchronize

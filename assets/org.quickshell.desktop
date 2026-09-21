@@ -1,0 +1,28 @@
+[Desktop Entry]
+Version=1.5
+Type=Application
+NoDisplay=true
+
+Name=Quickshell
+Icon=org.quickshell
+
+# Installed to ~/.local/share/applications, overriding the packaged
+# /usr/share/applications/org.quickshell.desktop.
+#
+# KWin only advertises its privileged Wayland interfaces to clients whose
+# desktop file asks for them: it takes the client's executable (/proc/<pid>/exe),
+# looks for an installed .desktop whose Exec resolves to that same binary, and
+# reads X-KDE-Wayland-Interfaces from it. Quickshell's packaged file has no Exec
+# line at all, so the shell matches nothing and zkde_screencast_unstable_v1 is
+# never offered — live window thumbnails stay empty and fall back to the app
+# icon in both the dock hover popup and the window switcher.
+#
+# zkde_screencast_unstable_v1 is what lets the shell ask KWin for a live
+# PipeWire feed of a single window, which is exactly how Plasma's own Task
+# Manager draws its taskbar thumbnails (org.kde.plasmashell.desktop requests
+# the same interface). org_kde_plasma_window_management goes with it for
+# window metadata.
+#
+# Delete this file to revoke that, then run: kbuildsycoca6
+Exec=/usr/bin/quickshell
+X-KDE-Wayland-Interfaces=zkde_screencast_unstable_v1,org_kde_plasma_window_management

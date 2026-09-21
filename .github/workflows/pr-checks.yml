@@ -1,0 +1,168 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+    branches: ["**"]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pr-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Validate PR template
+        run: python3 .github/scripts/check_pr_template.py
+
+  branch-name:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check branch name
+        env:
+          BRANCH_NAME: ${{ github.head_ref }}
+        run: |
+          if [[ "$BRANCH_NAME" == "main" || "$BRANCH_NAME" == "dev" ]]; then
+            echo "::warning::Branch '$BRANCH_NAME' as source - consider using a feature branch instead."
+          fi
+
+  changed-files:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Analyze changed files
+        run: |
+          echo "### Changed Files Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > /tmp/changed_files.txt
+
+          CHANGED_COUNT=$(wc -l < /tmp/changed_files.txt)
+          echo "Total files changed: $CHANGED_COUNT" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "$CHANGED_COUNT" -gt 75 ]]; then
+            echo "::warning::Large PR detected: $CHANGED_COUNT files changed. Consider breaking into smaller PRs."
+            echo "**$CHANGED_COUNT files changed** - consider breaking into smaller, focused PRs." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          QML_CHANGES=$(grep '\.qml$' /tmp/changed_files.txt || true)
+          NON_SHELL_QML=$(echo "$QML_CHANGES" | grep -v '^shell/' || true)
+          if [[ -n "$NON_SHELL_QML" ]]; then
+            echo "::warning::QML files changed outside shell/ directory - verify location is intentional"
+            echo "QML files outside shell/: $NON_SHELL_QML" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if grep -q '^installer/tui/.*\.(cpp|hpp|h)$' /tmp/changed_files.txt; then
+            echo "Installer C++ changes - compilation will be verified by validate workflow." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if grep -q 'CMakeLists.txt' /tmp/changed_files.txt; then
+            echo "Build system changes - verify with a clean build." >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if grep -q 'version.env' /tmp/changed_files.txt; then
+            echo "Version bump - ensure version-release workflow will fire correctly." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  commit-messages:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Review commit messages
+        run: |
+          COMMITS=$(git log --format='%H %s' origin/${{ github.base_ref }}..HEAD 2>/dev/null || echo "")
+
+          if [[ -z "$COMMITS" ]]; then
+            echo "No commits to check."
+            exit 0
+          fi
+
+          while IFS= read -r line; do
+            if [[ -z "$line" ]]; then continue; fi
+            HASH="${line%% *}"
+            MSG="${line#* }"
+
+            [[ "$MSG" == "Merge "* ]] && continue
+
+            FIRST_LINE="${MSG%%$'\n'*}"
+            if [[ "${#FIRST_LINE}" -gt 72 ]]; then
+              echo "::notice::$HASH: long subject (${#FIRST_LINE} chars) - keeping under 72 helps readability"
+            fi
+          done <<< "$COMMITS"
+
+          echo "Commit message review complete."
+
+  qml-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Check QML singleton roots
+        run: python3 .github/scripts/check_qml_deployment.py --source-root shell
+
+      - name: Check QML import completeness
+        run: python3 .github/scripts/check_qml_imports.py --shell-root shell
+
+  pr-gate:
+    needs:
+      - pr-template
+      - branch-name
+      - changed-files
+      - commit-messages
+      - qml-compatibility
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Report status
+        run: |
+          echo "## PR Checks Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          declare -A job_results
+          job_results[pr-template]="${{ needs.pr-template.result }}"
+          job_results[branch-name]="${{ needs.branch-name.result }}"
+          job_results[changed-files]="${{ needs.changed-files.result }}"
+          job_results[commit-messages]="${{ needs.commit-messages.result }}"
+          job_results[qml-compatibility]="${{ needs.qml-compatibility.result }}"
+
+          all_passed=true
+          for job in "${!job_results[@]}"; do
+            result="${job_results[$job]}"
+            if [[ "$result" == "success" ]]; then
+              echo "- [PASS] **${job}**" >> $GITHUB_STEP_SUMMARY
+            elif [[ "$result" == "skipped" ]]; then
+              echo "- [SKIP] **${job}**" >> $GITHUB_STEP_SUMMARY
+            else
+              echo "- [FAIL] **${job}** - ${result}" >> $GITHUB_STEP_SUMMARY
+              all_passed=false
+            fi
+          done
+
+          if [[ "$all_passed" != "true" ]]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Some checks failed. Please review the job logs above." >> $GITHUB_STEP_SUMMARY
+            exit 1
+          fi

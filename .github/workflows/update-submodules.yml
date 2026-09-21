@@ -1,0 +1,53 @@
+name: Update Submodules
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Runs every Sunday at Midnight
+  workflow_dispatch:
+
+jobs:
+  update-submodules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup GitHub App Authentication
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.APP_CLIENT_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          token: ${{ steps.app-token.outputs.token }}
+          submodules: true
+          fetch-depth: 0
+
+      - name: Update Submodules
+        run: |
+          git submodule update --remote --recursive
+
+      - name: Check for Changes and Open PR
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          if git diff --quiet; then
+            echo "All submodules are fully up to date."
+          else
+            BRANCH_NAME="chore/update-dependencies-$(date +%s)"
+
+            git checkout -b "$BRANCH_NAME"
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            git add .
+            git commit -m "chore: update submodules to latest upstream commits"
+            git push origin "$BRANCH_NAME"
+
+            gh pr create \
+              --base dev \
+              --head "$BRANCH_NAME" \
+              --title "chore: update submodules" \
+              --body "This PR automatically updates the git submodules to their latest upstream commits."
+          fi
