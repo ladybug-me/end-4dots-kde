@@ -1,3 +1,8 @@
+> [!NOTE]
+> This is a work in progess.
+> Currently adapting [caelestia-kde](https://github.com/ladybug-me/caelestia-kde) structure & the latest [dots-hyprland](https://github.com/end-4/dots-hyprland) upstream into this KDE port.
+
+
 <div align="center">
 
 <img src="assets/logo.svg" width="64" alt="Caelestia logo" />
