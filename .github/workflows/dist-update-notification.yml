@@ -1,22 +1,50 @@
-name: Comment on Discussion When sdata/arch-dist/ Changes
+name: Comment on Discussion When sdata/dist-arch/ Changes
 
 on:
   push:
     branches:
       - main
     paths:
-      - "sdata/arch-dist/**"
-      - "!sdata/arch-dist/README.md"
+      - "sdata/dist-arch/**"
+      - "!sdata/dist-arch/README.md"
+#  workflow_dispatch:
 
 jobs:
   comment_on_discussion:
     runs-on: ubuntu-latest
-    if: github.repository == 'ladybug-me/end-4dotsKDE'
+    if: github.ref == 'refs/heads/main' && github.repository == 'end-4/dots-hyprland'
     steps:
-      - name: Notify about package updates
+      - name: Create comment on discussion #2140
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DISCUSSION_NUMBER: 2140
+        # https://docs.github.com/en/graphql/guides/using-the-graphql-api-for-discussions
+        # https://docs.github.com/en/graphql/reference/mutations#adddiscussioncomment
         run: |
-          echo "Package definitions in sdata/arch-dist/ have been updated."
-          echo "Commit: ${{ github.sha }}"
-          echo "Message: ${{ github.event.head_commit.message }}"
+          MESSAGE="**Auto notification:**\n"
+          MESSAGE+="Directory \`sdata/dist-arch\` has been updated.\n"
+          MESSAGE+="Commit HASH: ${{ github.sha }}\n"
+          MESSAGE+="Commit message: ${{ github.event.head_commit.message }}"
+          REPO_OWNER="${{ github.repository_owner }}"
+          REPO_NAME="${{ github.event.repository.name }}"
+
+          DISCUSSION_NODE_ID=$(gh api graphql -f query='
+            query {
+              repository( owner: "'${REPO_OWNER}'", name: "'${REPO_NAME}'" )
+                { discussion(number: '${DISCUSSION_NUMBER}') { id } } 
+              }' | \
+            jq -r '.data.repository.discussion.id')
+          gh api graphql -f query='
+            mutation {
+              addDiscussionComment(input:{
+                discussionId: "'$DISCUSSION_NODE_ID'",
+                body: "'"$MESSAGE"'",
+              }) {
+                clientMutationId
+                comment {
+                  id
+                  body
+                }
+              }
+            }
+          '

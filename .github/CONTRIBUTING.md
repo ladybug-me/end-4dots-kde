@@ -1,17 +1,12 @@
-# Contributing to end-4dotsKDE
+# Contributing
 
-Thanks for your interest in contributing to the KDE Plasma port!
+- Please, please, please, make multiple PRs if you have many features/fixes, and don't shove your personal changes along with the PR, including changed defaults
+- We can accept features that we do not personally want, but in that case we will ask you to make it configurable/optionally loaded.
+- If you want to start working on something _big_ to contribute, it might be a good idea to ask first to not waste your effort (but if you've already done it for yourself, it doesn't hurt to submit).
 
-## Guidelines
+# Translations
 
-- Please make **multiple PRs** if you have many features/fixes—don't combine unrelated changes
-- Don't include your personal configuration defaults in PRs
-- We can accept features we don't personally use, but they **must be configurable** (off by default for experimental features)
-- For **big changes**, please open an issue first to discuss—it saves effort for everyone
-
-## Translations
-
-See `src/config/quickshell/ii/translations/tools` for translation files.
+See `dots/.config/quickshell/ii/translations/tools`
 
 # Code
 
@@ -35,46 +30,35 @@ See `src/config/quickshell/ii/translations/tools` for translation files.
   - Prefer early return: Use something like `if (!condition) return; doStuff();` instead of `if (condition) { doStuff() }`
   - If you feel it's a bother to refractor something into a new file, remember there's `component` to declare reusable components in the same file.
 
-## Setting up for Development
+# Setting up
 
-These instructions assume **Arch Linux** or an Arch-based distro.
+The following instruction assumes that you have an Arch(-based) Linux system.
 
-### Full Installation (Recommended)
+## Complete
 
-- Clone this repo: `git clone https://github.com/ladybug-me/end-4dotsKDE ~/end-4dotsKDE`
-- Run the installer: `bash ~/end-4dotsKDE/setup.sh`
-- Make your changes in the cloned repo
-- Test locally, then push to your fork and create a PR
+_Might not be necessary depending on what you change, but this is recommended._
 
-### Development-Only Setup
+- [Install](https://ii.clsty.link/en/ii-qs/01setup/) the dotfiles (if you don't wanna replace your stuff completely, do it on a new user).
+- Make changes, copy changes to a fork, create PR.
 
-_For testing Quickshell widget changes without a full KDE installation:_
+## Partially working shell
 
-- Install KDE Plasma 6+ and Quickshell: `yay -S plasma-desktop quickshell-git`
-- Copy `src/config/quickshell` folder to `~/.config/quickshell`
-- Most widgets will work, but KDE integration may be limited
+_Most stuff in the shell will work but not everything._
 
-### Quickshell Development
+- Install Hyprland and the development version of Quickshell (`yay -S hyprland quickshell-git`).
+- Copy `dots/.config/quickshell` folder to your home directory.
 
-- **LSP setup**: Run `touch ~/.config/quickshell/ii/.qmlls.ini` for QML language server support
-- **VSCode**: Install the official "Qt Qml" extension, then set `qmlls` custom exe path to `/usr/bin/qmlls6` in settings
-- **Live reload**: Changes to `.qml` files reload automatically when saved
+## Extra setup for Quickshell
+- Quickshell-specific LSP setup: Run `touch ~/.config/quickshell/ii/.qmlls.ini` for proper LSP support.
+- Hint for VSCode: Get the official "Qt Qml" extension, go to its settings and change custom exe path to `/usr/bin/qmlls6`.
 
-### Python Scripts
+## Python
+If your changes involves using python package or script, please use the virtual environment created by uv as described in `sdata/uv/README.md`.
 
-If your changes involve Python scripts or packages:
-- Use the virtual environment created by `uv` (see `sdata/uv/README.md`)
-- Run: `cd sdata/uv && nix-shell` (or use `uv venv`)
+# Running
 
-## Testing Your Changes
-
-**For KDE widgets:**
-- Restart Plasmashell: `kquitapp6 plasmashell && kstart6 plasmashell`
-- Or restart the Quickshell service: `systemctl --user restart qs-kwin-bridge`
-
-**For Quickshell shell:**
-- In a terminal: `pkill qs; qs -c ii` (shows logs for debugging)
-- Edit files in `~/.config/quickshell/ii`, changes reload live
-
-**For KDE settings:**
-- Re-run the relevant installation step or manually test with `kwriteconfig6`
+- Launch Hyprland (not the "uwsm-managed" one)
+- For the shell:
+  - Open `~/.config/quickshell/ii` in your code editor.
+  - In a terminal run `pkill qs; qs -c ii` to start the shell in the terminal (for logs).
+  - Make edits in the opened folder. Changes are reloaded live.

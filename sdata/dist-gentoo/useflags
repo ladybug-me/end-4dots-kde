@@ -1,0 +1,36 @@
+media-sound/cava pipewire -pulseaudio
+media-video/pipewire sound-server
+dev-libs/libdbusmenu gtk3
+
+net-misc/curl ssl
+net-misc/wget ssl
+
+x11-terms/kitty wayland
+media-fonts/nerdfonts jetbrainsmono
+
+gui-wm/hyprland::hyproverlay X guiutils
+
+gnome-base/gnome-keyring pam ssh-agent
+net-misc/networkmanager concheck tools wifi
+
+sys-apps/xdg-desktop-portal-gtk wayland
+
+gui-libs/gtk introspection wayland
+gui-libs/libadwaita introspection
+net-libs/libsoup introspection ssl
+dev-libs/libportal gtk
+
+app-text/tesseract png
+gui-apps/wf-recorder pipewire
+
+dev-qt/qt5compat icu qml
+dev-qt/qtbase X cups dbus gui icu libproxy opengl vulkan wayland
+dev-qt/qtdeclarative network opengl ssl svg vulkan
+dev-qt/qtmultimedia dbus ffmpeg opengl pipewire qml wayland
+dev-qt/qtpositioning geoclue qml
+dev-qt/qttools qdbus
+
+gui-apps/fuzzel png svg
+media-gfx/imagemagick xml
+
+dev-cpp/cpptrace unwind
