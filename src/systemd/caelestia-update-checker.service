@@ -1,0 +1,7 @@
+[Unit]
+Description=Caelestia Update Checker Service
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/sh -c 'exec "${CAELESTIA_BIN_DIR:-/usr/bin}/caelestia-check-updates"'

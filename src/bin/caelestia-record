@@ -1,0 +1,311 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+RECORDER="${RECORDER:-gpu-screen-recorder}"
+STATE_DIR="${STATE_DIR:-$HOME/.local/state/caelestia/record}"
+PID_FILE="${STATE_DIR}/recorder.pid"
+LOCK_FILE="${STATE_DIR}/recorder.lock"
+CURRENT_FILE="${STATE_DIR}/current_recording_path"
+MODE_FILE="${STATE_DIR}/current_recording_mode"
+IPC_SOCK="${XDG_RUNTIME_DIR:-/tmp}/caelestia-gsr.sock"
+
+# Where finished recordings live; must match Paths.qml's recsdir so the shell finds them.
+RECS_DIR="${CAELESTIA_RECORDINGS_DIR:-${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings}"
+
+mkdir -p "$STATE_DIR" "$RECS_DIR"
+
+_notify() {
+    local urgency="$1" summary="$2" body="$3"
+    notify-send -u "$urgency" -a "Caelestia Recorder" "$summary" "$body" 2>/dev/null || true
+}
+
+_is_recording() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid
+        pid=$(cat "$PID_FILE" 2>/dev/null || true)
+        local recorder_name
+        recorder_name=$(basename -- "$RECORDER")
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null \
+            && [[ "$(ps -o comm= -p "$pid" 2>/dev/null | tr -d ' ')" == "$recorder_name" ]]; then
+            return 0
+        fi
+    fi
+    # Fallback when the pid file is stale: a live recorder with a real output file.
+    local current_path=""
+    [[ -f "$CURRENT_FILE" ]] && current_path=$(cat "$CURRENT_FILE" 2>/dev/null || true)
+    pidof "$RECORDER" >/dev/null 2>&1 && [[ -n "$current_path" ]] && [[ -f "$current_path" ]]
+}
+
+_get_focused_refresh_rate() {
+    local rr=60  # fallback
+    local active_output=""
+
+    # The focused output comes from KWin, the same property the shell's bridge reads
+    # (KWinActiveWindowBridge::cursorOutputName). An earlier build also wrote it to a file
+    # under XDG_RUNTIME_DIR, but that writer was deleted in the same change that added this
+    # reader, so the file is not a source here - it made every recording `-f 60`.
+    if command -v qdbus6 >/dev/null 2>&1; then
+        active_output="$(qdbus6 org.kde.KWin /KWin org.kde.KWin.activeOutputName 2>/dev/null || true)"
+    fi
+
+    if [[ -n "$active_output" ]] && command -v kscreen-doctor >/dev/null 2>&1; then
+        local kscreen_json
+        kscreen_json=$(kscreen-doctor -j 2>/dev/null || true)
+        if [[ -n "$kscreen_json" ]]; then
+            # The output name is data, not code: pass it through the environment rather
+            # than into the snippet's source text.
+            rr=$(printf '%s' "$kscreen_json" | CAELESTIA_ACTIVE_OUTPUT="$active_output" python3 -c "
+import os, sys, json
+data = json.load(sys.stdin)
+active = os.environ['CAELESTIA_ACTIVE_OUTPUT']
+for o in data.get('outputs', []):
+    if o.get('name') == active and o.get('connected'):
+        current_id = o.get('currentModeId')
+        for m in o.get('modes', []):
+            if m.get('id') == current_id:
+                print(round(m.get('refreshRate', 60)))
+                sys.exit(0)
+print(60)
+" 2>/dev/null || echo 60)
+        fi
+    fi
+    echo "$rr"
+}
+
+_ensure_portals() {
+    # Pipewire screen capture needs both the portal and its KDE backend running.
+    if ! systemctl --user is-active --quiet plasma-xdg-desktop-portal-kde 2>/dev/null || \
+       ! systemctl --user is-active --quiet xdg-desktop-portal 2>/dev/null; then
+        systemctl --user restart plasma-xdg-desktop-portal-kde 2>/dev/null || true
+        systemctl --user restart xdg-desktop-portal 2>/dev/null || true
+        sleep 1
+    fi
+}
+
+_stop_recording() {
+    if [[ -f "$PID_FILE" ]]; then
+        local pid
+        pid=$(cat "$PID_FILE" 2>/dev/null || true)
+        if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+            # SIGINT so gpu-screen-recorder finalizes the mp4 trailer.
+            kill -INT "$pid" 2>/dev/null || true
+            # Give it 5 seconds to exit, then force it.
+            local waited=0
+            while kill -0 "$pid" 2>/dev/null && [[ $waited -lt 50 ]]; do
+                sleep 0.1
+                waited=$((waited + 1))
+            done
+            kill -KILL "$pid" 2>/dev/null || true
+        fi
+        rm -f "$PID_FILE"
+    fi
+    # Stray recorders of ours that the pid file does not know about.
+    local recorder_name
+    recorder_name=$(basename -- "$RECORDER")
+    while read -r pid; do
+        [[ -z "$pid" ]] && continue
+        kill -INT "$pid" 2>/dev/null || true
+    done < <(pgrep -u "$(id -u)" -x "$recorder_name" 2>/dev/null || true)
+    rm -f "$LOCK_FILE" "$CURRENT_FILE" "$MODE_FILE"
+    rm -f "$IPC_SOCK"
+}
+
+_open_dir() {
+    if [[ -d "$RECS_DIR" ]]; then
+        xdg-open "$RECS_DIR" 2>/dev/null || true
+    fi
+}
+
+# Convert a finished recording to a GIF, dropping the source mp4 on success.
+_convert_to_gif() {
+    local src="$1"
+    local out="${RECS_DIR}/$(basename "${src%.mp4}.gif")"
+    local filters="fps=${GIF_FPS},scale=${GIF_WIDTH}:-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=${GIF_DITHER}"
+
+    _notify normal "GIF" "Converting to GIF..."
+
+    if ffmpeg -y -v error -i "$src" -vf "$filters" "$out"; then
+        rm -f "$src"
+        _notify normal "GIF saved" "$out"
+        return 0
+    fi
+
+    _notify critical "GIF failed" "Conversion failed, original kept"
+    return 1
+}
+
+# Stops the active recording, converting to a GIF when that session asked for one. The
+# mode is read before _stop_recording clears the session files, so a session that wrote
+# none is a plain recording.
+_finish_recording() {
+    local saved_path=""
+    local mode=""
+    if [[ -f "$CURRENT_FILE" ]]; then
+        saved_path=$(cat "$CURRENT_FILE" 2>/dev/null || true)
+    fi
+    if [[ -f "$MODE_FILE" ]]; then
+        mode=$(cat "$MODE_FILE" 2>/dev/null || true)
+    fi
+
+    _stop_recording
+
+    if [[ "$mode" == "gif" ]] && [[ -n "$saved_path" ]] && [[ -f "$saved_path" ]]; then
+        _convert_to_gif "$saved_path" || true
+    else
+        _notify normal "Recording stopped" "Recording saved to $RECS_DIR"
+    fi
+}
+
+ACTION="start"
+SOUND_OUTPUT=false
+SOUND_INPUT=false
+GIF_MODE=false
+GIF_WIDTH=720
+GIF_FPS=30
+GIF_DITHER="bayer:bayer_scale=5"
+
+for arg in "$@"; do
+    case "$arg" in
+        --pause|pause|-p)
+            ACTION="pause"
+            ;;
+        --stop|stop)
+            ACTION="stop"
+            ;;
+        --open|open)
+            ACTION="open"
+            ;;
+        start)
+            ACTION="start"
+            ;;
+        -s|--sound|--output)
+            SOUND_OUTPUT=true
+            ;;
+        -i|--input|--mic)
+            SOUND_INPUT=true
+            ;;
+        --gif)
+            GIF_MODE=true
+            ;;
+        -h|--help)
+            echo "Usage: caelestia-record [start] [-s|--sound] [-i|--input] [--gif] | --pause | --stop | --open" >&2
+            echo "Options:" >&2
+            echo "  start (default)   Start recording (no audio)" >&2
+            echo "  -s, --sound       Record system audio (default_output)" >&2
+            echo "  -i, --input       Record microphone audio (default_input)" >&2
+            echo "  --gif             Record as GIF (auto-convert after stop)" >&2
+            echo "  -p, --pause       Toggle pause/resume" >&2
+            echo "  --stop            Stop recording" >&2
+            echo "  --open            Open recordings folder" >&2
+            exit 0
+            ;;
+        *)
+            echo "Unknown argument: $arg" >&2
+            echo "Usage: caelestia-record [start] [-s|--sound] [-i|--input] [--gif] | --pause | --stop | --open" >&2
+            exit 1
+            ;;
+    esac
+done
+
+case "$ACTION" in
+    start)
+        # A second start means stop.
+        if _is_recording; then
+            _finish_recording
+            exit 0
+        fi
+
+        # Prevent duplicate starts, but recover from a stale lock after a crash.
+        if [[ -f "$LOCK_FILE" ]]; then
+            if _is_recording; then
+                exit 0
+            fi
+            rm -f "$LOCK_FILE"
+        fi
+        touch "$LOCK_FILE"
+
+        _ensure_portals
+
+        rr=$(_get_focused_refresh_rate)
+        [[ "$rr" -le 0 ]] && rr=60
+
+        # Fail before the portal prompt rather than after a recording we cannot convert.
+        if [[ "$GIF_MODE" == "true" ]] && ! command -v ffmpeg >/dev/null 2>&1; then
+            _notify critical "GIF failed" "ffmpeg not found, cannot convert to GIF"
+            rm -f "$LOCK_FILE"
+            exit 1
+        fi
+
+        # Timestamped so a new recording never clobbers the previous one.
+        REC_PATH="${RECS_DIR}/recording_$(date +%Y%m%d_%H-%M-%S).mp4"
+        echo "$REC_PATH" > "$CURRENT_FILE"
+        # Written for every session, so a mode left by a session that died cannot decide the next.
+        if [[ "$GIF_MODE" == "true" ]]; then
+            echo "gif" > "$MODE_FILE"
+        else
+            echo "mp4" > "$MODE_FILE"
+        fi
+
+        args=("$RECORDER")
+        args+=("-w" "portal")
+        args+=("-f" "$rr")
+        if [[ "$SOUND_OUTPUT" == "true" ]] && [[ "$SOUND_INPUT" == "true" ]]; then
+            args+=("-a" "default_output|default_input")
+        elif [[ "$SOUND_OUTPUT" == "true" ]]; then
+            args+=("-a" "default_output")
+        elif [[ "$SOUND_INPUT" == "true" ]]; then
+            args+=("-a" "default_input")
+        fi
+        args+=("-fallback-cpu-encoding" "yes")
+        args+=("-ipc" "$IPC_SOCK")
+        args+=("-o" "$REC_PATH")
+
+        # Subshell so the recorder's PID can be captured.
+        (
+            exec "${args[@]}" >/tmp/gpu-screen-recorder.log 2>&1 &
+            echo $! > "$PID_FILE"
+            wait
+            rm -f "$PID_FILE" "$LOCK_FILE" "$CURRENT_FILE" "$MODE_FILE"
+        ) &
+        disown
+
+        # Wait for the PID file to appear.
+        pid=""
+        waited=0
+        while [[ -z "$pid" ]] && [[ $waited -lt 20 ]]; do
+            [[ -f "$PID_FILE" ]] && pid=$(cat "$PID_FILE" 2>/dev/null || true)
+            sleep 0.05
+            waited=$((waited + 1))
+        done
+
+        # Wait out the portal dialog: recorder alive, output file not yet created.
+        while [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null && [[ ! -f "$REC_PATH" ]]; do
+            sleep 0.1
+        done
+
+        if [[ -f "$REC_PATH" ]]; then
+            _notify low "Recording started" "Recording..."
+        else
+            _notify critical "Recording failed" "gpu-screen-recorder did not start"
+            rm -f "$LOCK_FILE" "$CURRENT_FILE" "$MODE_FILE"
+            exit 1
+        fi
+        ;;
+
+    pause)
+        if [[ -S "$IPC_SOCK" ]]; then
+            gsr-cli -ipc "$IPC_SOCK" toggle-pause 2>/dev/null || true
+        fi
+        ;;
+
+    stop)
+        if _is_recording; then
+            _finish_recording
+        fi
+        ;;
+
+    open)
+        _open_dir
+        ;;
+esac

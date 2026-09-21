@@ -1,0 +1,176 @@
+#!/usr/bin/env bash
+# caelestia-shell-ipc - manage the shell by config *path*, not config name, which avoids
+# the ambiguity between ~/.config/quickshell/shell.qml and .../caelestia/shell.qml.
+#
+# Usage:
+#   caelestia-shell-ipc quit              # gracefully stop the shell
+#   caelestia-shell-ipc show              # list available IPC commands
+#   caelestia-shell-ipc log               # tail the shell log
+#   caelestia-shell-ipc call <cmd> [...]  # send a custom IPC call
+#   caelestia-shell-ipc status            # check whether the shell is running
+
+set -euo pipefail
+
+_quickshell() {
+    if command -v quickshell >/dev/null 2>&1; then
+        command -v quickshell
+    elif command -v qs >/dev/null 2>&1; then
+        command -v qs
+    elif [ -x "/usr/bin/quickshell" ]; then
+        echo "/usr/bin/quickshell"
+    elif [ -x "/usr/local/bin/quickshell" ]; then
+        echo "/usr/local/bin/quickshell"
+    else
+        echo "[ERR] quickshell not found in PATH or standard locations" >&2
+        exit 1
+    fi
+}
+
+QS="$(_quickshell)"
+
+# CAELESTIA_SHELL_CONFIG wins when set; both autostart scripts set it. Otherwise try the
+# two install layouts, package first - both can exist on one machine.
+resolve_shell_config() {
+    local candidate
+    for candidate in \
+        /etc/xdg/quickshell/caelestia/shell.qml \
+        "$HOME/.config/quickshell/caelestia/shell.qml"
+    do
+        if [[ -f "$candidate" ]]; then
+            printf '%s\n' "$candidate"
+            return 0
+        fi
+    done
+    printf '%s\n' "$HOME/.config/quickshell/caelestia/shell.qml"
+}
+
+SHELL_CONFIG="${CAELESTIA_SHELL_CONFIG:-$(resolve_shell_config)}"
+
+# The directories a shell gets when nothing has exported them already. A package keeps
+# them under /usr and /etc, a checkout under $HOME; the resolved config path decides,
+# which is the rule src/bin/caelestia applies from its own location. Exporting the
+# checkout paths on a package handed the shell - and every command it spawns - a
+# data directory that does not exist there.
+_export_shell_env() {
+    if [[ "$SHELL_CONFIG" == /etc/xdg/* ]]; then
+        export QML2_IMPORT_PATH="${QML2_IMPORT_PATH:-/usr/lib/qt6/qml:/etc/xdg/quickshell/caelestia}"
+        export CAELESTIA_LIB_DIR="${CAELESTIA_LIB_DIR:-/usr/lib/caelestia}"
+    else
+        export QML2_IMPORT_PATH="${QML2_IMPORT_PATH:-$HOME/.local/lib/qt6/qml:$HOME/.config/quickshell/caelestia}"
+        export CAELESTIA_LIB_DIR="${CAELESTIA_LIB_DIR:-$HOME/.local/lib/caelestia}"
+    fi
+}
+
+# Starts the shell without handing it, and everything it launches, a stdout that goes
+# nowhere: --daemonize points stdio at /dev/null, which deadlocks Vesktop (issue #402).
+# A transient user service returns immediately with stdio on the journal instead.
+_start_shell() {
+    if command -v systemd-run >/dev/null 2>&1; then
+        # Deliberately not `caelestia-shell`: that name is the login unit, and systemd refuses a
+        # transient unit colliding with a loaded one.
+        systemctl --user reset-failed caelestia-shell-start.service 2>/dev/null || true
+        exec systemd-run --user --quiet --collect \
+            --unit="caelestia-shell-start" \
+            --description="Caelestia Shell" \
+            -- "$QS" -n -p "$SHELL_CONFIG"
+    fi
+
+    exec stdbuf -oL -eL "$QS" -d -n -p "$SHELL_CONFIG"
+}
+
+if [[ ! -f "$SHELL_CONFIG" ]]; then
+    echo "[ERR] Caelestia shell config not found: $SHELL_CONFIG" >&2
+    echo "       Build the shell first: bash scripts/08-build-shell.sh" >&2
+    exit 1
+fi
+
+_qs_ipc() {
+    "$QS" -p "$SHELL_CONFIG" ipc --any-display "$@"
+}
+
+_qs_direct() {
+    "$QS" -p "$SHELL_CONFIG" "$@"
+}
+
+# Match the exact quickshell command line that launched our config.
+_is_running() {
+    pgrep -f "quickshell.*$SHELL_CONFIG" >/dev/null 2>&1
+}
+
+case "${1:-}" in
+    quit|kill|stop)
+        if _is_running; then
+            _qs_ipc quit 2>/dev/null || _qs_direct kill 2>/dev/null || true
+            echo "Shell stop signal sent."
+        else
+            echo "Shell is not running."
+        fi
+        ;;
+
+    show|list)
+        _qs_ipc show
+        ;;
+
+    log|logs)
+        _qs_direct log
+        ;;
+
+    call)
+        shift
+        if [[ $# -eq 0 ]]; then
+            echo "Usage: caelestia-shell-ipc call <command> [args...]" >&2
+            exit 1
+        fi
+        _qs_ipc call "$@"
+        ;;
+
+    status|running)
+        if _is_running; then
+            echo "Shell is running (config: $SHELL_CONFIG)"
+        else
+            echo "Shell is NOT running (config: $SHELL_CONFIG)"
+            exit 1
+        fi
+        ;;
+
+    start|daemon)
+        _export_shell_env
+        if _is_running; then
+            echo "Shell is already running."
+        else
+            _start_shell
+        fi
+        ;;
+
+    restart)
+        if _is_running; then
+            _qs_ipc quit 2>/dev/null || _qs_direct kill 2>/dev/null || true
+            sleep 2
+        fi
+        _export_shell_env
+        _start_shell
+        ;;
+
+    -h|--help|help|"")
+        echo "Caelestia Shell IPC  -  path-based management wrapper"
+        echo ""
+        echo "Usage: caelestia-shell-ipc <command> [args...]"
+        echo ""
+        echo "Commands:"
+        echo "  start       Launch the shell in the background"
+        echo "  quit        Gracefully stop the running shell"
+        echo "  restart     Stop and restart the shell"
+        echo "  status      Check whether the shell is running"
+        echo "  show        List available IPC commands"
+        echo "  log         Print the shell log"
+        echo "  call <...>  Send a custom IPC call"
+        echo ""
+        echo "Config path: $SHELL_CONFIG"
+        echo "Quickshell:  $QS"
+        ;;
+
+    *)
+        # Unknown command: forward it as an IPC call.
+        _qs_ipc call "$@"
+        ;;
+esac

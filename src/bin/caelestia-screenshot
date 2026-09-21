@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCREENSHOT_DIR="${SCREENSHOT_DIR:-$HOME/Pictures/Screenshots}"
+mkdir -p "$SCREENSHOT_DIR"
+
+_notify() {
+    notify-send -u low -a "Caelestia Screenshot" "$1" "$2" 2>/dev/null || true
+}
+
+ACTION="${1:-full}"
+
+case "$ACTION" in
+    full|--full|-f)
+        FILE="${SCREENSHOT_DIR}/screenshot-$(date +%Y-%m-%d_%H.%M.%S).png"
+        spectacle -b -n -f -o "$FILE" 2>/dev/null || {
+            echo "Error: spectacle failed" >&2
+            exit 1
+        }
+        if command -v wl-copy >/dev/null 2>&1; then
+            wl-copy -t image/png < "$FILE"
+        fi
+        _notify "Screenshot Captured" "Saved to $FILE"
+        echo "$FILE"
+        ;;
+
+    region|--region|-r)
+        FILE="${SCREENSHOT_DIR}/screenshot-$(date +%Y-%m-%d_%H.%M.%S).png"
+        spectacle -b -n -r -o "$FILE" 2>/dev/null || {
+            echo "Error: spectacle region capture failed" >&2
+            exit 1
+        }
+        if command -v wl-copy >/dev/null 2>&1; then
+            wl-copy -t image/png < "$FILE"
+        fi
+        _notify "Screenshot Captured" "Saved to $FILE"
+        echo "$FILE"
+        ;;
+
+    --save|-o)
+        if [[ -z "${2:-}" ]]; then
+            echo "Usage: caelestia-screenshot --save PATH" >&2
+            exit 1
+        fi
+        FILE="$2"
+        mkdir -p "$(dirname "$FILE")"
+        spectacle -b -n -f -o "$FILE" 2>/dev/null || {
+            echo "Error: spectacle failed" >&2
+            exit 1
+        }
+        echo "$FILE"
+        ;;
+
+    --open|open)
+        xdg-open "$SCREENSHOT_DIR" 2>/dev/null || true
+        ;;
+
+    *)
+        echo "Usage: caelestia-screenshot [full|region|--save PATH|--open]" >&2
+        exit 1
+        ;;
+esac

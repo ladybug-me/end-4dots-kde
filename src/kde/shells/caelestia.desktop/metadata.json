@@ -1,0 +1,12 @@
+{
+    "KPackageStructure": "Plasma/Shell",
+    "X-Plasma-APIVersion": "2",
+    "KPlugin": {
+        "Id": "caelestia.desktop",
+        "Name": "Caelestia Lock Screen",
+        "Description": "Caelestia Lock Screen Greeter for KDE Plasma.",
+        "Authors": [{ "Name": "ladybug-me" }],
+        "License": "GPL-3.0-or-later",
+        "Version": "1.0.0"
+    }
+}
