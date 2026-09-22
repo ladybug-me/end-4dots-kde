@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Ensures essential standalone packages (Python tools, uv virtualenv, matugen) are installed.
 
 set -euo pipefail
 
@@ -22,6 +23,55 @@ if ! command -v python3 >/dev/null 2>&1 || ! python3 -m pip --version >/dev/null
     else
         warn "Could not determine the distro for Python tooling installation."
     fi
+fi
+
+echo
+info "Ensuring uv and Python virtual environment"
+export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+
+if ! command -v uv >/dev/null 2>&1; then
+    info "Installing uv..."
+    if [[ "$BASE_DISTRO" == "arch" ]]; then
+        package_install uv || true
+    elif [[ "$BASE_DISTRO" == "fedora" ]]; then
+        package_install uv || true
+    elif [[ "$BASE_DISTRO" == "debian" ]]; then
+        package_install uv || true
+    fi
+
+    # Fallback to official installer if distro package manager did not provide uv
+    if ! command -v uv >/dev/null 2>&1; then
+        if curl -LsSf https://astral.sh/uv/install.sh | sh; then
+            export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+            for rc in "$HOME/.bashrc" "$HOME/.zshrc" "$HOME/.profile"; do
+                grep -q 'export PATH="$HOME/.local/bin:$PATH"' "$rc" 2>/dev/null || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$rc" 2>/dev/null || true
+            done
+            fish -c 'fish_add_path ~/.local/bin' >/dev/null 2>&1 || true
+        fi
+    fi
+fi
+
+if command -v uv >/dev/null 2>&1; then
+    ok "uv is installed."
+    VENV_DIR="$(eval echo "${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/.venv}")"
+    mkdir -p "$(dirname "$VENV_DIR")"
+    if [[ ! -d "$VENV_DIR" ]]; then
+        info "Creating Python virtual environment at $VENV_DIR..."
+        uv venv --prompt .venv "$VENV_DIR" || warn "Failed to create virtual environment with uv."
+    fi
+
+    UV_REQ_FILE="$BUNDLE_DIR/installer/uv/requirements.txt"
+    if [[ -f "$UV_REQ_FILE" && -d "$VENV_DIR" ]]; then
+        info "Installing Python dependencies from $UV_REQ_FILE..."
+        if uv pip install -r "$UV_REQ_FILE" --python "$VENV_DIR/bin/python"; then
+            ok "Python virtual environment dependencies installed."
+        else
+            warn "Failed to install some Python dependencies via uv."
+        fi
+    fi
+else
+    warn "uv could not be installed; Python virtual environment was not created."
+    record_failed_package "uv"
 fi
 
 echo
