@@ -14,15 +14,15 @@ if [[ -f "$BUNDLE_DIR/.gitmodules" ]]; then
     git -C "$BUNDLE_DIR" submodule update --init --recursive --depth 1 --jobs "$(nproc 2>/dev/null || echo 1)" >/dev/null 2>&1 || true
 fi
 
-if ! submodule_has_content "$BUNDLE_DIR/src/dots"; then
-    info "src/dots is empty; fetching it another way."
-    if ! ensure_submodule_content "$BUNDLE_DIR" "src/dots"; then
-        err "src/dots is still empty, and the installer cannot deploy without it."
+if ! submodule_has_content "$BUNDLE_DIR/shell/modules/common/widgets/shapes"; then
+    info "shell/modules/common/widgets/shapes is empty; fetching it another way."
+    if ! ensure_submodule_content "$BUNDLE_DIR" "shell/modules/common/widgets/shapes"; then
+        err "shell/modules/common/widgets/shapes is still empty, and the installer cannot deploy without it."
         cat >&2 <<EOF
 
           Fetch it by hand:
 
-            git -C "$BUNDLE_DIR" submodule update --init --recursive src/dots
+            git -C "$BUNDLE_DIR" submodule update --init --recursive shell/modules/common/widgets/shapes
 
           Running this step on its own tries again:
 
@@ -36,13 +36,4 @@ EOF
     fi
 fi
 
-ok "src/dots ready."
-
-if ! submodule_has_content "$BUNDLE_DIR/src/yet-another-monochrome-icon-set"; then
-    info "src/yet-another-monochrome-icon-set is empty; fetching it another way."
-    if ensure_submodule_content "$BUNDLE_DIR" "src/yet-another-monochrome-icon-set"; then
-        ok "Icon set ready."
-    else
-        warn "Icon set could not be fetched; the monochrome icon theme will be missing."
-    fi
-fi
+ok "shell/modules/common/widgets/shapes ready."
