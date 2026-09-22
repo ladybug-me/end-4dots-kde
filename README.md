@@ -5,9 +5,9 @@
 
 <div align="center">
 
-<img src="assets/logo.svg" width="64" alt="Caelestia logo" />
+<img src="assets/logo.svg" width="100" alt="Caelestia logo" />
 
-# caelestia-kde
+# dots-kde
 
 [![Arch Linux](https://img.shields.io/badge/Arch_Linux-1793d1?logo=arch-linux&logoColor=white&style=for-the-badge&labelColor=101418)](https://archlinux.org)
 [![Fedora](https://img.shields.io/badge/Fedora-51A2DA?logo=fedora&logoColor=white&style=for-the-badge&labelColor=101418)](https://fedoraproject.org)
@@ -21,9 +21,9 @@
 https://github.com/user-attachments/assets/4c3e20c9-5050-4cc8-8e9c-32fd0594ac8b
 
 > [!NOTE]
-> This repo is the KDE Plasma port of [`caelestia-dots/shell`](https://github.com/caelestia-dots/shell).
-> Upstream runs on Hyprland; the port runs the same shell on KWin and Plasma. For the original
-> Hyprland dotfiles, see [`caelestia-dots/caelestia`](https://github.com/caelestia-dots/caelestia).
+> This repo is the KDE Plasma port of [`dots-hyprland`](https://github.com/end-4/dots-hyprland).
+> Upstream runs on Hyprland; the port runs the same shell on KWin and Plasma.
+> The repo structure is linked with [`caelestia-kde`](https://github.com/ladybug-me/caelestia-kde).
 
 ## Installation
 

@@ -9,6 +9,7 @@ import qs.modules.waffle.looks
 import qs.modules.waffle.bar
 import Quickshell
 import Quickshell.Wayland
+import qs.modules.common.widgets
 
 Button {
     id: root
@@ -80,13 +81,12 @@ Button {
             implicitWidth: Math.max(screencopyView.implicitWidth, 80)
             implicitHeight: screencopyView.implicitHeight
 
-            ScreencopyView {
+            LiveWindowPreview {
                 id: screencopyView
                 anchors.centerIn: parent
-                captureSource: root.toplevel
-                live: true
-                paintCursor: true
-                constraintSize: Qt.size(root.previewWidthConstraint, root.previewHeightConstraint)
+                address: Kwin.windowList.find(w => w.class === root.toplevel?.appId && w.title === root.toplevel?.title)?.address ?? ""
+                active: true
+                fallbackIcon: AppSearch.guessIcon(root.toplevel?.appId)
             }
         }
     }

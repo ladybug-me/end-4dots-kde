@@ -114,12 +114,11 @@ WMouseAreaButton {
             }
         }
 
-        ScreencopyView {
+        LiveWindowPreview {
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: Math.round(root.size.width)
             implicitHeight: Math.round(root.size.height)
-            constraintSize: Qt.size(Math.round(root.size.width), Math.round(root.size.height))
 
             Behavior on implicitWidth {
                 animation: Looks.transition.enter.createObject(this)
@@ -128,8 +127,9 @@ WMouseAreaButton {
                 animation: Looks.transition.enter.createObject(this)
             }
 
-            captureSource: root.toplevel ?? null
-            live: true
+            address: root.windowData?.address
+            active: true
+            fallbackIcon: AppSearch.guessIcon(root.windowData?.class)
         }
     }
 

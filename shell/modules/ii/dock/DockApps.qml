@@ -201,13 +201,12 @@ Item {
                                     Layout.fillHeight: true
                                     implicitHeight: screencopyView.height
                                     implicitWidth: screencopyView.width
-                                    ScreencopyView {
+                                    LiveWindowPreview {
                                         id: screencopyView
                                         anchors.centerIn: parent
-                                        captureSource: windowButton.modelData
-                                        live: true
-                                        paintCursor: true
-                                        constraintSize: Qt.size(root.maxWindowPreviewWidth, root.maxWindowPreviewHeight)
+                                        address: Kwin.windowList.find(w => w.class === windowButton.modelData?.appId && w.title === windowButton.modelData?.title)?.address ?? ""
+                                        active: previewPopup.show
+                                        fallbackIcon: AppSearch.guessIcon(windowButton.modelData?.appId)
                                         layer.enabled: true
                                         layer.effect: OpacityMask {
                                             maskSource: Rectangle {

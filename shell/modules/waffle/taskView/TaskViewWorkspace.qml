@@ -92,11 +92,12 @@ WMouseAreaButton {
                         model: ScriptModel {
                             values: Kwin.windowsForWorkspace({ id: root.workspace }, true)
                         }
-                        delegate: ScreencopyView {
+                        delegate: LiveWindowPreview {
                             required property var modelData
                             readonly property var windowData: modelData
-                            captureSource: modelData
-                            live: true
+                            address: windowData?.address
+                            active: true
+                            fallbackIcon: AppSearch.guessIcon(windowData?.class)
                             width: windowData?.width * root.windowScale
                             height: windowData?.height * root.windowScale
                             x: windowData?.x * root.windowScale
