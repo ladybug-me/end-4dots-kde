@@ -2,6 +2,11 @@
 if [[ -z "${CAELESTIA_INSTALL_KIND_SOURCED:-}" ]]; then
 CAELESTIA_INSTALL_KIND_SOURCED=1
 
+# Resolved at source time: a caller may change directory before asking.
+if ! CAELESTIA_INSTALL_KIND_SOURCED_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"; then
+    CAELESTIA_INSTALL_KIND_SOURCED_DIR=""
+fi
+
 install_kind() {
     case "${CAELESTIA_INSTALL_KIND:-}" in
         source | package)
@@ -10,25 +15,18 @@ install_kind() {
             ;;
     esac
 
-    # Where this file was sourced from is the whole answer: a package's copy lives under
-    # /usr. An unresolvable directory is reported rather than answered as "source", which
-    # is what an empty string would otherwise have quietly meant.
-    local lib_dir
-    if ! lib_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" 2>/dev/null && pwd)"; then
+    if [[ -z "$CAELESTIA_INSTALL_KIND_SOURCED_DIR" ]]; then
         printf '[ERR]   cannot resolve the directory %s was sourced from\n' "${BASH_SOURCE[0]}" >&2
         return 1
     fi
 
-    case "$lib_dir" in
+    case "$CAELESTIA_INSTALL_KIND_SOURCED_DIR" in
         /usr/*) printf 'package\n' ;;
         *) printf 'source\n' ;;
     esac
 }
 
 install_is_packaged() {
-    # install_kind reports failure when it cannot tell where it was sourced from, and a
-    # failure is not an answer: passing it on keeps the caller from reading "not a
-    # package" into a question that was never answered.
     local kind
     kind="$(install_kind)" || return 1
     [[ "$kind" == "package" ]]
