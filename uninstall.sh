@@ -280,6 +280,22 @@ if [[ -d "$HOME/.local/share/plasma/wallpapers/net.dosowisko.PlasmaApplicationWa
 fi
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/wallpaper-plugin-installed"
 
+VENV_DIR="$(eval echo "${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/.venv}")"
+if [[ -d "$VENV_DIR" ]]; then
+    rm -rf "$VENV_DIR"
+    ok "Removed Python virtual environment: $VENV_DIR"
+fi
+
+if [[ -d "${XDG_STATE_HOME:-$HOME/.local/state}/quickshell" ]]; then
+    rm -rf "${XDG_STATE_HOME:-$HOME/.local/state}/quickshell"
+    ok "Removed ~/.local/state/quickshell"
+fi
+
+if [[ -d "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia" ]]; then
+    rm -rf "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia"
+    ok "Removed ~/.local/state/caelestia"
+fi
+
 section "Step 4 - Remove Bridge Scripts"
 
 # Derived from src/bin, which is what 03-deploy-configs.sh and 08-build-shell.sh copy into
@@ -727,7 +743,7 @@ fi
 
 rm -f "$HOME/.config/caelestia/templates/sddm-theme.conf"
 
-for link in /usr/local/bin/sass /usr/local/bin/qdbus6 /usr/local/bin/caelestia /usr/local/bin/wl-clip-persist /usr/local/bin/gpu-screen-recorder; do
+for link in /usr/local/bin/sass /usr/local/bin/qdbus6 /usr/local/bin/caelestia /usr/local/bin/wl-clip-persist /usr/local/bin/gpu-screen-recorder /usr/local/bin/matugen /usr/local/bin/app2unit; do
     if [[ -L "$link" || -f "$link" ]]; then
         caelestia_sudo rm -f "$link"
         ok "Removed: $link"
@@ -746,6 +762,11 @@ if [[ -f "$HOME/.cargo/bin/satty" ]]; then
     ok "Removed: satty (cargo)"
 fi
 
+if [[ -f "$HOME/.cargo/bin/matugen" ]]; then
+    rm -f "$HOME/.cargo/bin/matugen"
+    ok "Removed: matugen (cargo)"
+fi
+
 if groups "$USER" | grep -q '\binput\b'; then
     caelestia_sudo gpasswd -d "$USER" input 2>/dev/null || \
         warn "Could not remove $USER from input group. Run: sudo gpasswd -d $USER input"
@@ -762,39 +783,48 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     # fish is absent on purpose even though the installer offers it: it may be the
     # user's login shell, and removing it locks them out of the machine.
     ARCH_PACKAGES=(
-        quickshell matugen
-        foot eza fastfetch starship btop
+        quickshell matugen uv
+        foot kitty eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit libcava
         brightnessctl ddcutil tesseract tesseract-data-eng
-        bat ripgrep lazygit jq trash-cli inotify-tools
+        bat ripgrep lazygit jq go-yq trash-cli inotify-tools
         imagemagick sassc xdg-utils xdg-user-dirs spectacle
+        playerctl pavucontrol-qt songrec translate-shell upower
+        wf-recorder wlogout wtype ydotool
         adw-gtk-theme papirus-icon-theme darkly darkly-bin
         ttf-jetbrains-mono-nerd ttf-material-symbols-variable
-        ttf-rubik-vf ttf-cascadia-code-nerd
+        ttf-rubik-vf ttf-cascadia-code-nerd ttf-readex-pro
+        ttf-twemoji otf-space-grotesk
     )
 
     FEDORA_PACKAGES=(
-        quickshell-git matugen
-        foot eza fastfetch starship btop
+        quickshell-git matugen uv
+        foot kitty eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder gpu-screen-recorder-ui slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit libcava libcava-devel
         brightnessctl ddcutil tesseract tesseract-langpack-eng
         bat ripgrep jq trash-cli inotify-tools
         ImageMagick sassc xdg-utils xdg-user-dirs spectacle
-        adw-gtk3-theme papirus-icon-theme darkly
-        google-rubik-fonts
+        playerctl songrec translate-shell upower wf-recorder
+        wlogout wtype ydotool microtex
+        adw-gtk3-theme papirus-icon-theme darkly bibata-cursor-theme breeze-plus-icon-theme
+        google-rubik-fonts florian-karsten-space-grotesk-fonts
+        readex-pro-fonts-all twitter-twemoji-fonts
     )
 
     DEBIAN_PACKAGES=(
-        quickshell matugen
-        foot eza fastfetch starship btop
+        quickshell matugen uv konsave
+        foot kitty eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit cava libcava
         brightnessctl ddcutil tesseract-ocr tesseract-ocr-eng
         jq yq trash-cli inotify-tools
         imagemagick sassc xdg-utils kde-spectacle
+        playerctl pavucontrol-qt translate-shell upower
+        wf-recorder wtype ydotool
         adw-gtk3 adw-gtk3-theme papirus-icon-theme darkly
+        bibata-cursor-theme fonts-twemoji
     )
 
     # One flow for all three: the distro only decides which list to walk and which
