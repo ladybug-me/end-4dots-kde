@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="preferences-desktop-launch-feedback.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.756345" inkscape:cy="27.208122" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;stroke:none;stroke-width:0.594047;stroke-dasharray:none;stroke-opacity:0.3" d="m 3.910602,9.2227666 c 0,2.5048434 2.0398006,4.5352964 4.5559187,4.5352964 2.4906073,0 4.5105913,-1.990316 4.5514773,-4.4600126 a 0.75932347,0.75588679 0 0 0 0.0044,-0.075293 0.75932347,0.75588679 0 0 0 -0.759261,-0.7558882 0.75932347,0.75588679 0 0 0 -0.759324,0.7558884 c 0,1.6697824 -1.359827,3.0235744 -3.0373161,3.0235744 -1.6773744,0 -3.0373163,-1.353679 -3.0373163,-3.0235744 0,-1.6697831 1.3598269,-3.0235704 3.0373163,-3.0235704 V 7.7109174 L 11.50384,5.4432681 8.4669821,3.1749374 v 1.5117314 c -2.5162329,0 -4.5559184,2.0305649 -4.5559184,4.5352971 z" id="path14-5" class="ColorScheme-Text"/>
+</svg>

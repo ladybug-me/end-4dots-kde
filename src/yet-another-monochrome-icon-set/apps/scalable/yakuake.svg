@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="yakuake.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="4.3531261" inkscape:cx="36.295755" inkscape:cy="39.971275" inkscape:window-width="2560" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path13" class="ColorScheme-Text" style="fill:currentColor;fill-opacity:1;stroke-width:0.288984;paint-order:markers stroke fill" d="m 1.3564645,2.5929927 c -0.171259,0 -0.309132,0.1378729 -0.309132,0.3091319 v 0.6182641 c 0,0.1712591 0.137873,0.3091319 0.309132,0.3091319 H 15.576535 c 0.171259,0 0.309132,-0.1378728 0.309132,-0.3091319 V 2.9021246 c 0,-0.171259 -0.137873,-0.3091319 -0.309132,-0.3091319 z m 0.572377,1.68332 V 12.7068 H 15.004158 V 4.2763127 Z m 3.928753,1.6984147 1.526943,1.5269428 1.526944,-1.5269428 0.327848,0.327849 0.32785,0.327849 -1.526943,1.5269429 -0.32785,0.327849 -1.854792,1.8547917 -0.655698,-0.6556977 1.526943,-1.526943 -1.526943,-1.5269429 z m 2.608905,4.6556966 H 11.866951 V 11.55782 H 8.4664995 Z m -7.110035,2.473056 c -0.171259,0 -0.309132,0.137874 -0.309132,0.309132 0,0.171258 0.137873,0.309132 0.309132,0.309132 h 5.564375 l 0.618265,0.618263 h 1.854791 l 0.6182635,-0.618263 h 5.564376 c 0.171259,0 0.309132,-0.137874 0.309132,-0.309132 0,-0.171258 -0.137873,-0.309132 -0.309132,-0.309132 z"/>
+</svg>

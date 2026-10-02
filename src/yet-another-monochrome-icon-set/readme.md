@@ -1,0 +1,1601 @@
+## Yet Another Monochrome Icon Set For KDE Plasma ##
+
+Yet Another Monochrome Icon Set is a clean, adaptive icon theme for KDE Plasma. It automatically adjusts its color based on the background—white on dark backgrounds and black on light ones—for better visibility and a consistent look across the desktop.
+
+The set features major modifications to the SVG path structuring for improved consistency, all done using Inkscape. While it is loosely based on the Orion icon theme by Seth Storm Rosenaa, a number of additional icons have been included based on personal needs, helping to improve coverage and integration within the system.
+
+Some tray icons come embedded from the app itself. If you’re on KDE Plasma 6, try Plasma Panel Colorizer by luisbocanegra. The System Tray Icons Replacer works great!
+https://github.com/luisbocanegra/plasma-panel-colorizer
+
+
+## Change Log
+- v1.5.7
+    - added
+        - apps/Plezy
+        - app/clamui
+        - apps/input-remapper
+        - apps/io.github.linx_systems.ClamUI
+        - apps/io.github.martchus.syncthingtray
+        - apps/jetbrains-goland
+        - apps/jetbrains-idea
+        - apps/koreader
+        - apps/kwatchgnupg
+        - apps/me.proton.Mail
+        - apps/org.kde.kwatchgnupg
+        - apps/org.waywallen.waywallen
+        - apps/plezy
+        - apps/rocks.koreader.KOReader
+        - apps/syncthingtray
+        - apps/waywallen
+    - updated
+        - apps/firefox
+        - apps/firefox-symbolic
+        - apps/org.mozilla.firefox
+    - fixed
+        - remove unused CSS class
+
+- v1.5.6
+    - added
+        - apps/Cisco_Packet_Tracer_9.0.1
+        - apps/GameConqueror
+        - apps/RuneLite
+        - apps/ScanTailor
+        - apps/appimagekit-chiaki
+        - apps/appimagekit-drawpile
+        - apps/appimagekit-rpcs3
+        - apps/audacity4portable
+        - apps/ausweisapp
+        - apps/azahar
+        - apps/chiaki
+        - apps/clash
+        - apps/com.github._4lex4.ScanTailor-Advanced
+        - apps/com.mtkennerly.ludusavi
+        - apps/com.orama_interactive.Pixelorama
+        - apps/com.parsecgaming.parsec
+        - apps/com.steamgriddb.SGDBoop
+        - apps/com.yubico.yubioath
+        - apps/de.bund.ausweisapp.ausweisapp2
+        - apps/dev.goats.xivlauncher
+        - apps/dev.twilitrealm.dusk
+        - apps/drawpile
+        - apps/dusk
+        - apps/dusklight
+        - apps/f3d
+        - apps/feishin
+        - apps/flycast
+        - apps/imhex
+        - apps/io.github.f3d_app.f3d
+        - apps/io.github.streetpea.Chiaki4deck
+        - apps/io.github.vikdevelop.SaveDesktop
+        - apps/me.amankhanna.opendeck
+        - apps/net.drawpile.drawpile
+        - apps/net.rpcs3.RPCS3
+        - apps/net.runelite.RuneLite
+        - apps/net.werwolv.ImHex
+        - apps/nifskope
+        - apps/org.azahar_emu.Azahar
+        - apps/org.easyrpg.player
+        - apps/org.flycast.Flycast
+        - apps/org.niftools.NifSkope
+        - apps/org.ryujinx.Ryujinx
+        - apps/org.scantailor.ScanTailor
+        - apps/org.zdoom.UZDoom
+        - apps/packettracer
+        - apps/parsec
+        - apps/parsecd
+        - apps/pixelorama
+        - apps/re.chiaki.Chiaki
+        - apps/rpcs3
+        - apps/runelite-launcher
+        - apps/runelite
+        - apps/ryujinx
+        - apps/scantailor-advanced
+        - apps/scantailor
+        - apps/uzdoom
+        - apps/yubikey-neo-manager
+        - apps/yubikey-personalization-gui
+        - apps/yubikey-piv-manager
+        - apps/yubioath
+        - mimetypes/application-x-audacity
+    - updated
+        - apps/systemsettings
+        - preferences/preferences-system
+
+- v1.5.5
+    - added
+        - apps/GitKraken
+        - apps/YACReader
+        - apps/Yacreader
+        - apps/chatgpt
+        - apps/citrix-receiver
+        - apps/com.axosoft.GitKraken
+        - apps/com.github.huluti.Curtail
+        - apps/com.yacreader.YACReader
+        - apps/dev.zed.Delta
+        - apps/espanso
+        - apps/exaile
+        - apps/gitkraken
+        - apps/io.github.bluemancz.hyprmod
+        - apps/io.github.quodlibet.ExFalso
+        - apps/io.github.quodlibet.QuodLibet
+        - apps/ipython
+        - apps/jellyfin
+        - apps/kbreakout
+        - apps/krfb
+        - apps/localsend_app
+        - apps/net.nullsum.JelliumDesktop
+        - apps/nuvio
+        - apps/org.exaile.Exaile
+        - apps/org.kde.kbreakout
+        - apps/org.kde.skladnik
+        - apps/org.zulip.Zulip
+        - apps/quodlibet
+        - apps/signal
+        - apps/skladnik
+        - apps/super-productivity
+        - apps/zulip
+    - updated
+        - apps/org.signal.Signal
+        - apps/signal-desktop
+        - apps/signal-desktop-beta
+        - status/strawberry-panel-grey
+
+- v1.5.4
+    - added
+        - apps/com.hypixel.HytaleLauncher
+        - apps/com.ticktick.TickTick
+        - apps/duolingo
+        - apps/io.github.nacho.mecalin
+        - apps/kapman
+        - apps/org.kde.kapman
+        - apps/ticktick
+        - apps/wps-office2019-kprometheus
+        - apps/wps-office-etmain
+        - apps/wps-office-pdfmain
+        - apps/wps-office-wppmain
+        - apps/wps-office-wpsmain
+        - status/wireguard-tray-connected
+        - status/wireguard-tray-disconnected
+    - updated
+        - apps/preferences-desktop-theme-applications
+        - apps/preferences-desktop-theme
+        - preferences/preferences-appearance
+        - preferences/preferences-desktop-theme-applications
+        - preferences/preferences-desktop-theme-global
+        - preferences/preferences-desktop-theme
+
+- v1.5.3
+    - added
+        - apps/alvr-launcher
+        - apps/alvr
+        - apps/Hytale
+        - apps/net.poedit.Poedit
+        - apps/poedit
+        - apps/rsi-launcher
+        - apps/sone
+        - apps/starcitizen
+        - apps/webcord
+        - apps/wireguard-gui
+        - places/16/folder-blue
+        - places/16/folder-blue-symbolic
+        - places/16/folder-brown
+        - places/16/folder-brown-symbolic
+        - places/16/folder-cyan
+        - places/16/folder-cyan-symbolic
+        - places/16/folder-green
+        - places/16/folder-green-symbolic
+        - places/16/folder-grey
+        - places/16/folder-grey-symbolic
+        - places/16/folder-orange
+        - places/16/folder-orange-symbolic
+        - places/16/folder-red
+        - places/16/folder-red-symbolic
+        - places/16/folder-violet
+        - places/16/folder-violet-symbolic
+        - places/16/folder-yellow
+        - places/16/folder-yellow-symbolic
+        - places/scalable/folder-blue
+        - places/scalable/folder-brown
+        - places/scalable/folder-cyan
+        - places/scalable/folder-green
+        - places/scalable/folder-grey
+        - places/scalable/folder-orange
+        - places/scalable/folder-red
+        - places/scalable/folder-violet
+        - places/scalable/folder-yellow
+        - places/scalable-outlined/folder-blue
+        - places/scalable-outlined/folder-brown
+        - places/scalable-outlined/folder-cyan
+        - places/scalable-outlined/folder-green
+        - places/scalable-outlined/folder-grey
+        - places/scalable-outlined/folder-orange
+        - places/scalable-outlined/folder-red
+        - places/scalable-outlined/folder-violet
+        - places/scalable-outlined/folder-yellow
+
+- v1.5.2
+    - added
+        - apps/AmneziaVPN
+        - apps/an-anime-game-launcher
+        - apps/app.motrix.native
+        - apps/arctis-manager
+        - apps/blockbench
+        - apps/chat.simplex.simplex
+        - apps/cloudflare
+        - apps/com.core447.StreamController
+        - apps/com.github.AppManager
+        - apps/com.github.th-ch.youtube-music
+        - apps/com.moulberry.PandoraLauncher
+        - apps/dev.lizardbyte.app.Sunshine
+        - apps/distributor-logo-rhel
+        - apps/envy24control
+        - apps/FlyEnv
+        - apps/granatier
+        - apps/Grok
+        - apps/hdajackretask
+        - apps/hdspconf
+        - apps/hdspmixer
+        - apps/hwmixvolume
+        - apps/hydralauncher
+        - apps/io.github.flattool.Warehouse
+        - apps/io.github.swordpuffin.rewaita
+        - apps/io.github.TeamWheelWizard.WheelWizard
+        - apps/io.github.wivrn.wivrn
+        - apps/io.gitlab.adhami3310.Converter
+        - apps/java26-openjdk
+        - apps/Kimi
+        - apps/me.proton.Pass
+        - apps/Mistral
+        - apps/moe.launcher.anime-games-launcher
+        - apps/nblood
+        - apps/nbtexplorer
+        - apps/net.agalwood.Motrix
+        - apps/net.jami.jami
+        - apps/optiscaler-client
+        - apps/pandora-launcher
+        - apps/Qoder
+        - apps/redhat
+        - apps/simplex
+        - apps/tailscale
+        - apps/tailscale-systray
+        - apps/wivrn
+        - apps/xclicker
+        - apps/zero-trust-orange
+    - updated
+        - apps/jami
+
+- v1.5.1
+    - added
+        - apps/com.github.jeromerobert.pdfarranger
+        - apps/fastflix
+        - apps/FastFlix
+        - apps/fcitx
+        - apps/info.febvre.Komikku
+        - apps/jami
+        - apps/klipper
+        - apps/Klipper
+        - apps/Knetattach
+        - apps/komikku
+        - apps/Kubuntu
+        - apps/marktext
+        - apps/notion
+        - apps/Notion
+        - apps/onionshare80
+        - apps/org.fcitx.Fcitx5
+        - apps/org.garudalinux.firedragon
+        - apps/org.gnumeric.gnumeric
+        - apps/org.kde.skrooge
+        - apps/org.onionshare.OnionShare
+        - apps/pdfarranger
+        - apps/redemption
+        - apps/skrooge
+        - apps/stirling-pdf
+        - apps/Stirling-PDF
+        - apps/texstudio
+        - apps/vkquake
+    - updated
+        - apps/hermes
+
+- v1.5.0
+    - added
+        - apps/virt-viewer
+        - apps/fontforge
+        - apps/hermes
+        - apps/org.fontforge.FontForge
+        - apps/org.vinegarhq.Vinegar
+        - apps/dev.xarbit.appgrid
+        - apps/klipper
+        - apps/knetattach
+        - apps/openclaw
+        - apps/vinegar
+        - actions/preferences-system-windows-actions
+
+- v1.4.9
+    - added
+        - apps/appimagekit-cool-retro-term
+        - apps/calibre-ebook-edit
+        - apps/calibre-viewer
+        - apps/cool-retro-term
+        - apps/io.github.mhogomchungu.media-downloader
+        - apps/kubuntu-manage-software
+        - apps/media-downloader
+        - apps/org.opensuse.Welcome
+        - apps/proton-authenticator
+        - apps/smartphone
+        - apps/terminal
+    - updated
+        - preferences/preferences-desktop-theme-applications
+        - preferences/preferences-desktop-theme
+
+- v1.4.8
+    - added
+        - apps/cliamp
+        - apps/io.gitlab.azymohliad.WatchMate
+        - apps/watchmate
+    - updated
+        - apps/klassy-settings
+
+- v1.4.7
+    - added
+        - apps/hydrus_non-transparent
+        - apps/hydrus
+        - apps/io.github.elyprismlauncher.ElyPrismLauncher
+        - apps/io.mango3d.LycheeSlicer
+        - apps/lmstudio-bin
+        - apps/lycheeslicer
+        - apps/Myrlyn-alt
+        - apps/Myrlyn
+        - apps/next-music
+        - apps/portproton
+        - apps/ru.linux_gaming.PortProton
+        - apps/yast-control-center
+        - apps/yast-oneclick
+        - apps/yast-sw_single
+
+- v1.4.6
+    - added
+        - apps/Beeper
+        - apps/krdc
+        - apps/latte-dock
+        - apps/re.sonny.Junction
+        - apps/trackma
+        - actions/document-scan
+        - actions/document-scan-symbolic
+        - places/folder-development
+
+- v1.4.5
+    - added
+        - apps/arianna
+        - apps/bruno
+        - apps/emacs
+        - apps/kdevelop
+        - apps/org.kde.arianna
+        - apps/org.kde.kdevelop
+    - updated
+        - apps/com.rtosta.zapzap
+
+- v1.4.4
+    - added
+        - apps/devin-desktop
+        - apps/devin-desktop-alt
+        - apps/openrc-manager-gui
+        - apps/pcloud
+        - apps/veracrypt
+        - devices/headset
+    - updated
+        - apps/atom
+        - apps/distributor-logo-zorin (Fixed a silly mistake. I accidentally used a comma instead of a period for the extension.)
+        - apps/vscodium
+        - apps/zed
+    - resized
+        - apps/supertuxkart
+        - apps/io.github.arunsivaramanneo.GPUViewer
+        - apps/io.github.ilya_zlobintsev.LACT
+    - Note
+        Edited index.theme to tweaked the size, minsize and maxsize values.
+        
+- v1.4.3
+    - added
+        - apps/artix
+        - apps/distributor-logo-artix
+        - apps/distributor-logo-debian
+        - apps/distributor-logo-fedora
+        - apps/distributor-logo-kubuntu
+        - apps/distributor-logo-linux-mint
+        - apps/distributor-logo-opensuse
+        - apps/distributor-logo-pclinuxos
+        - apps/distributor-logo-pop-os
+        - apps/distributor-logo-solus
+        - apps/distributor-logo-Tumbleweed
+        - apps/distributor-logo-tumbleweed
+        - apps/distributor-logo-ubuntu
+        - apps/distributor-logo-zorin,svg
+        - apps/electron
+        - apps/io.github.freedoom.Phase1
+        - apps/io.github.freedoom.Phase2
+        - apps/krusader_blue
+        - apps/krusader_red
+        - apps/krusader_root
+        - apps/moonlight
+        - apps/systemsettings-alt
+        - apps/tumbleweed
+        - apps/ollama
+        - apps/Ollama
+        - apps/com.dekomote.vermouth
+        - apps/dev.ibrahimcetin.reins
+        - apps/com.cassidyjames.butler
+        - apps/konform
+        - apps/drawy
+        - apps/Drawy
+        - categories/preferences-system-alt
+        - preferences/preferences-system-windows-behavior-alt
+    - updated
+        - apps/com.github.neithern.g4music
+        - apps/electron34
+        - apps/electron35
+        - apps/electron37
+        - apps/electron41
+        - apps/gwenview
+        - apps/krusader_user
+        - apps/preferences-system
+        - apps/systemsettings
+        - categories/preferences-system
+        - preferences/preferences-system-windows-behavior
+
+- v1.4.2
+    - added
+        - apps/appimagekit-balena-etcher-electron
+        - apps/balena-etcher
+        - apps/balena-etcher-electron
+        - apps/collabora-online
+        - apps/collaboraoffice-calc
+        - apps/collaboraoffice-draw
+        - apps/collaboraoffice-impress
+        - apps/collaboraoffice-writer
+        - apps/com.dec05eba.gpu_screen_recorder
+        - apps/com.github.qarmin.czkawka
+        - apps/czkawka
+        - apps/dialog-information
+        - apps/etcher-electron
+        - apps/GammaRay
+        - apps/gmameui
+        - apps/gpu-screen-recorder
+        - apps/GPU.Screen.Recorder
+        - apps/hp_logo
+        - apps/imhex
+        - apps/io.balena.etcher
+        - apps/io.github.ebkr.r2modman
+        - apps/io.github.radiolamp.mangojuice
+        - apps/io.gitlab.news_flash.NewsFlash
+        - apps/kcalc
+        - apps/kgeography
+        - apps/kmines
+        - apps/mame
+        - apps/mangojuice
+        - apps/materialious
+        - apps/msedit
+        - apps/open_tv
+        - apps/openCode
+        - apps/org.gnome.Papers
+        - apps/org.kde.kcalc
+        - apps/org.kde.kgeography
+        - apps/org.kde.keepsecret
+        - apps/org.kde.kmines
+        - apps/org.kde.qrca
+        - apps/org.mamedev.MAME
+        - apps/qdbusviewer6
+        - apps/qrca
+        - apps/qtdbusviewer
+        - apps/r2modman
+        - apps/re.sonny.Eloquent
+        - apps/rustdesk
+        - apps/tsMuxerGUI
+        - apps/us.materialio.Materialious
+        - apps/utilities-terminal_su
+        - apps/yaak
+        - devices/camera-video
+    - updated
+        - apps/dialog-information
+        - apps/etcher
+        - apps/opencode
+        - apps/org.xfce.mousepad
+
+- v1.4.1
+    - added
+        - apps/office2024-planmaker
+        - apps/office2024-presentations
+        - apps/office2024-textmaker
+
+- v1.4.0
+    - added
+        - apps/chipEdit64
+        - apps/chipedit
+        - apps/gramps
+        - apps/Gramps
+        - apps/IMSProg64
+        - apps/imsprog
+        - apps/jlink
+        - apps/JLink
+        - apps/lm-studio
+        - apps/org.gramps_project.Gramps
+        - apps/ozone
+        - apps/Ozone
+        - apps/pulseview
+        - apps/systemview
+        - apps/SystemView
+        - apps/throne
+        - apps/Throne
+    - updated
+        - apps/gimp
+
+- v1.3.9
+    - added
+        - apps/helium-browser
+
+- v1.3.8
+    - added
+        - apps/avidemux
+        - apps/cantor
+        - apps/claude
+        - apps/codex
+        - apps/gemini
+        - apps/github-copilot
+        - apps/git
+        - apps/juk
+        - apps/kalarm
+        - apps/kiro
+        - apps/koko
+        - apps/kwave
+        - apps/opencode
+        - apps/org.avidemux.Avidemux
+        - apps/org.kde.cantor
+        - apps/org.kde.juk
+        - apps/org.kde.kalarm
+        - apps/org.kde.koko
+        - apps/org.kde.kwave
+        - apps/qwen
+
+- v1.3.7
+    - added
+        - apps/com.mastermindzh.tidal-hifi
+        - apps/fceux
+        - apps/fceux1
+        - apps/solaar
+        - apps/waypaper
+    - updated
+        - apps/dolphin
+        - folder icons
+
+- v1.3.6
+    - added
+        - apps/blackmagicraw-player
+        - apps/blackmagicraw-speedtest
+        - apps/boxflat
+        - apps/cockos-reaper
+        - apps/com.opera.opera-gx
+        - apps/distributor-logo-garudalinux
+        - apps/garuda-linux
+        - apps/garuda
+        - apps/garuda-tool-alt
+        - apps/garuda-tool
+        - apps/garuda-welcome
+        - apps/io.github.lawstorant.boxflat
+        - apps/netbeans
+        - apps/opera-gx-alt
+        - apps/opera-gx
+        - apps/org.apache.netbeans
+        - apps/org.es_de.frontend
+        - apps/reaper
+        - apps/sunshine
+        - apps/winboat
+    - updated
+        - apps/code-oss
+        - apps/k3b-alt
+        - apps/k3b
+
+- v1.3.5
+    - added
+        - apps/littlenavconnect
+        - apps/littlenavmap
+        - status/easyeffects-tray
+    - updated
+        - apps/heroic
+
+- v1.3.4
+    - added
+        - apps/altair-ai-studio
+        - apps/app.fluxer.Fluxer
+        - apps/AppImageLauncher
+        - apps/bazaar
+        - apps/bleamd-icon
+        - apps/crispy-doom
+        - apps/crispy-setup
+        - apps/dev.aunetx.deezer
+        - apps/electron41
+        - apps/fluxer
+        - apps/foot
+        - apps/gajim
+        - apps/gtkhash
+        - apps/helix
+        - apps/ib-tws
+        - apps/icon
+        - apps/io.anytype.anytype
+        - apps/io.github.cboxdoerfer.FSearch
+        - apps/io.github.kolunmi.Bazaar
+        - apps/itch.io
+        - apps/kmag
+        - apps/kolourpaint
+        - apps/kvirc
+        - apps/net.kvirc.KVIrc5
+        - apps/org.altlinux.Tuner
+        - apps/org.coolercontrol.CoolerControl
+        - apps/org.gajim.Gajim
+        - apps/org.gtkhash.gtkhash
+        - apps/org.spyder_ide.spyder
+        - apps/reflector-simple
+        - apps/shelly
+        - apps/spyder
+        - apps/steam_icon_1255980
+        - apps/steam_icon_2012840
+        - apps/steam_icon_2014780
+        - apps/steam_icon_2410180
+        - apps/steam_icon_317400
+        - apps/steam_icon_400
+        - apps/steam_icon_601360
+        - apps/tuner
+        - apps/zellij
+        - status/OpenRGBGreyscale
+    - updated
+        - apps/gs_icon
+        - apps/easyeffects
+        - apps/openrgb
+
+- v1.3.3
+    - added
+        - apps/ardour9
+        - apps/com.kagi.OrionGtk
+        - apps/io.mgba.mGBA
+        - apps/mgba
+        - apps/mGBA
+        - apps/nixos
+        - apps/nix-snowflake
+        - apps/NixOS
+        - apps/org.kde.kalk
+        - apps/oriongtk
+        - apps/OrionGtk
+        - apps/qdirstat
+        - apps/steam_icon_291550 (Brawlhalla)
+        - apps/steam_icon_2767030 (Marvel Rivals)
+        - apps/LimineSnapperSync
+        - apps/net.waterfox.waterfox
+        - apps/harmonoid
+        - apps/readest
+        - apps/org.jellyfin.JellyfinDesktop
+        - apps/notesnook
+        - apps/notesnook-electron
+        - apps/com.notesnook.Notesnook
+        - apps/kooha
+        - apps/io.github.seadve.Kooha
+        - apps/zathura
+        - apps/org.pwmt.zathura
+        - apps/speedcrunch
+        - apps/org.speedcrunch.SpeedCrunch
+        - apps/qzdl
+        - apps/polymc
+        - apps/PolyMC
+        - apps/org.polymc.PolyMC
+        - apps/nwg-look
+        - apps/simple64
+        - apps/steam_icon_620 (Portal 2)
+        - status/battery-profile-balanced
+        - status/battery-profile-balanced-symbolic
+        - status/state-disconnected
+        - status/state-connected
+        - status/state-error
+    - updated
+        - actions/speedometer
+        - actions/speedometer-symbolic
+        - status/steam_tray_mono
+        - status/applications-email-panel
+        - status/ayatanawebmail-messages
+        - status/ayatanawebmail-messages-new
+
+    - resized (no need to put into public changelist)
+        - apps/display-im6.q16
+        - apps/firewall-config
+        - apps/gufw
+        - apps/helio-workstation
+        - apps/heroic
+        - apps/htop
+        - apps/ibus
+        - apps/inspector
+        - apps/io.github.nokse22.inspector
+        - apps/jockey
+        - status/drive-removable-media-usb-pendrive-symbolic
+
+- v1.3.2
+    - added
+        - apps/abdownloadmanager
+        - apps/ABDownloadManager
+        - apps/antigravity
+        - apps/aseprite
+        - apps/baloo
+        - apps/dbeaver
+        - apps/dbeaver-alt
+        - apps/goverlay
+        - apps/httptoolkit
+        - apps/huiontablet
+        - apps/io.github.benjamimgois.goverlay
+        - apps/io.github.kukuruzka165.materialgram
+        - apps/lutris_aseprite
+        - apps/materialgram
+        - apps/whatsapp
+        - apps/debian
+        - apps/fedora
+        - apps/kubuntu
+        - apps/linuxmint
+        - apps/opensuse
+        - apps/pclinuxos
+        - apps/pop-os
+        - apps/solus
+        - apps/ubuntu
+        - apps/zorin
+        - mimetypes/image-aseprite
+    - updated
+        - apps/cachyos
+        - apps/cachy-update-blue
+        - apps/cachy-update_updates-available-blue
+        - apps/org.cachyos.hello
+
+- v1.3.1
+    - added
+        - apps/ai
+        - apps/archlinux
+        - apps/archlinux-logo
+        - apps/cachyos
+        - apps/cachy-update-blue
+        - apps/cachy-update_updates-available-blue
+        - apps/codewithme
+        - apps/datalore
+        - apps/distributor-logo-archlinux
+        - apps/dotcover
+        - apps/dotmemory
+        - apps/dotpeek
+        - apps/dottrace
+        - apps/fleet
+        - apps/hub
+        - apps/junie
+        - apps/kalm
+        - apps/kotlin
+        - apps/ktor
+        - apps/kontrast
+        - apps/Kontrast
+        - apps/licensevault
+        - apps/mps
+        - apps/org.kde.kalm
+        - apps/org.kde.kontrast
+        - apps/org.wezfurlong.wezterm
+        - apps/qodana
+        - apps/resharpercpp
+        - apps/resharper
+        - apps/riderflow
+        - apps/re.fossplant.songrec
+        - apps/songrec
+        - apps/teamcity
+        - apps/teamspeak-client
+        - apps/teamspeak
+        - apps/waydroid
+        - apps/wezterm
+        - apps/Wezterm
+        - apps/youtrack
+        - apps/Zed
+        - actions/application-exit
+        - actions/application-exit-symbolic
+        - actions/application-menu
+        - actions/application-menu-symbolic
+        - actions/list-remove
+        - actions/menu_new-symbolic
+        - actions/remove
+    - updated
+        - apps/clion
+        - apps/com.jetbrains.CLion
+        - apps/com.jetbrains.DataGrip
+        - apps/com.jetbrains.dataspell
+        - apps/com.jetbrains.GoLand
+        - apps/com.Jetbrains.GoLand
+        - apps/com.jetbrains.IntelliJ-IDEA-Community
+        - apps/com.jetbrains.IntelliJ-IDEA-Ultimate
+        - apps/com.jetbrains.PhpStorm
+        - apps/com.jetbrains.PyCharm-Community
+        - apps/com.jetbrains.PyCharm-Professional
+        - apps/com.jetbrains.PyCharm
+        - apps/com.jetbrains.Rider
+        - apps/com.jetbrains.RubyMine
+        - apps/com.jetbrains.RustRover
+        - apps/com.jetbrains.WebStorm
+        - apps/datagrip
+        - apps/dataspell
+        - apps/gogoland
+        - apps/goland
+        - apps/golang
+        - apps/idea-community
+        - apps/idea
+        - apps/idea-ultimate
+        - apps/intellij-idea-ce
+        - apps/intellij-idea-community
+        - apps/intellij-idea
+        - apps/intellij_idea
+        - apps/intellij-idea-ue-bundled-jre
+        - apps/intellij-idea-ultimate-edition
+        - apps/intellij-idea-ultimate
+        - apps/jetbrains-clion
+        - apps/jetbrains-datagrip
+        - apps/jetbrains-dataspell
+        - apps/Jetbrains-goland
+        - apps/jetbrains-intellij-idea
+        - apps/jetbrains-phpstorm
+        - apps/jetbrains-pycharm-edu
+        - apps/jetbrains-pycharm
+        - apps/jetbrains-rider
+        - apps/jetbrains-rubymine
+        - apps/jetbrains-rustrover
+        - apps/jetbrains-toolbox
+        - apps/jetbrains-webstorm
+        - apps/phpstorm
+        - apps/pycharm-community
+        - apps/pycharm-education
+        - apps/pycharmedu
+        - apps/pycharm-professional
+        - apps/pycharm
+        - apps/rider
+        - apps/rubymine
+        - apps/rustrover
+        - apps/toolbox
+        - apps/webstorm
+        - preferences/preferences-system-network-remote
+
+- v1.3.0
+    - added
+        - apps/Cisco_Packet_Tracer_9.0.0
+        - apps/kruler-alt
+        - apps/kruler
+        - apps/Kruler
+        - apps/packettracer
+        - apps/qtcreator
+        - apps/qticon
+        - apps/QtIcon
+        - apps/QtProject-qtcreator
+        - apps/tageditor
+
+- v1.2.9
+    - added
+        - apps/cachyos-pi
+        - apps/ente
+        - apps/filendesktop
+        - apps/filen
+        - apps/io.ente.auth
+        - apps/org.cachyos.hello
+        - apps/org.cachyos.Kernel.Manager
+        - apps/org.cachyos.KernelManager
+        - apps/org.cachyos.scx-manager
+        - actions/document-open
+        - actions/edit-find
+        - actions/list-add
+        - actions/media-eject
+        - actions/media-mount
+        - actions/media-playback-pause
+        - actions/media-playback-start-rtl
+        - actions/media-playback-start
+        - actions/media-playback-stop
+        - actions/media-playlist-append
+        - actions/media-playlist-normal
+        - actions/media-playlist-repeat
+        - actions/media-playlist-shuffle
+        - actions/media-record
+        - actions/media-repeat-none
+        - actions/media-seek-backward
+        - actions/media-seek-forward
+        - actions/media-skip-backward
+        - actions/media-skip-forward
+    - updated
+        - apps/kwrite
+        - apps/org.kde.kwrite
+
+- v1.2.8
+    - added
+        - apps/alacritty
+        - apps/kdiskmark
+        - apps/audiotube
+        - apps/calendar
+        - apps/com.makemkv.MakeMKV
+        - apps/com.termius.Termius
+        - apps/deskflow
+        - apps/dragonplayer
+        - apps/ghostwriter
+        - apps/io.github.CyberTimon.RapidRAW
+        - apps/itinerary
+        - apps/jack-plug
+        - apps/jan
+        - apps/kajongg
+        - apps/kdf
+        - apps/KDiskFree
+        - apps/kdiskmark
+        - apps/kimagemapeditor
+        - apps/kleopatra
+        - apps/kmahjongg
+        - apps/kmplot
+        - apps/konqueror
+        - apps/ktimer
+        - apps/kwikdisk
+        - apps/labplot
+        - apps/lokalize
+        - apps/makemkv
+        - apps/maps
+        - apps/marble
+        - apps/org.deskflow.deskflow
+        - apps/org.kde.audiotube
+        - apps/org.kde.itinerary
+        - apps/org.kde.kclock
+        - apps/org.kde.kdf
+        - apps/org.kde.kimagemapeditor
+        - apps/org.kde.kleopatra
+        - apps/org.kde.kmahjongg
+        - apps/org.kde.kmplot
+        - apps/org.kde.ktimer
+        - apps/org.kde.labplot
+        - apps/org.kde.lokalize
+        - apps/org.kde.marble
+        - apps/org.kde.merkuro.calendar
+        - apps/org.kde.palapeli
+        - apps/palapeli
+        - apps/rapidraw
+        - apps/RapidRAW
+        - apps/sweethome3d
+        - apps/termius
+        - apps/ultimate-doom-builder
+        - apps/yazi
+
+- v1.2.7
+    - added
+        - apps/aether
+        - apps/com.github.FontManager.FontManager
+        - apps/map-globe
+        - apps/nvtop
+        - apps/xterm-color_48x48
+        - apps/io.github.arunsivaramanneo.GPUViewer
+        - apps/brightnesssettings
+        - apps/system-hibernate
+        - apps/system-suspend-hibernate
+        - apps/display
+        - apps/swappy
+        - apps/nomacs
+        - apps/org.nomacs.ImageLounge
+
+- v1.2.6
+    - added
+        - apps/com.borgbase.Vorta
+        - apps/com.borgbase.Vorta-symbolic
+        - apps/io.github.dweymouth.supersonic
+        - apps/io.github.softfever.OrcaSlicer
+        - apps/jgmenu
+        - apps/joplin-desktop
+        - apps/joplin
+        - apps/Joplin
+        - apps/krename
+        - apps/LibreOffice-startcenter
+        - apps/lxqt-about
+        - apps/net.cozic.joplin_desktop
+        - apps/opensnitch-ui
+        - apps/OrcaSlicer
+        - apps/org.joplinapp.joplin
+        - apps/org.kde.krename
+        - apps/pinentry
+        - apps/supersonic-desktop
+        - apps/vorta
+
+- v1.2.5
+    - added
+        - apps/calc
+        - apps/cantata
+        - apps/classicube
+        - apps/com.github.Bleuzen.FFaudioConverter
+        - apps/com.ylsoftware.qmmp.Qmmp
+        - apps/devilutionx-hellfire
+        - apps/devilutionx
+        - apps/dev.zed.zed
+        - apps/dog.unix.cantata.Cantata
+        - apps/dsda-doom
+        - apps/equibop
+        - apps/firedragon
+        - apps/freedownloadmanager
+        - apps/furmark
+        - apps/grayjay
+        - apps/helium
+        - apps/io.github.Qalculate.qalculate-qt
+        - apps/jasp
+        - apps/java-java11-openjdk
+        - apps/java-java17-openjdk
+        - apps/java-java21-openjdk
+        - apps/java-java-openjdk
+        - apps/java
+        - apps/jconsole-java11-openjdk
+        - apps/jconsole-java17-openjdk
+        - apps/jconsole-java21-openjdk
+        - apps/jconsole-java-openjdk
+        - apps/jshell-java11-openjdk
+        - apps/jshell-java17-openjdk
+        - apps/jshell-java21-openjdk
+        - apps/jshell-java-openjdk
+        - apps/kdiamond
+        - apps/kid3-qt
+        - apps/kid3
+        - apps/konversation
+        - apps/kpat
+        - apps/kteatime
+        - apps/ktorrent
+        - apps/luanti-alt
+        - apps/luanti
+        - apps/mpc-qt
+        - apps/net.classicube.flatpak.client
+        - apps/occt
+        - apps/org.jaspstats.JASP
+        - apps/org.kde.kdiamond
+        - apps/org.kde.kget
+        - apps/org.kde.kid3
+        - apps/org.kde.kpat
+        - apps/org.kde.kteatime
+        - apps/org.kde.ktorrent
+        - apps/org.kde.ktrip
+        - apps/org.kde.neochat
+        - apps/org.kde.skanlite
+        - apps/org.kde.tokodon
+        - apps/org.ladybird.Ladybird
+        - apps/otter-browser
+        - apps/proton-mail
+        - apps/protonmail
+        - apps/proton-pass
+        - apps/protonpass
+        - apps/qalculate
+        - apps/qmmp
+        - apps/QMPlay2
+        - apps/skanlite
+        - apps/Skanlite
+        - apps/skanpage
+        - apps/Superposition
+        - apps/tokodon
+        - apps/zed
+        - mimetypes/application-x-jaspstats-jasp
+    - updated
+        - apps/accessories-calculator
+
+- v1.2.4
+    - added
+        - apps/ch.tlaun.TL
+        - apps/org.zdoom.UZDoom
+        - apps/tutanota-desktop
+        - apps/appimagekit-tutanota-desktop
+        - apps/com.tutanota.Tutanota
+        - apps/application-sweethome3d
+        - apps/co.anysphere.cursor
+        - apps/gnucash-icon
+        - apps/info.mumble.Mumble
+        - apps/io.github.sharkwouter.Minigalaxy
+        - apps/minigalaxy
+        - apps/multimedia-photo-viewer
+        - apps/mumble
+        - apps/NoMachine-icon
+        - apps/NoMachine
+        - apps/org.kde.kclock
+        - apps/step
+        - apps/tokodon
+        - apps/umbrello
+        - apps/windsurf
+        - apps/xyz.z3ntu.razergenie
+    - updated
+        - apps/lutris
+        - apps/krita
+        - apps/org.kde.krita
+        - apps/hwloc
+        - status/tutanota-desktop-tray
+
+- v1.2.3
+    - added
+        - apps/Cider
+        - apps/legacy-launcher
+        - apps/steam_icon_2525380 (Tomb Raider IV-VI Remastered)
+        - apps/steam_icon_3017860 (Doom: The Dark Ages)
+        - apps/steam_icon_7000 (Tomb Raider: Legend)
+        - apps/steam_icon_782330 (Doom Eternal)
+        - apps/steam_icon_8000 (Tomb Raider: Anniversary)
+        - apps/steam_icon_8140 (Tomb Raider: Underworld)
+        - apps/com.getmailspring.Mailspring
+        - apps/krecorder
+        - apps/mailspring
+        - apps/org.kde.krecorder
+        - apps/supertux2
+        - apps/supertux
+    - updated
+        - apps/gwenview
+        - apps/org.kde.gwenview
+        - apps/ardour
+        - apps/ardour8
+        - apps/org.ardour.Ardour
+        - apps/org.ardour.Ardour8
+        - apps/qtassistant
+        - apps/assistant
+        - apps/qtdbusviewer
+        - apps/qdbusviewer
+        - apps/qtlinguist
+        - apps/linguist
+        - apps/qtdesigner
+        - apps/designer
+        - apps/qv4l2
+        - apps/qvidcap
+        - apps/okular
+        - apps/org.kde.okular
+
+- v1.2.2
+    - added
+        - apps/appimagekit-obsidian
+        - apps/com.github.hluk.copyq
+        - apps/copyq
+        - apps/floorp
+        - apps/com.raggesilver.BlackBox
+        - apps/kcachegrind
+        - apps/kdiff3
+        - apps/kompare
+        - apps/md.obsidian.Obsidian
+        - apps/moe.launcher.the-honkers-railway-launcher
+        - apps/one.ablaze.floorp
+        - apps/Obsidian
+        - apps/okteta
+        - apps/org.kde.kcachegrind
+        - apps/org.kde.kdiff3
+        - apps/org.kde.okteta
+        - apps/steam_icon_203160 (Tomb Raider)
+        - apps/steam_icon_391220 (Rise Of The Tomb Raider)
+        - apps/the-honkers-railway-launcher
+        - apps/cider
+        - apps/masterpdfeditor3
+        - apps/masterpdfeditor4
+        - apps/masterpdfeditor5
+        - apps/masterPDFEditor-free
+        - apps/masterpdfeditor
+        - apps/masterPDFEditor
+        - apps/net.codeindustry.MasterPDFEditor-Legacy
+        - apps/net.codeindustry.MasterPDFEditor
+        - apps/org.cidercollective.cider
+        - apps/sh.cider.Cider
+        - mimetypes/application-x-kcachegrind
+        - mimetypes/application-x-bzpdf
+        - mimetypes/x-scheme-handler-cider
+        - mimetypes/x-scheme-handler-itmss
+        - mimetypes/x-scheme-handler-itms
+        - mimetypes/x-scheme-handler-itunes
+        - mimetypes/x-scheme-handler-music
+
+- v1.2.1
+    - added
+        - apps/knights
+        - apps/openmw-cs
+        - apps/openmw
+        - apps/org.kde.knights
+        - apps/org.openmw.OpenMW.OpenCS
+        - apps/org.openmw.OpenMW
+        - apps/org.prismlauncher.PrismLauncher
+        - devices/input-gamepad
+        - devices/input-gaming-symbolic
+        - devices/input-touchscreen
+    - updated
+        - preferences/preferences-system-bluetooth-activated-symbolic
+        - preferences/preferences-system-bluetooth-battery-symbolic
+        - preferences/preferences-system-bluetooth-inactive-symbolic
+        - preferences/preferences-system-bluetooth
+        - preferences/preferences-system-bluetooth-symbolic
+
+- v1.2.0
+    - added
+        - apps/7zip
+        - apps/7z
+        - apps/deepinwine-7zip
+        - apps/J7Z
+        - apps/p7zip-gui
+        - apps/p7zip
+        - apps/steam_icon_455910 (STAR WARS: Rogue Squadron 3D)
+        - apps/anki
+        - apps/net.ankiweb.Anki
+        - apps/anytype
+        - apps/vesktop
+        - apps/dev.vencord.Vesktop
+        - actions/network-connect
+        - actions/network-connect-symbolic
+        - actions/network-disconnect
+        - actions/network-disconnect-symbolic
+        - mimetypes/application-x-apkg
+        - mimetypes/application-rdata
+    - updated
+        - apps/plasmadiscover
+        - apps/org.pulseaudio.pavucontrol
+
+    Note:
+        - Change the mimetypes to a filled style.
+
+- v1.1.9
+    - added
+        - apps/rkward
+        - apps/system-run
+        - apps/net.nokyan.Resources
+        - apps/nicotine-plus
+        - apps/nicotine_plus
+        - apps/org.nicotine_plus.Nicotine
+        - apps/org.gnome.World.PikaBackup
+        - apps/SysMonTask
+        - apps/clion
+        - apps/com.jetbrains.CLion
+        - apps/com.jetbrains.DataGrip
+        - apps/com.jetbrains.dataspell
+        - apps/com.jetbrains.GoLand
+        - apps/com.Jetbrains.GoLand
+        - apps/com.jetbrains.IntelliJ-IDEA-Community
+        - apps/com.jetbrains.IntelliJ-IDEA-Ultimate
+        - apps/com.jetbrains.PhpStorm
+        - apps/com.jetbrains.PyCharm-Community
+        - apps/com.jetbrains.PyCharm-Professional
+        - apps/com.jetbrains.PyCharm
+        - apps/com.jetbrains.Rider
+        - apps/com.jetbrains.RubyMine
+        - apps/com.jetbrains.RustRover
+        - apps/com.jetbrains.WebStorm
+        - apps/datagrip
+        - apps/dataspell
+        - apps/gogoland
+        - apps/goland
+        - apps/golang
+        - apps/idea-community
+        - apps/idea
+        - apps/idea-ultimate
+        - apps/intellij-idea-ce
+        - apps/intellij-idea-community
+        - apps/intellij-idea
+        - apps/intellij_idea
+        - apps/intellij-idea-ue-bundled-jre
+        - apps/intellij-idea-ultimate-edition
+        - apps/intellij-idea-ultimate
+        - apps/jetbrains-clion
+        - apps/jetbrains-datagrip
+        - apps/jetbrains-dataspell
+        - apps/Jetbrains-goland
+        - apps/jetbrains-intellij-idea
+        - apps/jetbrains-phpstorm
+        - apps/jetbrains-pycharm-edu
+        - apps/jetbrains-pycharm
+        - apps/jetbrains-rider
+        - apps/jetbrains-rubymine
+        - apps/jetbrains-rustrover
+        - apps/jetbrains-toolbox
+        - apps/jetbrains-webstorm
+        - apps/phpstorm
+        - apps/pycharm-community
+        - apps/pycharm-education
+        - apps/pycharmedu
+        - apps/pycharm-professional
+        - apps/pycharm
+        - apps/rider
+        - apps/rubymine
+        - apps/rustrover
+        - apps/toolbox
+        - apps/webstorm
+    - updated
+        - actions/system-run
+        - apps/hwinfo
+        - apps/vivaldi
+        - apps/org.gnome.DiskUtility
+        - apps/kdeconnect
+        - status/firewall-applet-error
+        - status/firewall-applet
+        - status/device_usb
+        - status/drive-harddisk
+        - status/kde-connect
+        - devices/device_usb
+        - devices/drive-harddisk
+        - preferences/preferences-kde-connect
+        - preferences/preferences-system-disks
+        - preferences/preferences-desktop-thunderbolt
+
+    Note: Replaced redundant mimetype icons with symbolic links
+
+- v1.1.8
+    - added
+        - apps/org.fooyin.fooyin
+        - apps/org.vinegarhq.Sober
+        - apps/org.gnome.EasyTAG
+        - apps/claws-mail
+        - apps/org.claws_mail.Claws-Mail
+        - apps/kmymoney
+    - updated
+        - apps/easytag
+        - apps/gzdoom
+        - apps/haruna
+
+
+- v1.1.7
+    - added
+        - apps/plank-reloaded
+        - apps/io.gitlab.theevilskeleton.Upscaler
+
+- v1.1.6
+    - added
+        - apps/antconc
+        - apps/dupeguru
+        - apps/faugus-launcher
+        - apps/io.github.Faugus.faugus-launcher
+        - apps/mendeley-reference-manager
+        - apps/octopi
+        - apps/stardew-valley
+        - apps/mendeley-reference-manager
+        - apps/steam_icon_1145360 (hades)
+        - apps/steam_icon_1313140 (cult of the lamb)
+        - apps/steam_icon_1590910 (forgive me father)
+        - apps/steam_icon_2325290 (sky)
+        - apps/ytdlp-gui
+
+- v1.1.5
+    - added
+        - apps/gmic_qt
+        - apps/losslesscut
+    - updated
+        - apps/kate
+        - apps/org.kde.kate
+        - apps/kdenlive
+        - apps/org.kde.kdenlive
+        - apps/timeshift
+
+- v1.1.4
+    - updated
+        - apps/pacseek
+        - apps/deadbeef
+        - apps/thunderbird
+        - apps/org.mozilla.Thunderbird
+        - apps/kmail
+        - apps/ktnef
+        - apps/filezilla
+        - apps/org.filezillaproject.Filezilla
+        - apps/lutris
+        - apps/net.lutris.Lutris
+        - apps/elisa
+        - apps/org.kde.elisa
+        - apps/kfontview
+
+- v1.1.3
+    - added
+        - apps/vmware-netcfg
+        - apps/vmware-player
+        - apps/vmware
+        - apps/vmware-workstation
+    - updated
+        - apps/libreoffice-base
+        - apps/libreoffice-basic
+        - apps/libreoffice-calc
+        - apps/libreoffice-chart
+        - apps/libreoffice-draw
+        - apps/libreoffice-impress
+        - apps/libreoffice-main
+        - apps/libreoffice-math
+        - apps/libreoffice-startcenter
+        - apps/libreoffice-writer
+        - apps/org.libreoffice.LibreOffice.base
+        - apps/org.libreoffice.LibreOffice.calc
+        - apps/org.libreoffice.LibreOffice.draw
+        - apps/org.libreoffice.LibreOffice.impress
+        - apps/org.libreoffice.LibreOffice.math
+        - apps/org.libreoffice.LibreOffice.startcenter
+        - apps/org.libreoffice.LibreOffice.writer
+        - apps/utilities-system-monitor
+        - apps/org.gnome.SystemMonitor
+        - apps/meld
+        - apps/org.gnome.Meld-symbolic
+        - apps/org.gnome.Meld
+        - apps/org.gnome.meld
+    - Replace duplicate icons with symbolic links.
+
+- v1.1.2
+    - added
+        - apps/com.github.iwalton3.jellyfin-media-player
+        - apps/com.github.iwalton3.jellyfin-mpv-shim
+        - apps/davinci-resolve
+        - apps/DV_Resolve
+        - apps/DV-Resolve
+        - apps/jellyfin-mpv-shim
+        - apps/jellyfin
+        - apps/jellyfin-theater
+        - apps/jellyfin-theatre
+        - apps/mediainfo
+        - apps/mkvtoolnix-gui
+        - apps/net.mediaarea.MediaInfo
+        - apps/nuvolaplayer3_plex
+        - apps/org.bunkus.mkvtoolnix-gui
+        - apps/org.jellyfin.JellyfinServer
+        - apps/org.jellyfin.Jellyfin
+        - apps/plexhometheater
+        - apps/plex-media-player
+        - apps/plexmediaplayer
+        - apps/plex
+        - apps/resolve
+        - apps/tv.plex.PlexDesktop
+        - apps/tv.plex.PlexMediaPlayer
+        - apps/electron37
+        - apps/protontricks
+        - apps/piavpn
+        - apps/rofi
+        - apps/satty
+        - apps/app.drey.Dialect
+        - apps/com.github.neithern.g4music
+        - apps/mullvad-browser
+        - apps/pragha
+        - actions/preferences-system-windows-actions
+        - actions/system-run
+    - updated
+        - apps/audacious
+        - apps/org.atheme.audacious
+    - Resolved icon rendering issues following the upgrade to Qt 6.10.0.
+
+- v1.1.1
+    - added
+        - apps/org.localsend.localsend_app
+        - apps/org.rncbc.qpwgraph
+        - apps/app.zen_browser.zen
+        - apps/kamoso
+        - mimetypes/org.rncbc.qpwgraph.application-x-qpwgraph-patchbay
+    - updated
+        - apps/zen
+        - apps/zen-browser
+        - apps/io.github.zen_browser.zen
+        - apps/supertuxkart
+
+- v1.1.0
+    - added
+        - apps/corectrl
+        - apps/curseforge
+        - apps/koi
+        - apps/mpd
+        - apps/nvim
+        - apps/smb4k
+        - apps/smplayer
+        - apps/system-config-samba
+        - apps/youtube-music
+        - apps/keepassxc
+        - status/media-playback-paused
+        - status/media-playback-paused-symbolic
+        - status/media-playback-playing
+        - status/media-playback-playing-symbolic
+        - status/media-playback-stopped
+        - status/media-playback-stopped-symbolic
+
+- v1.0.9
+    - added
+        - apps/org.inkscape.Inkscape-symbolic
+        - apps/qemu
+        - places/document-open-recent-symbolic
+        - devices/audio-headphones
+        - devices/audio-headphones-symbolic
+        - devices/audio-headset
+        - devices/audio-headset-symbolic
+        - devices/audio-headsets
+    - updated
+        - apps/partitionmanager
+        - apps/gparted
+        - apps/org.upscayl.Upscayl
+        - apps/upscayl
+        - apps/com.spotify.Client
+        - apps/spotify
+        - apps/spotify-client
+        - apps/com.valvesoftware.Steam
+        - apps/steam
+        - apps/org.strawberrymusicplayer.strawberry
+        - apps/strawberry
+        - actions/document-open-recent
+        - places/folder-documents
+        - places/document-open-recent
+        - devices/drive-removable-media
+        - devices/media-removable
+    - fixed
+        - apps/feh
+
+- v1.0.8
+    - added
+        - apps/io.github.nokse22.high-tide
+        - apps/tidal-hifi
+        - apps/org.shotcut.Shotcut
+        - apps/tenacity
+        - apps/soundconverter
+        - apps/org.gnome.SoundJuicer
+        - apps/waterfox
+        - apps/io.github.thetumultuousunicornofdarkness.cpu-x
+        - apps/io.github.ilya_zlobintsev.LACT
+        - apps/mullvad-vpn
+        - apps/com.vysp3r.ProtonPlus
+        - actions/question
+    - updated
+        - apps/org.xfce.mousepad
+
+- v1.0.7
+    - added
+        - apps/org.kde.iconexplorer
+        - apps/accessories-dictionary
+        - apps/calf_plugin
+        - actions/configure
+        - actions/window-pin
+    - fixed
+        - apps/localsend
+
+- v1.0.6
+    - updated
+        - apps/mpv
+        - apps/org.kde.dolphin
+        - apps/dolphin
+
+- v1.0.5
+    - added
+        - apps/converseen
+        - apps/kaddressbook
+        - apps/ktnef
+    - updated
+        - apps/org.mozilla.firefox
+        - apps/firefox
+
+- v1.0.4
+    - added
+        - apps/pasystray
+        - apps/org.musicbrainz.Picard
+        - apps/compton
+        - apps/org.xfce.orage
+        - apps/conky-logomark-violet
+    - updated
+        - apps/conky
+        - apps/kitty
+        - apps/virt-manager
+
+- v1.0.3
+    - added
+        - apps/electron35
+        - apps/snapper-tools
+        - apps/ktorrent
+        - apps/xppentablet
+        - apps/io.github.TheWisker.Cavasik
+        - apps/fish
+        - apps/gg.minion.Minion
+        - apps/polychromatic
+        - apps/org.keepassxc.KeePassXC
+        - apps/dev.zed.Zed
+        - apps/deluge
+        - apps/org.wireshark.Wireshark
+        - apps/torbrowser
+        - apps/org.kde.telly-skout
+        - apps/krusader_user
+        - apps/dev.fredol.open-tv
+
+- v1.0.2
+    - added
+        - apps/dialog-password
+        - apps/canon-pixma-ts5055-complete-scangear-icon
+        - apps/stacer
+        - apps/obs (update)
+        - apps/com.obsproject.Studio (update)
+    - fixed
+        - categories/applications-all-symbolic
+
+- v1.0.1
+    - added
+        - apps/falkon
+        - apps/kmix
+        - apps/jdownloader (update)
+        - apps/krita (update)
+        - preferences/kup
+    - removed
+        - unwanted elements
+        - duplicated style
+        - hardcoded fill
+    - fixed some icons
+
+- v1.0.0
+    - Initial release!

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="logseq.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.918782" inkscape:cy="33.461929" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="177" inkscape:window-y="267" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;stroke-width:0.407185" d="M 10.537585,1.5443891 A 1.5834337,2.4717887 78.451456 0 0 9.5840369,1.6724299 1.5834337,2.4717887 78.451456 0 0 7.7389765,3.8077694 1.5834337,2.4717887 78.451456 0 0 10.659263,4.6730389 1.5834337,2.4717887 78.451456 0 0 12.504325,2.5376996 1.5834337,2.4717887 78.451456 0 0 10.537585,1.5443891 Z M 2.4924839,1.9547558 A 2.7206187,2.1300461 45.000001 0 0 1.2144615,2.5361091 2.7206187,2.1300461 45.000001 0 0 1.775137,5.9796913 2.7206187,2.1300461 45.000001 0 0 5.1845223,6.2532693 2.7206187,2.1300461 45.000001 0 0 4.6238465,2.8096871 2.7206187,2.1300461 45.000001 0 0 2.4924839,1.9547558 Z m 7.8327601,4.475862 a 5.904193,4.4790431 0 0 0 -5.9041949,4.4790442 5.904193,4.4790431 0 0 0 5.9041949,4.479043 5.904193,4.4790431 0 0 0 5.904194,-4.479043 5.904193,4.4790431 0 0 0 -5.904194,-4.4790442 z" id="path3" class="ColorScheme-Text"/>
+  <g id="g9" transform="matrix(0.46959567,0,0,0.46959567,4.7471229,3.7470598)" style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.58349;stroke-dasharray:none;stroke-opacity:0.3"/>
+  </svg>

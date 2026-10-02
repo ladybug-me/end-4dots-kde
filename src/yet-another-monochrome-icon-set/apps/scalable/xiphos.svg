@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="xiphos.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="4.3531261" inkscape:cx="36.295755" inkscape:cy="40.430715" inkscape:window-width="2560" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+    </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g id="g1-9" transform="matrix(1.8928475,0,0,1.8928475,-82.105055,6.0553922)" style="">
+    <path id="path2-3-7" style="fill:currentColor;fill-opacity:1;stroke-width:0.195973" class="ColorScheme-Text" d="m 45.141058,-2.6457809 c -0.236878,0 -0.427355,0.1874731 -0.427355,0.4201211 v 6.9989182 c 0,0.2326483 0.190477,0.4201211 0.427355,0.4201211 h 5.416101 c 0.236877,0 0.427872,-0.1874728 0.427872,-0.4201211 v -6.9989182 c 0,-0.232648 -0.190995,-0.4201211 -0.427872,-0.4201211 z m 2.708309,1.1756156 h 1.175616 v 1.37198231 h 1.371982 V 1.0779495 H 49.024983 V 4.0172471 H 47.849367 V 1.0779495 h -1.371982 v -1.17613249 h 1.371982 z"/>
+  </g>
+</svg>

@@ -21,3 +21,27 @@ __pycache__/
 /caelestia-kde
 /run.sh
 /dots-hyprland
+
+.SRCINFO
+backups/
+src/bin/build/
+
+__pycache__/
+*.py[cod]
+
+installer/build/
+caelestia-install
+build
+
+run.sh
+
+/CONTEXT.md
+/CLAUDE.md
+/docs/agents/
+/docs/adr/
+# Generated for Crowdin before upload; never committed.
+/shell/translations/caelestia_en.ts
+/shell/translations/caelestia_en.qm
+
+caelestia-kde-plugins/
+wallpaper-selector/

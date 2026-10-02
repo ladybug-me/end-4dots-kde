@@ -2,6 +2,7 @@
 #include "Draw.hpp"
 #include "Globals.hpp"
 #include "Input.hpp"
+#include "Sudo.hpp"
 #include "Term.hpp"
 #include "UI.hpp"
 #include <cerrno>
@@ -9,8 +10,9 @@
 #include <csignal>
 #include <cstdio>
 #include <cstdlib>
-#include <filesystem>
+#include <cstring>
 #include <fcntl.h>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -28,16 +30,16 @@ extern volatile sig_atomic_t g_sigterm_received;
 namespace {
 static size_t g_spin_frame = 0;
 
-std::string env_val(const char* name) {
-  const char* v = getenv(name);
+std::string env_val(const char *name) {
+  const char *v = getenv(name);
   return v ? std::string(v) : std::string();
 }
 
-bool env_is_true(const char* name) { return env_val(name) == "true"; }
+bool env_is_true(const char *name) { return env_val(name) == "true"; }
 
-bool log_tail_since(const std::string& log_path, long start_offset,
-                    std::string& out) {
-  FILE* f = fopen(log_path.c_str(), "rb");
+bool log_tail_since(const std::string &log_path, long start_offset,
+                    std::string &out) {
+  FILE *f = fopen(log_path.c_str(), "rb");
   if (!f)
     return false;
   fseek(f, 0, SEEK_END);
@@ -56,7 +58,7 @@ bool log_tail_since(const std::string& log_path, long start_offset,
   return true;
 }
 
-pid_t spawn_step(const string& script_path, int log_fd) {
+pid_t spawn_step(const string &script_path, int log_fd) {
   pid_t child = fork();
   if (child < 0)
     return -1;
@@ -67,21 +69,21 @@ pid_t spawn_step(const string& script_path, int log_fd) {
       dup2(log_fd, STDERR_FILENO);
     }
     execlp("stdbuf", "stdbuf", "-oL", "-eL", "bash", script_path.c_str(),
-           static_cast<char*>(nullptr));
-    execlp("bash", "bash", script_path.c_str(), static_cast<char*>(nullptr));
+           static_cast<char *>(nullptr));
+    execlp("bash", "bash", script_path.c_str(), static_cast<char *>(nullptr));
     _exit(127);
   }
   return child;
 }
-bool answer_is_true(const char* name) {
+bool answer_is_true(const char *name) {
   auto it = g_answers.find(name);
   if (it != g_answers.end())
     return it->second == "true";
   return env_is_true(name);
 }
 
-bool read_log_tail(const std::string& log_path, size_t max_lines,
-                   std::vector<std::string>& out) {
+bool read_log_tail(const std::string &log_path, size_t max_lines,
+                   std::vector<std::string> &out) {
   out.clear();
   std::ifstream in(log_path, std::ios::binary);
   if (!in)
@@ -114,14 +116,14 @@ bool read_log_tail(const std::string& log_path, size_t max_lines,
 }
 
 string spin_glyph() {
-  static const char* frames[] = {"[/]", "[-]", "[\\]", "[|]"};
+  static const char *frames[] = {"[/]", "[-]", "[\\]", "[|]"};
   return frames[g_spin_frame % 4];
 }
 } // namespace
 
 namespace Runner {
 const vector<Phase> phases = {
-    {"prepare", "Prepare"},   {"packages", "Packages"},
+    {"prepare", "Prepare"},     {"packages", "Packages"},
     {"configure", "Configure"}, {"build", "Build"},
     {"finalize", "Finalize"},
 };
@@ -134,9 +136,8 @@ vector<Step> steps = {
     {"Update submodules", "scripts/02a-submodules.sh", "PENDING", "prepare"},
     {"Back up current setup", "scripts/00-backup-themes.sh", "PENDING",
      "prepare"},
-    {"Install packages", "scripts/02-all-packages.sh", "PENDING",
-     "packages"},
-    {"Install lock screen greeter", "scripts/02-packages.sh", "PENDING",
+    {"Install packages", "scripts/02-all-packages.sh", "PENDING", "packages"},
+    {"Set up Python tooling and matugen", "scripts/02-packages.sh", "PENDING",
      "packages"},
     {"Deploy config files", "scripts/03-deploy-configs.sh", "PENDING",
      "configure"},
@@ -145,14 +146,12 @@ vector<Step> steps = {
     {"Apply KDE theme", "scripts/04-deploy-kde.sh", "PENDING", "configure"},
     {"Apply window rules", "scripts/04a-window-rules.sh", "PENDING",
      "configure"},
-    {"Install SDDM theme", "scripts/05-sddm-theme.sh", "PENDING",
-     "configure"},
+    {"Install SDDM theme", "scripts/05-sddm-theme.sh", "PENDING", "configure"},
     {"Enable system services", "scripts/06-services.sh", "PENDING",
      "configure"},
     {"Configure KDE applications", "scripts/07-kde-apps.sh", "PENDING",
      "configure"},
-    {"Build Caelestia shell", "scripts/08-build-shell.sh", "PENDING",
-     "build"},
+    {"Build Caelestia shell", "scripts/08-build-shell.sh", "PENDING", "build"},
     {"Apply system tweaks", "scripts/09-system-tweaks.sh", "PENDING",
      "finalize"},
     {"Create autostart entries", "scripts/10-autostart.sh", "PENDING",
@@ -161,7 +160,7 @@ vector<Step> steps = {
      "finalize"},
 };
 
-bool step_is_skipped(const Step& step) {
+bool step_is_skipped(const Step &step) {
   if (step.name == "Update system") {
     return answer_is_true("SKIP_SYSTEM_UPDATE");
   }
@@ -169,10 +168,10 @@ bool step_is_skipped(const Step& step) {
     return !answer_is_true("INSTALL_SDDM");
   }
   if (step.name == "Install optional components") {
-    static const char* opt[] = {"INSTALL_VSCODE",  "INSTALL_ZED",
+    static const char *opt[] = {"INSTALL_VSCODE",    "INSTALL_ZED",
                                 "INSTALL_SPICETIFY", "INSTALL_DISCORD",
-                                "INSTALL_TODOIST", "INSTALL_FIREFOX_THEME"};
-    for (const char* name : opt) {
+                                "INSTALL_TODOIST",   "INSTALL_FIREFOX_THEME"};
+    for (const char *name : opt) {
       if (answer_is_true(name))
         return false;
     }
@@ -392,8 +391,7 @@ void draw_progress_ui(size_t current_index) {
 
   for (int r = 0; r < max_rows && (scroll + (size_t)r) < lines.size(); ++r) {
     const Line &ln = lines[scroll + (size_t)r];
-    Draw::text(x + 2, y + 2 + r, Draw::fit(ln.text, (size_t)(w - 4)),
-               ln.color);
+    Draw::text(x + 2, y + 2 + r, Draw::fit(ln.text, (size_t)(w - 4)), ln.color);
   }
 
   string hint = "L - Full log    Ctrl+C - Cancel";
@@ -412,10 +410,37 @@ void execute() {
   setenv("SRCPKGDEST", (cache_dir + "/makepkg-srcpackages").c_str(), 1);
 
   std::error_code fs_error;
-  for (const string& path : {cache_dir, cache_dir + "/makepkg-build",
-                             cache_dir + "/makepkg-packages",
-                             cache_dir + "/makepkg-sources",
-                             cache_dir + "/makepkg-srcpackages"}) {
+  std::filesystem::create_directories(cache_dir, fs_error);
+  if (fs_error) {
+    Term::restore();
+    cerr << "Could not create installer cache directory at " << cache_dir
+         << ": " << fs_error.message() << endl;
+    exit(1);
+  }
+
+  // The install log and the makepkg trees live in here, so the directory stays
+  // private and has to be ours. lstat rather than stat: a /tmp/caelestia-kde
+  // left behind by another user would otherwise be followed, and the log below
+  // is opened in a mode that truncates whatever the path points at.
+  struct stat cache_st{};
+  if (lstat(cache_dir.c_str(), &cache_st) != 0 || !S_ISDIR(cache_st.st_mode) ||
+      cache_st.st_uid != getuid()) {
+    Term::restore();
+    cerr << "Refusing the installer cache directory at " << cache_dir
+         << ": not a directory owned by this user." << endl;
+    exit(1);
+  }
+  if (chmod(cache_dir.c_str(), 0700) != 0) {
+    Term::restore();
+    cerr << "Could not restrict the installer cache directory at " << cache_dir
+         << ": " << strerror(errno) << endl;
+    exit(1);
+  }
+
+  for (const string &path :
+       {cache_dir + "/makepkg-build", cache_dir + "/makepkg-packages",
+        cache_dir + "/makepkg-sources", cache_dir + "/makepkg-srcpackages"}) {
+    fs_error.clear();
     std::filesystem::create_directories(path, fs_error);
     if (fs_error) {
       Term::restore();
@@ -439,10 +464,13 @@ void execute() {
 
   setenv("CONFIRM_ARG", "--noconfirm", 1);
 
-  // One shared install log: every step appends, and the live view tails it.
+  // One shared install log: every step appends, and the live view tails it. It
+  // carries every step's output, so it stays 0600 and never opens through a
+  // symlink.
   string log_path = cache_dir + "/install.log";
-  int log_fd = open(log_path.c_str(),
-                    O_WRONLY | O_CREAT | O_TRUNC | O_APPEND | O_CLOEXEC, 0644);
+  int log_fd = open(
+      log_path.c_str(),
+      O_WRONLY | O_CREAT | O_TRUNC | O_APPEND | O_CLOEXEC | O_NOFOLLOW, 0600);
   if (log_fd < 0) {
     Term::restore();
     cerr << "Could not open installation log at " << log_path << ": "
@@ -450,8 +478,9 @@ void execute() {
     exit(1);
   }
 
-  // The log view is a display mode, not a blocking screen: the step loop keeps polling and
-  // advancing while it is open, so watching the full log never stalls the install.
+  // The log view is a display mode, not a blocking screen: the step loop keeps
+  // polling and advancing while it is open, so watching the full log never
+  // stalls the install.
   bool log_open = false;
   UI::LogViewState log_state;
 
@@ -478,10 +507,11 @@ void execute() {
     steps[i].status = "RUNNING";
     show_progress(i);
 
-    // Where this step's output starts, so its segment can be scanned for [WARN] afterwards.
+    // Where this step's output starts, so its segment can be scanned for [WARN]
+    // afterwards.
     long start_offset = 0;
     if (log_fd >= 0) {
-      struct stat st {};
+      struct stat st{};
       if (fstat(log_fd, &st) == 0)
         start_offset = st.st_size;
       dprintf(log_fd, "\n[CAELESTIA] %s\n", steps[i].name.c_str());
@@ -505,8 +535,9 @@ void execute() {
       exit(1);
     }
 
-    // Polls the child, redraws on resize, and lets the user toggle the log view. waitpid keeps
-    // running beneath it, so the step finishes and the next starts with the full log open.
+    // Polls the child, redraws on resize, and lets the user toggle the log
+    // view. waitpid keeps running beneath it, so the step finishes and the next
+    // starts with the full log open.
     int child_status = 0;
     while (true) {
       pid_t r = waitpid(child, &child_status, WNOHANG);
@@ -525,20 +556,19 @@ void execute() {
         int st2 = 0;
         waitpid(child, &st2, 0);
         Term::restore();
-        if (!g_sudo_bin_dir.empty() && run_shell("rm -rf \"" + g_sudo_bin_dir + "\"") != 0) {
-          cerr << "[installer] warning: could not remove the sudo shim directory " << g_sudo_bin_dir << endl;
-        }
+        Sudo::cleanup();
         exit(130);
       }
 
-      // Polls faster with the live log open so its tail stays smooth; in progress mode the
-      // longer timeout paces the spinner.
+      // Polls faster with the live log open so its tail stays smooth; in
+      // progress mode the longer timeout paces the spinner.
       string key = Input::wait_key(log_open ? 100 : 200);
 
       bool closed_log = false;
       if (key == "l" || key == "L" || key == "KEY_shift_tab" ||
           (log_open && key == "escape")) {
-        // Toggles the full-screen log; opening resets scroll so the view follows the newest output.
+        // Toggles the full-screen log; opening resets scroll so the view
+        // follows the newest output.
         log_open = !log_open;
         if (log_open) {
           log_state = UI::LogViewState();
@@ -553,7 +583,8 @@ void execute() {
       if (log_open) {
         UI::log_view_tick(log_path, log_state);
       } else if (closed_log || g_resized || key.empty()) {
-        // Advance the spinner each poll timeout so a running step shows activity.
+        // Advance the spinner each poll timeout so a running step shows
+        // activity.
         if (key.empty())
           g_spin_frame++;
         draw_progress_ui(i);
@@ -563,7 +594,8 @@ void execute() {
     int exit_code = WIFEXITED(child_status) ? WEXITSTATUS(child_status) : 1;
 
     if (exit_code == 0) {
-      // A step can succeed while reporting non-fatal problems; scan its output for [WARN].
+      // A step can succeed while reporting non-fatal problems; scan its output
+      // for [WARN].
       string delta;
       bool warned = log_fd >= 0 &&
                     log_tail_since(log_path, start_offset, delta) &&
@@ -600,8 +632,8 @@ void execute() {
     close(log_fd);
 
   if (log_open) {
-    // Every step is done, so the (now static) log can go to the blocking viewer: nothing is
-    // left running to stall.
+    // Every step is done, so the (now static) log can go to the blocking
+    // viewer: nothing is left running to stall.
     UI::log_view(log_path);
   } else {
     draw_progress_ui(steps.size());

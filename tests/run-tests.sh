@@ -42,8 +42,10 @@ for file in "${files[@]}"; do
     ran=$((ran + 1))
     echo "RUN   $(basename "$file")"
 
-    output="$(bash "$file" 2>&1)"
+    tmp_root="$(mktemp -d "${TMPDIR:-/tmp}/caelestia-tests.XXXXXX")"
+    output="$(TMPDIR="$tmp_root" bash "$file" 2>&1)"
     status=$?
+    rm -rf -- "$tmp_root"
 
     if [[ $status -eq 0 ]]; then
         echo "PASS  $(basename "$file")"

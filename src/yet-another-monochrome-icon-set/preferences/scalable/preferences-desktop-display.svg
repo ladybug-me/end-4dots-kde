@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="preferences-desktop-display.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.756345" inkscape:cy="27.208122" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:0.337627;stroke-dasharray:none;stroke-opacity:0.3" class="ColorScheme-Text" d="m 3.8363828,3.8363835 c -0.6614452,0 -0.6614452,0.6614447 -0.6614452,0.6614447 v 6.6144528 c 0,0.661444 0.6614452,0.661444 0.6614452,0.661444 h 3.3072261 c 0,0 -0.6614453,0 -0.6614453,0.661445 v 0.661446 H 10.450835 V 12.43517 c 0,-0.661445 -0.6614452,-0.661445 -0.6614452,-0.661445 h 3.3072262 c 0.661446,0 0.661446,-0.661444 0.661446,-0.661444 V 4.4978282 c 0,0 0,-0.6614447 -0.661446,-0.6614447 z m 0.6614451,1.32289 H 12.435171 V 10.450835 H 4.4978279 Z" id="path5"/>
+</svg>

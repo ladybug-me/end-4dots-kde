@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="ppsspp.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="27.28934" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="35" inkscape:window-y="32" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;fill-opacity:1;stroke-width:0.267153" d="M 4.5406595,2.1098352 C 4.3491884,2.1611386 4.2363477,2.3565868 4.2876515,2.5480578 L 5.2679875,6.2067216 8.3355478,7.9777777 10.106604,4.9102186 9.1262681,1.251555 C 9.074963,1.0600834 8.8795162,0.94724244 8.6880455,0.99854643 Z M 1.2515549,7.8067315 C 1.0600843,7.8580359 0.94724254,8.0534834 0.99854672,8.2449542 L 2.1098351,12.392339 c 0.051304,0.191473 0.2467526,0.304314 0.4382232,0.25301 L 6.2067224,11.665012 7.9777785,8.5974522 4.9102185,6.8263963 Z M 10.726278,5.2679874 8.9552219,8.3355469 12.022781,10.106603 15.681446,9.126268 C 15.872914,9.074964 15.985757,8.8795154 15.934455,8.6880446 L 14.823164,4.5406596 C 14.771864,4.3491883 14.576413,4.2363467 14.384943,4.2876516 Z M 8.5974531,8.9552211 6.8263966,12.02278 7.806732,15.681444 c 0.051304,0.191469 0.2467522,0.304312 0.4382232,0.25301 L 12.39234,14.823163 c 0.191473,-0.05132 0.304312,-0.246749 0.25301,-0.438222 l -0.980337,-3.658664 z" id="path2" class="ColorScheme-Text"/>
+</svg>

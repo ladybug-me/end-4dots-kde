@@ -4,13 +4,17 @@ set -uo pipefail
 
 BUNDLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-LIB_DIR="$(dirname "${BASH_SOURCE[0]}")/scripts/lib"
+LIB_DIR="$BUNDLE_DIR/scripts/lib"
 
 source "$LIB_DIR/log.sh"
 # shellcheck source=scripts/lib/packages.sh
 source "$LIB_DIR/packages.sh"
+# shellcheck source=scripts/lib/panels.sh
+source "$LIB_DIR/panels.sh"
 # shellcheck source=scripts/lib/privileges.sh
 source "$LIB_DIR/privileges.sh"
+# shellcheck source=scripts/lib/selection.sh
+source "$LIB_DIR/selection.sh"
 
 section() {
     local title="$1"
@@ -101,7 +105,7 @@ if [[ -d "$BUNDLE_DIR/backups" ]]; then
             if [[ "$_bsel" == "0" ]]; then
                 SELECTED_BACKUP=""
                 break
-            elif [[ "$_bsel" -ge 1 ]] && [[ "$_bsel" -le "${#backups[@]}" ]]; then
+            elif [[ "$_bsel" =~ ^[0-9]+$ ]] && [[ "$_bsel" -ge 1 ]] && [[ "$_bsel" -le "${#backups[@]}" ]]; then
                 SELECTED_BACKUP="${backups[$((_bsel-1))]}"
                 SELECTED_KNSV="$(find "$SELECTED_BACKUP" -maxdepth 1 -type f -name '*.knsv' | head -n 1)"
                 if [[ -n "$SELECTED_KNSV" ]]; then
@@ -154,9 +158,9 @@ ensure_konsave() {
 }
 
 restore_or_remove() {
-    local name="$1"           # e.g. "fish"
-    local target="$2"         # full destination path
-    local backup_subdir="$3"  # "config" or "local"
+    local name="$1"
+    local target="$2"
+    local backup_subdir="$3"
     local backup_dir="$SELECTED_BACKUP"
 
     rm -rf "$target"
@@ -200,7 +204,7 @@ else
 fi
 
 pkill -f "caelestia shell" 2>/dev/null || true
-pkill -f "quickshell"      2>/dev/null || true
+pkill -f "quickshell.*caelestia" 2>/dev/null || true
 ok "Stopped any running shell processes"
 
 section "Step 2 - Remove Service and Autostart Files"
@@ -254,6 +258,16 @@ if [[ -d "$HOME/.local/lib/caelestia" ]]; then
     ok "Removed ~/.local/lib/caelestia"
 fi
 
+# Only the generated entries carry the Wayland interface declaration; a
+# user's own quickshell.desktop without it stays untouched.
+for desktop_file in quickshell.desktop org.quickshell.desktop; do
+    _df="$HOME/.local/share/applications/$desktop_file"
+    if [[ -f "$_df" ]] && grep -qE '^[[:space:]]*X-KDE-Wayland-Interfaces=' "$_df"; then
+        rm -f "$_df"
+        ok "Removed ~/.local/share/applications/$desktop_file"
+    fi
+done
+
 for qml_mod in Caelestia M3Shapes; do
     if [[ -d "$HOME/.local/lib/qt6/qml/$qml_mod" ]]; then
         rm -rf "$HOME/.local/lib/qt6/qml/$qml_mod"
@@ -263,7 +277,14 @@ done
 
 if [[ -d "$HOME/.local/share/caelestia-shell" ]]; then
     rm -rf "$HOME/.local/share/caelestia-shell"
-    ok "Removed ~/.local/share/caelestia-shell"
+    ok "Removed legacy ~/.local/share/caelestia-shell"
+fi
+
+# Caelestia's data dir: desktop icon layout, startup task list and the
+# legacy asset drops older installers left behind.
+if [[ -d "$HOME/.local/share/caelestia" ]]; then
+    rm -rf "$HOME/.local/share/caelestia"
+    ok "Removed ~/.local/share/caelestia"
 fi
 
 if [[ -d "$HOME/.local/share/plasma/shells/caelestia.desktop" ]]; then
@@ -279,22 +300,6 @@ if [[ -d "$HOME/.local/share/plasma/wallpapers/net.dosowisko.PlasmaApplicationWa
     ok "Removed Plasma wallpaper plugin: net.dosowisko.PlasmaApplicationWallpaper"
 fi
 rm -f "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/wallpaper-plugin-installed"
-
-VENV_DIR="$(eval echo "${ILLOGICAL_IMPULSE_VIRTUAL_ENV:-${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/.venv}")"
-if [[ -d "$VENV_DIR" ]]; then
-    rm -rf "$VENV_DIR"
-    ok "Removed Python virtual environment: $VENV_DIR"
-fi
-
-if [[ -d "${XDG_STATE_HOME:-$HOME/.local/state}/quickshell" ]]; then
-    rm -rf "${XDG_STATE_HOME:-$HOME/.local/state}/quickshell"
-    ok "Removed ~/.local/state/quickshell"
-fi
-
-if [[ -d "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia" ]]; then
-    rm -rf "${XDG_STATE_HOME:-$HOME/.local/state}/caelestia"
-    ok "Removed ~/.local/state/caelestia"
-fi
 
 section "Step 4 - Remove Bridge Scripts"
 
@@ -402,6 +407,20 @@ if [[ -z "$SELECTED_KNSV" ]]; then
     fi
 fi
 
+# The installer wipes the panels from the running plasmashell, so without a
+# backup there is nothing to restore and the user ends up on a blank desktop.
+# Hand back a plain stock panel instead (issue #854).
+if [[ "$THEME_RESTORED_FROM_BACKUP" != "true" ]] && pgrep -x plasmashell >/dev/null 2>&1; then
+    _qdbus="$(command -v qdbus6 || command -v qdbus || true)"
+    if [[ -n "$_qdbus" ]]; then
+        if "$_qdbus" org.kde.plasmashell /PlasmaShell evaluateScript "$(stock_panel_script)" 2>/dev/null; then
+            ok "Created a default bottom panel (no backup was available)"
+        else
+            warn "Could not create a default panel. Add one via Edit Mode if the desktop is empty."
+        fi
+    fi
+fi
+
 kwriteconfig6 --file kwinrc --group "Plugins" --key "quickshell-kde-bridgeEnabled" "false" 2>/dev/null || true
 kwriteconfig6 --file kwinrc --group "Plugins" --key "krohnkiteEnabled"             "false" 2>/dev/null || true
 kwriteconfig6 --file kwinrc --group "Plugins" --key "kwin_workspace_trackerEnabled" "false" 2>/dev/null || true
@@ -465,12 +484,16 @@ kwriteconfig6 --file kscreenlockerrc --group Greeter --group LnF --group General
 kwriteconfig6 --file kscreenlockerrc --group Greeter --group LnF --group General --key showMediaControls --delete 2>/dev/null || true
 ok "Restored stock KDE lock screen configuration."
 
-kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "1" 2>/dev/null || true
-kwriteconfig6 --file kwinrc --group "Desktops" --key "Rows"   "1" 2>/dev/null || true
-for i in $(seq 1 5); do
-    kwriteconfig6 --file kwinrc --group "Desktops" --key "Name_$i" "Desktop $i" 2>/dev/null || true
-done
-ok "Restored desktop count to 1"
+# Leave the restored desktop layout alone; forcing it back to one desktop
+# would clobber what the backup just put back.
+if [[ "$THEME_RESTORED_FROM_BACKUP" != "true" ]]; then
+    kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "1" 2>/dev/null || true
+    kwriteconfig6 --file kwinrc --group "Desktops" --key "Rows"   "1" 2>/dev/null || true
+    for i in $(seq 1 5); do
+        kwriteconfig6 --file kwinrc --group "Desktops" --key "Name_$i" "Desktop $i" 2>/dev/null || true
+    done
+    ok "Restored desktop count to 1"
+fi
 
 for i in $(seq 1 5); do
     kwriteconfig6 --file kglobalshortcutsrc --group "kwin" \
@@ -484,12 +507,6 @@ _bk_dir="$SELECTED_BACKUP"
 if [[ -n "$_bk_dir" ]] && [[ -f "$_bk_dir/.config/kglobalshortcutsrc" ]]; then
     cp "$_bk_dir/.config/kglobalshortcutsrc" "$HOME/.config/kglobalshortcutsrc"
     ok "Restored kglobalshortcutsrc from backup"
-elif ls "$BUNDLE_DIR/backups/kglobalshortcutsrc_"* >/dev/null 2>&1; then
-    _bk_file="$(ls -t "$BUNDLE_DIR/backups/kglobalshortcutsrc_"* 2>/dev/null | head -1)"
-    if [[ -f "$_bk_file" ]]; then
-        cp "$_bk_file" "$HOME/.config/kglobalshortcutsrc"
-        ok "Restored kglobalshortcutsrc from $( basename "$_bk_file")"
-    fi
 fi
 
 rm -f "$HOME/.local/share/konsole/MaterialYou.colorscheme"
@@ -502,8 +519,10 @@ ok "Removed Konsole profiles generated by Caelestia"
 _DARKLY_GTK_THEME="${XDG_DATA_HOME:-$HOME/.local/share}/themes/Darkly"
 _GTK4_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/gtk-4.0"
 if [[ -d "$_DARKLY_GTK_THEME" ]]; then
-    rm -rf "$_DARKLY_GTK_THEME"
-    ok "Removed Darkly GTK theme"
+    # The installer skips Darkly when the theme already existed, so a local
+    # copy here may be the user's own build. Leave it; the distro darkly
+    # package is handled through the package removal step instead.
+    info "Leaving $_DARKLY_GTK_THEME in place (delete manually if you want)."
 fi
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/desktoptheme/Darkly" 2>/dev/null || true
 rm -f "${XDG_DATA_HOME:-$HOME/.local/share}/plasma/desktoptheme/darkly" 2>/dev/null || true
@@ -592,7 +611,7 @@ if [[ -z "$_RESTORE_SHELL" ]]; then
 fi
 
 if [[ -n "$_RESTORE_SHELL" ]]; then
-    caelestia_sudo chsh -s "$_RESTORE_SHELL" "$USER" 2>/dev/null || \
+    caelestia_sudo chsh -s "$_RESTORE_SHELL" "$(id -un)" 2>/dev/null || \
         warn "Could not change login shell to $_RESTORE_SHELL. Run: chsh -s $_RESTORE_SHELL"
     ok "Login shell reverted to $_RESTORE_SHELL"
 fi
@@ -603,11 +622,6 @@ else
     if [[ -f "$HOME/.bashrc" ]]; then
         sed -i '/export QML2_IMPORT_PATH=.*caelestia\|export CAELESTIA_LIB_DIR=/d' "$HOME/.bashrc" 2>/dev/null || true
         ok "Removed Caelestia env vars from ~/.bashrc"
-    fi
-
-    if [[ -f "$HOME/.config/environment.d/caelestia.conf" ]]; then
-        rm -f "$HOME/.config/environment.d/caelestia.conf"
-        ok "Removed the Caelestia environment file"
     fi
 
     if [[ -f "$HOME/.config/fish/config.fish" ]]; then
@@ -621,6 +635,19 @@ else
     fi
 fi
 
+# These two are written unconditionally by 08-build-shell.sh, independently of any
+# rc file, so an exact rc restore must not keep them either.
+if [[ -f "$HOME/.config/environment.d/caelestia.conf" ]]; then
+    rm -f "$HOME/.config/environment.d/caelestia.conf"
+    ok "Removed the Caelestia environment file"
+fi
+
+if [[ -f "$HOME/.config/plasma-workspace/env/caelestia.sh" ]]; then
+    rm -f "$HOME/.config/plasma-workspace/env/caelestia.sh"
+    rmdir "$HOME/.config/plasma-workspace/env" 2>/dev/null || true
+    ok "Removed the Caelestia Plasma session environment script"
+fi
+
 section "Step 8 - Remove System-level Files"
 
 if [[ -f /etc/keyd/quickshell.conf ]]; then
@@ -629,11 +656,13 @@ if [[ -f /etc/keyd/quickshell.conf ]]; then
     caelestia_sudo rmdir /etc/keyd 2>/dev/null || true
 fi
 
-if [[ -f /etc/udev/rules.d/80-uinput.rules ]]; then
-    caelestia_sudo rm -f /etc/udev/rules.d/80-uinput.rules
-    caelestia_sudo udevadm control --reload-rules 2>/dev/null || true
-    ok "Removed udev rule: 80-uinput.rules"
-fi
+for uinput_rule in /etc/udev/rules.d/70-uinput.rules /etc/udev/rules.d/80-uinput.rules; do
+    if [[ -f "$uinput_rule" ]]; then
+        caelestia_sudo rm -f "$uinput_rule"
+        caelestia_sudo udevadm control --reload-rules 2>/dev/null || true
+        ok "Removed udev rule: $(basename "$uinput_rule")"
+    fi
+done
 
 CCACHE_FLAG="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/ccache-enabled"
 if [[ -f "$CCACHE_FLAG" ]] && [[ -f /etc/makepkg.conf ]]; then
@@ -743,8 +772,10 @@ fi
 
 rm -f "$HOME/.config/caelestia/templates/sddm-theme.conf"
 
-for link in /usr/local/bin/sass /usr/local/bin/qdbus6 /usr/local/bin/caelestia /usr/local/bin/wl-clip-persist /usr/local/bin/gpu-screen-recorder /usr/local/bin/matugen /usr/local/bin/app2unit; do
-    if [[ -L "$link" || -f "$link" ]]; then
+for link in /usr/local/bin/sass /usr/local/bin/qdbus6 /usr/local/bin/caelestia /usr/local/bin/wl-clip-persist /usr/local/bin/gpu-screen-recorder; do
+    # The installer only ever creates symlinks here; a regular file at one of
+    # these names belongs to the user and stays.
+    if [[ -L "$link" ]]; then
         caelestia_sudo rm -f "$link"
         ok "Removed: $link"
     fi
@@ -757,19 +788,9 @@ for effect_lib in /usr/lib/qt6/plugins/kwin/effects/plugins/kwin_workspace_track
     fi
 done
 
-if [[ -f "$HOME/.cargo/bin/satty" ]]; then
-    rm -f "$HOME/.cargo/bin/satty"
-    ok "Removed: satty (cargo)"
-fi
-
-if [[ -f "$HOME/.cargo/bin/matugen" ]]; then
-    rm -f "$HOME/.cargo/bin/matugen"
-    ok "Removed: matugen (cargo)"
-fi
-
-if groups "$USER" | grep -q '\binput\b'; then
-    caelestia_sudo gpasswd -d "$USER" input 2>/dev/null || \
-        warn "Could not remove $USER from input group. Run: sudo gpasswd -d $USER input"
+if groups "$(id -un)" | grep -q '\binput\b'; then
+    caelestia_sudo gpasswd -d "$(id -un)" input 2>/dev/null || \
+        warn "Could not remove the user from input group. Run: sudo gpasswd -d $(id -un) input"
     ok "Removed $USER from 'input' group (takes effect on next login)"
 fi
 
@@ -783,48 +804,39 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     # fish is absent on purpose even though the installer offers it: it may be the
     # user's login shell, and removing it locks them out of the machine.
     ARCH_PACKAGES=(
-        quickshell matugen uv
-        foot kitty eza fastfetch starship btop
+        quickshell matugen
+        foot eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit libcava
         brightnessctl ddcutil tesseract tesseract-data-eng
-        bat ripgrep lazygit jq go-yq trash-cli inotify-tools
+        bat ripgrep lazygit jq trash-cli inotify-tools
         imagemagick sassc xdg-utils xdg-user-dirs spectacle
-        playerctl pavucontrol-qt songrec translate-shell upower
-        wf-recorder wlogout wtype ydotool
         adw-gtk-theme papirus-icon-theme darkly darkly-bin
         ttf-jetbrains-mono-nerd ttf-material-symbols-variable
-        ttf-rubik-vf ttf-cascadia-code-nerd ttf-readex-pro
-        ttf-twemoji otf-space-grotesk
+        ttf-rubik-vf ttf-cascadia-code-nerd
     )
 
     FEDORA_PACKAGES=(
-        quickshell-git matugen uv
-        foot kitty eza fastfetch starship btop
+        quickshell-git matugen
+        foot eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder gpu-screen-recorder-ui slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit libcava libcava-devel
         brightnessctl ddcutil tesseract tesseract-langpack-eng
         bat ripgrep jq trash-cli inotify-tools
         ImageMagick sassc xdg-utils xdg-user-dirs spectacle
-        playerctl songrec translate-shell upower wf-recorder
-        wlogout wtype ydotool microtex
-        adw-gtk3-theme papirus-icon-theme darkly bibata-cursor-theme breeze-plus-icon-theme
-        google-rubik-fonts florian-karsten-space-grotesk-fonts
-        readex-pro-fonts-all twitter-twemoji-fonts
+        adw-gtk3-theme papirus-icon-theme darkly
+        google-rubik-fonts
     )
 
     DEBIAN_PACKAGES=(
-        quickshell matugen uv konsave
-        foot kitty eza fastfetch starship btop
+        quickshell matugen
+        foot eza fastfetch starship btop
         fuzzel swappy satty gpu-screen-recorder slurp grim
         wl-clipboard cliphist wl-clip-persist app2unit cava libcava
         brightnessctl ddcutil tesseract-ocr tesseract-ocr-eng
         jq yq trash-cli inotify-tools
         imagemagick sassc xdg-utils kde-spectacle
-        playerctl pavucontrol-qt translate-shell upower
-        wf-recorder wtype ydotool
         adw-gtk3 adw-gtk3-theme papirus-icon-theme darkly
-        bibata-cursor-theme fonts-twemoji
     )
 
     # One flow for all three: the distro only decides which list to walk and which
@@ -850,21 +862,38 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     esac
 
     if [[ ${#_pkg_list[@]} -gt 0 ]]; then
-        warn "The following packages will be removed:"
-        printf '  %s\n' "${_pkg_list[@]}"
-        echo
-        read -r -p "Proceed? [y/N]: " _pkg_confirm
-        if [[ "${_pkg_confirm,,}" == "y" || "${_pkg_confirm,,}" == "yes" ]]; then
-            mapfile -t _installed < <(filter_installed "${_pkg_list[@]}")
-            if [[ ${#_installed[@]} -gt 0 ]]; then
-                "${_remove_cmd[@]}" "${_installed[@]}" 2>/dev/null || \
-                    warn "Some packages could not be removed automatically. Check manually."
-                ok "$BASE_DISTRO packages removed"
-            else
-                skip "None of the listed packages are installed"
-            fi
+        mapfile -t _installed < <(filter_installed "${_pkg_list[@]}")
+        if [[ ${#_installed[@]} -eq 0 ]]; then
+            skip "None of the listed packages are installed"
         else
-            skip "Package removal skipped"
+            warn "Packages installed by caelestia that are also common desktop tools:"
+            for _i in "${!_installed[@]}"; do
+                printf '  %2d) %s\n' "$((_i + 1))" "${_installed[_i]}"
+            done
+            echo "  Enter the numbers to remove (e.g. 1 3 5-9), 'all' for every package,"
+            echo "  or press Enter to keep them all."
+
+            _selected=()
+            read -r -p "Selection [keep all]: " _pkg_choice || _pkg_choice=""
+            case "${_pkg_choice,,}" in
+                all|a)
+                    _selected=("${_installed[@]}")
+                ;;
+                *)
+                    mapfile -t _idx < <(select_indices "${#_installed[@]}" "$_pkg_choice")
+                    for _n in "${_idx[@]}"; do
+                        _selected+=("${_installed[_n]}")
+                    done
+                ;;
+            esac
+
+            if [[ ${#_selected[@]} -gt 0 ]]; then
+                "${_remove_cmd[@]}" "${_selected[@]}" 2>/dev/null || \
+                    warn "Some packages could not be removed automatically. Check manually."
+                ok "Removed ${#_selected[@]} package(s)"
+            else
+                skip "Package removal skipped"
+            fi
         fi
     fi
 
@@ -875,9 +904,10 @@ if [[ "$REMOVE_PACKAGES" == "true" ]]; then
     fi
 
     if command -v uv >/dev/null 2>&1; then
+        # konsave is deliberately absent: the installer runs it from its own
+        # venv, so a uv-installed konsave belongs to the user.
         uv tool uninstall kde-material-you-colors 2>/dev/null || true
-        uv tool uninstall konsave 2>/dev/null || true
-        ok "Removed uv tools: kde-material-you-colors, konsave"
+        ok "Removed uv tools: kde-material-you-colors"
     fi
 
     if command -v kpackagetool6 >/dev/null 2>&1; then
@@ -908,6 +938,14 @@ if [[ -d "$CACHE_DIR" ]]; then
     else
         skip "Kept installer cache at $CACHE_DIR"
     fi
+fi
+
+# Runtime state the color pipeline, recorder and installer stages regenerate on
+# demand: scheme.json, wallpaper state, rendered theme, recorder pid/lock files.
+STATE_DIR="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia"
+if [[ -d "$STATE_DIR" ]]; then
+    rm -rf "$STATE_DIR"
+    ok "Removed $STATE_DIR"
 fi
 
 section "Step 11 - Reload KDE"

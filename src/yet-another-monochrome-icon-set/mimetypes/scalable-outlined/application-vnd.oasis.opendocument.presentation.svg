@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" id="svg73" sodipodi:docname="application-x-cmakecache.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <metadata id="metadata77">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview pagecolor="#f5f7fa" bordercolor="#666666" borderopacity="1" objecttolerance="10" gridtolerance="10" guidetolerance="10" inkscape:pageopacity="0" inkscape:pageshadow="2" inkscape:window-width="1183" inkscape:window-height="669" id="namedview75" showgrid="false" inkscape:zoom="4.4470387" inkscape:cx="19.451146" inkscape:cy="8.3201435" inkscape:window-x="107" inkscape:window-y="141" inkscape:window-maximized="0" inkscape:current-layer="g877" inkscape:document-rotation="0" inkscape:pagecheckerboard="0" inkscape:showpageshadow="2" inkscape:deskcolor="#d1d1d1"/>
+  <defs id="defs29">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <g id="g877" transform="matrix(1.1,0,0,1.1,-3.1845928,-3.2065454)" style="">
+    <path style="opacity:1;baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:currentColor;enable-background:accumulate;stop-color:#000000;stop-opacity:1" d="m 19.662109,8.8378906 c -3.322035,0 -6.02539,2.6861674 -6.02539,5.9980474 v 34.572265 c 0,3.31188 2.703355,6 6.02539,6 h 24.738282 c 3.322035,0 6.027343,-2.68812 6.027343,-6 V 14.835938 c 0,-3.31188 -2.705308,-5.9980474 -6.027343,-5.9980474 z m 0,1.6347654 h 24.738282 c 2.448644,0 4.390625,1.933707 4.390625,4.363282 v 34.572265 c 0,2.429575 -1.941981,4.363281 -4.390625,4.363281 H 19.662109 c -2.448644,0 -4.390625,-1.933706 -4.390625,-4.363281 V 14.835938 c 0,-2.429575 1.941981,-4.363282 4.390625,-4.363282 z" class="ColorScheme-Text" id="rect246"/>
+  <g id="g165" transform="matrix(0.45699841,0,0,0.43439959,17.149039,16.745845)" style="fill:currentColor;stroke:none;stroke-width:1.47254;stroke-dasharray:none;stroke-opacity:0.3" class="ColorScheme-Text">
+      <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:1.47254;stroke-dasharray:none;stroke-opacity:0.3" d="M 15.170846,38.133302 C 11.199239,37.672223 7.7486921,34.768233 6.4275421,30.774917 5.9747891,29.406424 5.9070951,28.926816 5.9082011,27.09547 c 9.29e-4,-1.536469 0.01768,-1.741851 0.206696,-2.534896 0.526015,-2.206928 1.531736,-4.005608 3.113581,-5.568473 1.1580989,-1.144205 2.7209029,-2.073438 4.2218379,-2.510277 0.753373,-0.219265 1.973196,-0.427682 2.507471,-0.428423 l 0.330498,-4.59e-4 v 5.560147 5.560146 h 5.256069 5.25607 l -0.05357,0.680437 c -0.119163,1.513441 -0.566427,3.181939 -1.181411,4.407198 -2.022299,4.029114 -6.156084,6.364499 -10.394592,5.872433 z" id="path90" class="ColorScheme-Text"/>
+      <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:1.47254;stroke-dasharray:none;stroke-opacity:0.3" d="M 32.074433,33.355494 V 31.29474 h 13.103281 13.10328 v 2.060754 2.060753 H 45.177714 32.074433 Z" id="path129" class="ColorScheme-Text"/>
+      <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:1.47254;stroke-dasharray:none;stroke-opacity:0.3" d="m 32.074433,20.874328 v -2.021871 h 13.103281 13.10328 V 20.874328 22.8962 H 45.177714 32.074433 Z" id="path168-3" class="ColorScheme-Text"/>
+      <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:1.47254;stroke-dasharray:none;stroke-opacity:0.3" d="M 8.4340931,45.875542 V 43.814789 H 28.108455 47.782817 v 2.060753 2.060754 H 28.108455 8.4340931 Z" id="path207" class="ColorScheme-Text"/>
+    </g>
+  </g>
+</svg>

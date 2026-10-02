@@ -1,0 +1,15 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="enve.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="4.3531261" inkscape:cx="16.195258" inkscape:cy="27.796116" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="35" inkscape:window-y="32" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path99" style="fill:currentColor;stroke-width:0.0288699;stroke-opacity:0.6" d="M 10.636646,1.3825619 C 8.3087599,1.3659252 6.2741966,1.8929124 4.7338672,2.9161847 4.1127336,3.3288167 3.1756418,4.2595296 2.772165,4.8641417 1.8981297,6.1738862 1.4088067,7.7207757 1.337707,9.4031551 1.296701,10.373452 1.368564,10.815378 1.6862575,11.544532 c 0.9031701,2.072912 3.2375815,3.707012 5.8693973,4.110933 0.37829,0.05806 1.7395346,0.02937 2.349526,-0.05007 1.9079432,-0.24852 3.9977552,-0.96458 5.0250212,-1.722135 0.794641,-0.586007 0.901785,-1.183037 0.327932,-1.8213 -0.339784,-0.377929 -0.829312,-0.594776 -1.419731,-0.629362 l -0.443789,-0.02554 -1.086889,0.522337 c -1.51072,0.726737 -2.185685,0.920417 -3.4059776,0.976923 -0.4563963,0.02113 -0.8313385,0.0072 -1.0672524,-0.03927 C 7.1094043,12.724408 6.3345676,12.27042 5.6489353,11.584788 5.3332858,11.269137 4.8416885,10.673811 4.8418685,10.607864 c 3.51e-5,-0.013 0.7075545,-0.0253 1.5728965,-0.02651 1.6728845,-0.0023 2.2705094,-0.05534 3.2645941,-0.289641 C 10.590059,10.077069 12.063818,9.4385435 13.069629,8.8228918 14.883785,7.7124541 15.740765,6.2950007 15.617485,4.607883 15.460306,2.4568394 14.127355,1.5075217 11.105962,1.3933623 10.948228,1.3873963 10.791839,1.3836723 10.636646,1.3825703 Z M 8.4481411,2.8759296 c 0.8087597,0 1.4531699,0.2661346 2.0235569,0.836522 0.570387,0.5703872 0.836522,1.2138159 0.836522,2.0225752 0,1.2340639 -0.855706,2.3793693 -2.0206118,2.7039681 C 8.5366339,8.6482533 7.8759646,8.5933652 7.2090678,8.2652107 5.7069009,7.5260504 5.1603431,5.5963665 6.0573777,4.1984588 6.5775082,3.3879053 7.5030982,2.8759296 8.4481411,2.8759296 Z" class="ColorScheme-Text"/>
+</svg>

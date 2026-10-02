@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="svg3297"
+   height="64"
+   width="64"
+   version="1.0"
+   sodipodi:docname="krdc.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="13.09375"
+     inkscape:cx="35.398568"
+     inkscape:cy="31.045346"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3297" />
+  <metadata
+     id="metadata58">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3299">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <path
+     id="path5"
+     d="M 2,7.0000315 V 52.000032 h 22.502438 v 1.020512 1.362299 0.117125 H 18.25 v 2.5 h 27.5 v -2.5 h -6.247563 v -0.117124 -1.3623 -1.020512 H 62 V 7.0000315 Z M 4.5024375,9.497594 H 59.502437 v 37.5 H 4.5024375 Z m 28.7499995,8.75 c -5.558162,0 -11.115837,2.119263 -15.356449,6.359863 l 2.790537,2.792975 c 6.938563,-6.938538 18.193249,-6.938538 25.131825,0 l 2.790538,-2.792975 C 44.368287,20.366857 38.8106,18.247594 33.252437,18.247594 Z m 0,7.897951 c -3.537325,0 -7.075012,1.349912 -9.77295,4.047849 l 2.792975,2.790525 c 3.853201,-3.853201 10.106763,-3.853201 13.95995,0 l 2.792975,-2.790525 c -2.697937,-2.697937 -6.235612,-4.047849 -9.77295,-4.047849 z m 0,7.897949 c -1.5165,0 -3.034188,0.578138 -4.189449,1.733399 l 4.189449,4.189451 4.18945,-4.189451 c -1.155262,-1.155261 -2.67295,-1.733399 -4.18945,-1.733399 z"
+     style="fill:currentColor"
+     class="ColorScheme-Text" />
+</svg>

@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="applications-multimedia.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="29.64467" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;stroke:none;stroke-width:0.334153;stroke-dasharray:none;stroke-opacity:0.3" d="M 3.9563752,3.1749376 V 13.758062 H 12.976647 V 3.1749376 H 12.41288 V 3.8363827 H 11.849112 V 3.1749376 H 5.0839093 V 3.8363827 H 4.5201418 L 4.5200295,3.1749376 H 3.9563525 Z M 6.211443,4.4978277 h 4.510136 V 7.8050549 H 6.211443 Z M 4.5200295,5.1592734 H 5.0837967 V 6.4821641 H 4.5200295 Z m 7.3289705,0 h 0.563768 V 6.4821641 H 11.849 Z M 4.5200295,7.8050549 H 5.0837967 V 9.1279452 H 4.5200295 Z m 7.3289705,0 h 0.563768 V 9.1279452 H 11.849 Z M 6.2113302,9.1279452 H 10.721465 V 12.435172 H 6.2113302 Z M 4.5199161,10.450836 h 0.5637676 v 1.322891 H 4.5199161 Z m 7.3289719,0 h 0.563766 v 1.322891 h -0.563766 z m -7.3289719,2.645783 h 0.5637676 v 0.661443 H 4.5199161 Z m 7.3289719,0 h 0.563766 v 0.661443 h -0.563766 z" id="path4" class="ColorScheme-Text"/>
+  </svg>

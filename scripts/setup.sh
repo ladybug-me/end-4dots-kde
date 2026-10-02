@@ -19,6 +19,8 @@ flock -n 9 || { echo "Another Caelestia setup is already running."; exit 1; }
 source "$SCRIPTS_DIR/lib/privileges.sh"
 # shellcheck source=scripts/lib/packages.sh
 source "$SCRIPTS_DIR/lib/packages.sh"
+# shellcheck source=scripts/lib/download.sh
+source "$SCRIPTS_DIR/lib/download.sh"
 
 run_arch_pacman_install() {
     local -a pkgs=("$@")
@@ -118,19 +120,31 @@ try_download_prebuilt_installer() {
         *) return 1 ;;
     esac
 
-    local version tag tmp_bin url
+    local version tag tmp_bin url status=0
     version="$(tui_version)"
     tag="$(release_tag)"
     [[ -n "$version" && -n "$tag" ]] || return 1
     tmp_bin="$(mktemp)"
     url="https://github.com/ladybug-me/caelestia-kde/releases/download/${tag}/caelestia-install-${arch}-v${version}"
-    if curl -fsSL --connect-timeout 10 --max-time 30 "$url" -o "$tmp_bin" 2>/dev/null; then
-        chmod +x "$tmp_bin"
-        printf '%s\n' "$tmp_bin"
-        return 0
+    if ! fetch_asset "$url" "$tmp_bin" --max-time 30 2>/dev/null; then
+        rm -f "$tmp_bin"
+        return 1
     fi
-    rm -f "$tmp_bin"
-    return 1
+
+    verify_download "$url" "$tmp_bin" || status=$?
+    if [[ "$status" -eq 1 ]]; then
+        echo "[WARN]  Checksum mismatch for the prebuilt installer - compiling locally." >&2
+    elif [[ "$status" -eq 2 ]]; then
+        echo "[WARN]  No published checksum for the prebuilt installer - compiling locally." >&2
+    fi
+    if [[ "$status" -ne 0 ]]; then
+        rm -f "$tmp_bin"
+        return 1
+    fi
+
+    chmod +x "$tmp_bin"
+    printf '%s\n' "$tmp_bin"
+    return 0
 }
 
 start_spinner() {
@@ -156,10 +170,18 @@ stop_spinner() {
 }
 
 start_spinner
+# The full cleanup trap lands later; until then a Ctrl-C must still stop
+# the spinner and hand the terminal back.
+trap 'stty sane 2>/dev/null || true; tput cnorm 2>/dev/null || true; kill "${SPINNER_PID:-}" 2>/dev/null || true' EXIT
 
 PREBUILT_BIN=""
 if [[ -z "${CAELESTIA_FORCE_BUILD_INSTALLER:-}" ]] && command -v curl >/dev/null 2>&1; then
     PREBUILT_BIN="$(try_download_prebuilt_installer || true)"
+fi
+
+if [[ -n "$PREBUILT_BIN" && ! -x "$PREBUILT_BIN" ]]; then
+    echo "[WARN]  The prebuilt installer download did not produce a binary; compiling locally." >&2
+    PREBUILT_BIN=""
 fi
 
 if [[ -n "$PREBUILT_BIN" ]]; then
@@ -200,7 +222,7 @@ else
         fi
 
         BUILD_DIR="$BUNDLE_DIR/installer/build"
-        BUILD_LOG="/tmp/caelestia_build.log"
+        BUILD_LOG="$(mktemp "${TMPDIR:-/tmp}/caelestia-build.XXXXXX.log")"
         # Configure from a clean directory: cmake bakes absolute source paths into
         # CMakeCache.txt and refuses to configure over a cache naming a different tree.
         # One checkout routinely has two names here - ~/Desktop/caelestia-kwin and
@@ -234,6 +256,8 @@ fi
 
 cleanup_install_state() {
     stty sane 2>/dev/null || true
+    kill "${SPINNER_PID:-}" 2>/dev/null || true
+    rm -f "${BUILD_LOG:-}" "${ERR_LOG:-}" 2>/dev/null || true
     tput cnorm 2>/dev/null || true
     printf '\033[0m\033[?1049l\033[?25h' 2>/dev/null || true
 
@@ -268,12 +292,15 @@ if [[ ! -x "$BIN" ]]; then
 fi
 
 _installer_start=$(date +%s)
-"$BIN" "$@" 2>/tmp/caelestia_installer_err.log
+ERR_LOG="$(mktemp "${TMPDIR:-/tmp}/caelestia-installer-err.XXXXXX.log")"
+set +e
+"$BIN" "$@" 2>"$ERR_LOG"
 _exit_code=$?
+set -e
 _installer_elapsed=$(($(date +%s) - _installer_start))
 
 _reached_done=0
-if grep -q '\[installer\] done (success)' /tmp/caelestia_installer_err.log 2>/dev/null; then
+if grep -q '\[installer\] done (success)' "$ERR_LOG" 2>/dev/null; then
     _reached_done=1
 fi
 
@@ -303,9 +330,9 @@ if [[ $_show_diagnostic -eq 1 ]]; then
     echo "============================================================"
     echo ""
 
-    if [[ -s /tmp/caelestia_installer_err.log ]]; then
+    if [[ -s "$ERR_LOG" ]]; then
         echo "--- stderr output ---"
-        cat /tmp/caelestia_installer_err.log
+        cat "$ERR_LOG"
         echo "--- end stderr ------"
         echo ""
     else

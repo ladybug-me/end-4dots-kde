@@ -12,6 +12,8 @@ source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/sc
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/packages.sh"
 # shellcheck source=scripts/lib/darkly.sh
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/darkly.sh"
+# shellcheck source=scripts/lib/matugen.sh
+source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/matugen.sh"
 
 darkly_rpm_asset_url() {
     local release_json ver url
@@ -37,10 +39,8 @@ PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 
 CORE_PACKAGES=(
     cmake ninja-build ccache qt6-qttools-devel extra-cmake-modules libgcc glibc
-    bc coreutils rsync jemalloc breakpad libunwind-devel
 
     wl-clipboard cliphist wl-clip-persist inotify-tools wireplumber trash-cli jq
-    libdbusmenu-gtk3-devel
 
     aubio aubio-devel lm_sensors lm_sensors-devel pipewire-devel
     pulseaudio-qt-qt6-devel pulseaudio-libs-devel fftw-devel
@@ -48,8 +48,6 @@ CORE_PACKAGES=(
     qt6-qtbase qt6-qtbase-private-devel qt6-qtdeclarative qt6-qtdeclarative-devel
     qt6-qtwayland qt6-qtwayland-devel qt6-qtsvg qt6-qtsvg-devel qt6-qtshadertools-devel
     qt6-qtmultimedia-devel qt6-qt5compat-devel qt6-qtimageformats
-    qt6-qtpositioning qt6-qtquicktimeline qt6-qtsensors qt6-qttranslations qt6-qtvirtualkeyboard
-    qt5-qtwayland
 
     kf6-kglobalaccel-devel kf6-kwindowsystem-devel kf6-kguiaddons-devel
     kf6-kcoreaddons-devel kwin-devel kf6-kconfig-devel
@@ -57,19 +55,16 @@ CORE_PACKAGES=(
     libepoxy-devel libdrm-devel
 
     libqalculate libqalculate-devel libsecret vulkan-headers ksshaskpass libX11-devel
-    wayland-devel libxcb
 )
 
 SHELL_PACKAGES=(
-    clang uv gobject-introspection-devel gtk4-devel
-    libadwaita-devel libsoup3-devel libportal-gtk4
-    foot kitty eza fastfetch starship btop bash matugen
+    foot eza fastfetch starship btop bash
+    pciutils
 )
 
 THEME_PACKAGES=(
-    adw-gtk3-theme bibata-cursor-theme breeze-plus-icon-theme fontconfig
-    google-rubik-fonts florian-karsten-space-grotesk-fonts readex-pro-fonts-all twitter-twemoji-fonts
-    google-noto-sans-fonts google-noto-sans-cjk-fonts google-noto-emoji-fonts
+    adw-gtk3-theme google-rubik-fonts google-noto-sans-fonts
+    google-noto-sans-cjk-ttc-fonts google-noto-emoji-fonts
 )
 
 UTILITY_PACKAGES=(
@@ -77,13 +72,10 @@ UTILITY_PACKAGES=(
     tesseract tesseract-langpack-eng spectacle gpu-screen-recorder
     slurp grim brightnessctl power-profiles-daemon
     xdg-utils sassc bat ripgrep xdg-user-dirs
-    geoclue2 glib2 gnome-keyring microtex playerctl
-    songrec translate-shell upower wf-recorder
-    wlogout wtype xdg-desktop-portal xdg-desktop-portal-gtk ydotool
 )
 
 COPR_CORE=(app2unit libcava)
-COPR_SHELL=(quickshell-git)
+COPR_SHELL=(quickshell-git matugen)
 COPR_UTILS=()
 
 PACKAGES=()
@@ -94,7 +86,7 @@ case "$PACKAGE_GROUP" in
     themes) PACKAGES=("${THEME_PACKAGES[@]}");  COPR_PKGS=() ;;
     utils)  PACKAGES=("${UTILITY_PACKAGES[@]}"); COPR_PKGS=("${COPR_UTILS[@]}") ;;
     all|*)  PACKAGES=("${CORE_PACKAGES[@]}" "${SHELL_PACKAGES[@]}" "${THEME_PACKAGES[@]}" "${UTILITY_PACKAGES[@]}")
-            COPR_PKGS=("quickshell-git" "gpu-screen-recorder" "app2unit" "starship" "libcava" "wl-clip-persist") ;;
+            COPR_PKGS=("quickshell-git" "gpu-screen-recorder" "app2unit" "starship" "libcava" "wl-clip-persist" "matugen") ;;
 esac
 
 if [[ "$PACKAGE_GROUP" == "all" || "$PACKAGE_GROUP" == "core" ]]; then
@@ -171,7 +163,12 @@ for pkg in "${COPR_PKGS[@]}"; do
     done
     if [[ "$_needed" == "no" ]]; then continue; fi
 
-    if package_present "$pkg" || command -v "$pkg" >/dev/null 2>&1; then
+    if [[ "$pkg" == "matugen" ]]; then
+        if package_present matugen; then
+            cleanup_legacy_cargo_matugen
+            continue
+        fi
+    elif package_present "$pkg" || command -v "$pkg" >/dev/null 2>&1; then
         continue
     fi
 
@@ -182,6 +179,9 @@ for pkg in "${COPR_PKGS[@]}"; do
     fi
 
     if caelestia_sudo dnf install -y "$pkg" 2>/dev/null; then
+        if [[ "$pkg" == "matugen" ]] && package_present matugen; then
+            cleanup_legacy_cargo_matugen
+        fi
         continue
     fi
 
@@ -190,6 +190,11 @@ for pkg in "${COPR_PKGS[@]}"; do
     case "$pkg" in
         quickshell-git|quickshell)
             if caelestia_sudo dnf copr enable -y errornointernet/quickshell && caelestia_sudo dnf install -y quickshell-git; then
+                COPR_FAILED="no"
+            fi
+            ;;
+        matugen)
+            if install_matugen_fedora; then
                 COPR_FAILED="no"
             fi
             ;;
@@ -331,34 +336,6 @@ if command -v xdg-user-dirs-update >/dev/null 2>&1; then
 fi
 
 if [[ "$PACKAGE_GROUP" == "all" || "$PACKAGE_GROUP" == "shell" ]]; then
-
-info "Installing Caelestia CLI wrapper..."
-if ! command -v caelestia >/dev/null 2>&1; then
-    caelestia_sudo dnf install -y python3-pip python3-build python3-installer python3-hatchling python3-hatch-vcs || true
-    tmpdir="$(mktemp -d)"
-    (
-        cd "$tmpdir" || exit 1
-        curl -sL "https://github.com/caelestia-dots/cli/releases/download/v1.0.8/caelestia-1.0.8.tar.gz" -o caelestia.tar.gz
-        tar -xzf caelestia.tar.gz
-        cd caelestia-1.0.8 || exit 1
-        python3 -m build --wheel --no-isolation
-        if ! caelestia_sudo pip3 install dist/*.whl --break-system-packages; then
-            pip3 install dist/*.whl --user --break-system-packages
-            if [[ -f "$HOME/.local/bin/caelestia" ]]; then
-                caelestia_sudo ln -sf "$HOME/.local/bin/caelestia" /usr/local/bin/caelestia || true
-            fi
-        fi
-
-        mkdir -p ~/.config/fish/completions/
-        cp ./completions/caelestia.fish ~/.config/fish/completions/ 2>/dev/null || true
-    )
-    rm -rf "$tmpdir"
-fi
-
-if ! command -v caelestia >/dev/null 2>&1 && [[ ! -f "$HOME/.local/bin/caelestia" ]]; then
-    err "Failed to install Caelestia CLI wrapper."
-    FAILED_PKGS+=("caelestia")
-fi
 
 if command -v sassc >/dev/null 2>&1 && ! command -v sass >/dev/null 2>&1; then
     caelestia_sudo ln -sf /usr/bin/sassc /usr/local/bin/sass || true

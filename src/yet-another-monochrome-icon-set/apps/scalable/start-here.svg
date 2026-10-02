@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   sodipodi:docname="start-here.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#505050"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="11.787767"
+     inkscape:cx="9.1196238"
+     inkscape:cy="42.501688"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showborder="false" />
+  <defs
+     id="defs1">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <path
+     id="path4422"
+     style="fill:currentColor;fill-opacity:1;stroke-width:1.00632"
+     class="ColorScheme-Text"
+     d="m 40.722423,5.5 -6.03841,6.038411 11.40397,11.403972 -11.40397,11.406436 6.03841,6.038411 17.442383,-17.444847 z m -22.14002,0.670387 c -1.858355,0 -3.354399,1.496045 -3.354399,3.354399 0,1.858355 1.496044,3.354399 3.354399,3.354399 1.858354,0 3.354399,-1.496044 3.354399,-3.354399 0,-1.858354 -1.496045,-3.354399 -3.354399,-3.354399 z m -8.052037,19.456008 c -2.6016875,0 -4.6951725,2.093485 -4.6951725,4.695172 0,2.601689 2.093485,4.697639 4.6951735,4.697639 h 0.0025 c 2.601687,0 4.695173,-2.09595 4.695173,-4.697639 0,-2.601687 -2.093486,-4.695172 -4.695173,-4.695172 z m 15.431222,19.456008 c -3.716709,0 -6.708798,2.99209 -6.708798,6.708798 0,3.71671 2.992089,6.708799 6.708798,6.708799 3.716708,0 6.708798,-2.992089 6.708798,-6.708799 0,-3.716708 -2.992089,-6.708798 -6.708798,-6.708798 z" />
+</svg>

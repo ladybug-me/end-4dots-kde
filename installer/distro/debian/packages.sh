@@ -12,6 +12,8 @@ source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/sc
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/packages.sh"
 # shellcheck source=scripts/lib/darkly.sh
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/darkly.sh"
+# shellcheck source=scripts/lib/matugen.sh
+source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)}/scripts/lib/matugen.sh"
 
 darkly_deb_asset_url() {
     local release_json id ver needle url
@@ -53,18 +55,13 @@ PACKAGE_GROUP="${PACKAGE_GROUP:-all}"
 
 CORE_PACKAGES=(
     cmake ninja-build ccache g++ build-essential qt6-l10n-tools qt6-tools-dev extra-cmake-modules
-    libcli11-dev spirv-tools bc coreutils rsync wget libjemalloc-dev libunwind-dev
 
     wl-clipboard cliphist inotify-tools wireplumber trash-cli jq yq libc6
-    pipewire-pulse libdbusmenu-gtk3-dev
 
     libaubio-dev aubio-tools lm-sensors libsensors-dev libpipewire-0.3-dev pipewire libfftw3-dev
 
     qt6-base-dev qt6-base-private-dev qt6-declarative-dev qml6-module-qtquick qt6-wayland qt6-wayland-dev
     qt6-svg-dev qt6-shadertools-dev qt6-multimedia-dev qt6-5compat-dev qt6-image-formats-plugins
-    qt6-positioning-dev qml6-module-qtpositioning qt6-sensors-dev qml6-module-qtsensors
-    qml6-module-qtquick-timeline qt6-translations-l10n qt6-virtualkeyboard-dev qml6-module-qtquick-virtualkeyboard
-    qtwayland5
 
     libkf6globalaccel-dev libkf6windowsystem-dev libkf6guiaddons-dev
     libkf6coreaddons-dev kwin-dev libkf6pulseaudioqt-dev libpulse-dev
@@ -74,18 +71,15 @@ CORE_PACKAGES=(
     ffmpeg libavcodec-dev libavformat-dev libavutil-dev libswscale-dev
     libqalculate-dev qalc libvulkan-dev libsecret-1-dev ksshaskpass libx11-dev
     libsecret-tools
-    libwayland-dev wayland-protocols libgl1-mesa-dev libegl1-mesa-dev libgbm-dev
-    libxcb1-dev libxcb-cursor-dev libxcb-util-dev
 )
 
 SHELL_PACKAGES=(
-    clang gobject-introspection libgirepository1.0-dev libgtk-4-dev
-    libadwaita-1-dev libsoup-3.0-dev libportal-gtk4-dev
-    foot kitty eza fastfetch btop bash
+    foot eza fastfetch btop bash
+    pciutils
 )
 
 THEME_PACKAGES=(
-    adw-gtk3 bibata-cursor-theme fontconfig fonts-twemoji
+    adw-gtk3
 )
 
 UTILITY_PACKAGES=(
@@ -93,10 +87,6 @@ UTILITY_PACKAGES=(
     tesseract-ocr tesseract-ocr-eng kde-spectacle slurp grim
     brightnessctl power-profiles-daemon
     xdg-utils sassc python3-venv uv konsave
-    geoclue-2.0 libglib2.0-dev gnome-keyring playerctl pavucontrol-qt
-    translate-shell upower wf-recorder wtype ydotool
-    libtinyxml2-dev libgtkmm-3.0-dev libgtksourceviewmm-3.0-dev libcairomm-1.0-dev
-    xdg-desktop-portal xdg-desktop-portal-gtk
 )
 
 FALLBACK_PKGS=(
@@ -346,18 +336,7 @@ for pkg in "${FALLBACK_TARGETS[@]}"; do
             rm -rf "$tmpdir"
             ;;
         matugen)
-            export PATH="$HOME/.cargo/bin:$HOME/.local/bin:$PATH"
-            if ! command -v cargo >/dev/null 2>&1; then
-                info "Installing a Rust toolchain to build matugen..."
-                curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal || true # ci:allow-curl-pipe
-                export PATH="$HOME/.cargo/bin:$PATH"
-            fi
-            if command -v cargo >/dev/null 2>&1; then
-                cargo install matugen || { err "cargo install $pkg failed."; FAILED_PKGS+=("$pkg"); }
-            else
-                err "matugen generates the color palette but has no Debian package; install a Rust toolchain and run 'cargo install matugen'."
-                FAILED_PKGS+=("$pkg")
-            fi
+            install_matugen_debian || FAILED_PKGS+=("$pkg")
             ;;
         *)
             FAILED_PKGS+=("$pkg")
@@ -426,34 +405,6 @@ fi
 fi  # end of PACKAGE_GROUP themes/all block
 
 if [[ "$PACKAGE_GROUP" == "all" || "$PACKAGE_GROUP" == "shell" ]]; then
-
-info "Installing Caelestia CLI wrapper..."
-if ! command -v caelestia >/dev/null 2>&1; then
-    caelestia_sudo apt-get install -y python3-pip python3-build python3-installer python3-hatchling python3-hatch-vcs || true
-    tmpdir="$(mktemp -d)"
-    (
-        cd "$tmpdir" || exit 1
-        curl -sL "https://github.com/caelestia-dots/cli/releases/download/v1.0.8/caelestia-1.0.8.tar.gz" -o caelestia.tar.gz
-        tar -xzf caelestia.tar.gz
-        cd caelestia-1.0.8 || exit 1
-        python3 -m build --wheel --no-isolation
-        if ! caelestia_sudo pip3 install dist/*.whl --break-system-packages 2>/dev/null; then
-            pip3 install dist/*.whl --user --break-system-packages 2>/dev/null || pip3 install dist/*.whl --user
-            if [[ -f "$HOME/.local/bin/caelestia" ]]; then
-                caelestia_sudo ln -sf "$HOME/.local/bin/caelestia" /usr/local/bin/caelestia || true
-            fi
-        fi
-
-        mkdir -p ~/.config/fish/completions/
-        cp ./completions/caelestia.fish ~/.config/fish/completions/ 2>/dev/null || true
-    )
-    rm -rf "$tmpdir"
-fi
-
-if ! command -v caelestia >/dev/null 2>&1 && [[ ! -f "$HOME/.local/bin/caelestia" ]]; then
-    err "Failed to install Caelestia CLI wrapper."
-    FAILED_PKGS+=("caelestia")
-fi
 
 if command -v sassc >/dev/null 2>&1 && ! command -v sass >/dev/null 2>&1; then
     caelestia_sudo ln -sf /usr/bin/sassc /usr/local/bin/sass || true

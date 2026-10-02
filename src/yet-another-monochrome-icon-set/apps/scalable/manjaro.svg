@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 16.933333 16.933333"
+   version="1.1"
+   id="svg896"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   sodipodi:docname="manjaro.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs890">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#7f3232"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="9.861792"
+     inkscape:cx="79.448036"
+     inkscape:cy="17.542451"
+     inkscape:document-units="px"
+     inkscape:current-layer="svg896"
+     showgrid="false"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:showpageshadow="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050" />
+  <metadata
+     id="metadata893">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="rect1340-7"
+     class="ColorScheme-Text"
+     style="font-size:140.705px;line-height:1.25;letter-spacing:0px;word-spacing:0px;fill:currentColor;fill-opacity:1;fill-rule:evenodd;stroke-width:0.77049;stroke-linecap:round;stroke-linejoin:round;paint-order:stroke fill markers"
+     d="m 2.7300165,1.4552082 c -0.7062413,0 -1.2748076,0.5685646 -1.2748076,1.2748118 v 11.473294 c 0,0.706246 0.5685663,1.274811 1.2748076,1.274811 H 5.2796444 V 5.2796372 h 5.0992376 v -3.824429 z m 8.9236785,0 V 15.478125 h 2.549623 c 0.706241,0 1.274806,-0.568565 1.274806,-1.274811 V 2.73002 c 0,-0.7062473 -0.568565,-1.2748118 -1.274806,-1.2748118 z M 6.554453,6.5544485 v 8.9236765 h 3.824429 V 6.5544485 Z"
+     inkscape:label="M" />
+</svg>

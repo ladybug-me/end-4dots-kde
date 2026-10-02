@@ -1,0 +1,26 @@
+[Unit]
+Description=Caelestia Shell
+Documentation=https://github.com/ladybug-me/caelestia-kde
+PartOf=graphical-session.target
+After=graphical-session.target
+# The shell registers org.freedesktop.Notifications, and applications decide once,
+# when they start, whether a notification server exists; one that finds none draws
+# its own popups for the rest of the session. This ordering is what the retired
+# autostart entry's X-KDE-AutostartPhase=1 used to buy. On a machine without the
+# target the ordering is a no-op rather than an error.
+Before=xdg-desktop-autostart.target
+
+[Service]
+Type=exec
+Environment=CAELESTIA_SHELL_CONFIG=/etc/xdg/quickshell/caelestia/shell.qml
+Environment=CAELESTIA_BIN_DIR=/usr/bin
+ExecStart=/usr/bin/caelestia-autostart
+# Retried, but not in a tight loop: systemd gives up on a unit that starts five times in
+# ten seconds and leaves it failed, which is a state an install then has to clear.
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=5s
+Slice=session.slice
+
+[Install]
+WantedBy=graphical-session.target

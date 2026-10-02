@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   id="svg73"
+   sodipodi:docname="application-x-rdata.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <metadata
+     id="metadata77">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <sodipodi:namedview
+     pagecolor="#9c4444"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     id="namedview75"
+     showgrid="false"
+     inkscape:zoom="4.4470387"
+     inkscape:cx="19.451146"
+     inkscape:cy="24.96043"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg73"
+     inkscape:document-rotation="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
+  <defs
+     id="defs29">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <path
+     id="path1"
+     style="opacity:1;baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:currentColor;enable-background:accumulate;stop-color:#000000;stop-opacity:1"
+     d="M 16.487059 9.1224276 C 12.372966 9.1224276 9.031448 12.462169 9.031448 16.576263 L 9.031448 47.668237 C 9.031448 51.78233 12.372966 55.123848 16.487059 55.123848 L 47.575482 55.123848 C 51.689575 55.123848 55.031093 51.78233 55.031093 47.668237 L 55.031093 16.576263 C 55.031093 12.462169 51.689575 9.1224276 47.575482 9.1224276 L 16.487059 9.1224276 z M 31.625553 12.17818 L 32.614545 12.17818 C 32.614545 12.17818 32.655345 12.80385 32.614545 13.167172 L 33.603536 13.167172 L 33.603536 14.156163 L 32.614545 14.156163 L 32.614545 15.145155 L 33.603536 15.145155 L 33.603536 16.132371 L 32.614545 16.132371 L 32.614545 17.121362 L 33.603536 17.121362 L 33.603536 18.110354 L 32.614545 18.110354 L 32.614545 19.099345 L 33.603536 19.099345 C 33.603776 19.30889 33.526392 19.515542 33.415326 19.679956 C 35.188849 20.072387 36.515468 21.659343 36.515468 23.541817 L 36.515468 31.450198 C 36.515468 33.625017 34.744204 35.404388 32.559502 35.404388 C 30.374797 35.404388 28.605312 33.625017 28.605312 31.450198 L 28.605312 23.541817 C 28.605312 21.366998 30.374132 19.587626 32.559502 19.587626 C 32.580384 19.587626 32.602618 19.587303 32.623422 19.587626 C 32.604111 19.458995 32.599012 19.29866 32.614545 19.099345 L 31.625553 19.099345 L 31.625553 18.110354 L 32.614545 18.110354 L 32.614545 17.121362 L 31.625553 17.121362 L 31.625553 16.132371 L 32.614545 16.132371 L 32.614545 15.145155 L 31.625553 15.145155 L 31.625553 14.156163 L 32.614545 14.156163 L 32.614545 13.167172 L 31.625553 13.167172 L 31.625553 12.17818 z M 32.559502 21.563834 C 31.468138 21.563834 30.583295 22.355552 30.583295 23.541817 C 30.583295 24.530369 31.468138 25.5198 32.559502 25.5198 C 33.650863 25.5198 34.537485 24.530369 34.537485 23.541817 C 34.537485 22.355552 33.650863 21.563834 32.559502 21.563834 z M 32.559502 27.496007 C 31.467572 27.496007 30.583295 28.382063 30.583295 29.47399 L 30.583295 31.450198 C 30.583295 32.542125 31.467572 33.42818 32.559502 33.42818 C 33.651426 33.42818 34.537485 32.542125 34.537485 31.450198 L 34.537485 29.47399 C 34.537485 28.382063 33.651426 27.496007 32.559502 27.496007 z "
+     transform="matrix(1.1,0,0,1.1,-3.1845928,-3.2065454)"
+     class="ColorScheme-Text" />
+</svg>

@@ -55,7 +55,7 @@ if [[ ! -d "$DOTS_DIR" ]] || [[ -z "$(ls -A "$DOTS_DIR" 2>/dev/null)" ]]; then
 fi
 
 info "Recording previous login shell..."
-getent passwd "$USER" | cut -d: -f7 > "$BACKUP_DIR/previous_shell.txt"
+getent passwd "$(id -un)" | cut -d: -f7 > "$BACKUP_DIR/previous_shell.txt"
 
 info "Backing up pre-install configs..."
 mkdir -p "$BACKUP_DIR/shellrc" "$BACKUP_DIR/.config" "$BACKUP_DIR/local"
@@ -140,7 +140,7 @@ deploy_config() {
 }
 
 info "Deploying Caelestia configs..."
-for config in btop fastfetch foot kitty micro; do
+for config in btop foot kitty micro; do
     deploy_config "$config" "$DOTS_DIR/$config"
 done
 

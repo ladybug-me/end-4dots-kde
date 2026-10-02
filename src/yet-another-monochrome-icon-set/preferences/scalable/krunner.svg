@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="krunner.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.756345" inkscape:cy="27.208122" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;stroke:none;stroke-width:0.386535;stroke-dasharray:none;stroke-opacity:0.3" d="m 7.3283586,3.1749717 c 2.283832,0 4.1707384,1.8701715 4.1707384,4.1566094 0,0.869034 -0.293479,1.6685392 -0.754038,2.3381309 l 2.780517,2.786819 a 0.75818592,0.75990393 0 0 1 -1.060405,1.086386 L 9.684654,10.756098 c -0.6690499,0.461695 -1.4877181,0.732132 -2.3563703,0.732132 -2.2839083,0 -4.1472118,-1.8701732 -4.1472118,-4.1566107 0,-2.2864385 1.8633035,-4.1566101 4.1472118,-4.1566101 z m 0,1.5114944 c -1.4684163,0 -2.6391369,1.1750354 -2.6391369,2.645115 0,1.4700038 1.1707206,2.6451148 2.6391369,2.6451148 1.468414,0 2.6391343,-1.175111 2.6391343,-2.6451148 0,-1.4700796 -1.1707203,-2.645115 -2.6391343,-2.645115 z" id="path8" class="ColorScheme-Text"/>
+</svg>

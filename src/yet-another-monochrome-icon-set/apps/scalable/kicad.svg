@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="kicad.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="29.64467" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path878" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text" d="M 48.000244 10.000751 A 6 6 0 0 0 41.999499 15.999755 A 6 6 0 0 0 48.000244 22.000499 A 6 6 0 0 0 53.999248 15.999755 A 6 6 0 0 0 48.000244 10.000751 z M 10.00075 13.999506 L 11.999257 15.999755 L 11.999257 52.000742 L 10.00075 53.999249 L 22.000498 53.999249 L 20.00025 52.000742 L 20.00025 41.9995 L 27.999502 52.000742 L 27.999502 53.999249 L 39.999251 53.999249 L 24.000747 34.000248 L 39.999251 13.999506 L 27.999502 13.999506 L 27.999502 15.999755 L 20.00025 25.999255 L 20.00025 15.999755 L 22.000498 13.999506 L 10.00075 13.999506 z M 41.999499 25.999255 L 43.999748 27.999503 L 43.999748 52.000742 L 41.999499 53.999249 L 53.999248 53.999249 L 52.000741 52.000742 L 52.000741 25.999255 L 41.999499 25.999255 z " transform="matrix(0.2968384,0,0,0.2968384,-1.0323288,-1.0323291)"/>
+</svg>

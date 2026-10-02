@@ -1,169 +1,219 @@
--- ######## Window rules ########
+local vars = require("variables")
 
--- Disable blur for xwayland context menus
-hl.window_rule({match = {class = "^()$", title = "^()$" },                   no_blur = true })
+-- Tags an array of window matches. If `field` is given, matches should be an
+-- array of strings. Otherwise, it should be an array of tables.
+local function tagged_rule(tag, matches, field)
+    for _, match in ipairs(matches) do
+        if field then
+            local table = {}
+            table[field] = match
+            match = table
+        end
+        hl.window_rule({ match = match, tag = "+" .. tag })
+    end
+end
 
--- Disable blur for every window
-hl.window_rule({match = {class = ".*" }, no_blur = true })
+local function create_tag(tag, rules)
+    local rule = { match = { tag = tag } }
+    for k, v in pairs(rules) do
+        rule[k] = v
+    end
+    hl.window_rule(rule)
+end
 
--- Floating
-hl.window_rule({match = {title = "^(Open File)(.*)$" },                      center = true})
-hl.window_rule({match = {title = "^(Open File)(.*)$" },                      float = true})
-hl.window_rule({match = {title = "^(Select a File)(.*)$" },                  center = true})
-hl.window_rule({match = {title = "^(Select a File)(.*)$" },                  float = true})
-hl.window_rule({match = {title = "^(Choose wallpaper)(.*)$" },               center = true})
-hl.window_rule({match = {title = "^(Choose wallpaper)(.*)$" },               float = true})
-hl.window_rule({match = {title = "^(Choose wallpaper)(.*)$" },               size = {"(monitor_w*0.60)", "(monitor_h*0.65)"} })
-hl.window_rule({match = {title = "^(Open Folder)(.*)$" },                    center = true})
-hl.window_rule({match = {title = "^(Open Folder)(.*)$" },                    float = true})
-hl.window_rule({match = {title = "^(Save As)(.*)$" },                        center = true})
-hl.window_rule({match = {title = "^(Save As)(.*)$" },                        float = true})
-hl.window_rule({match = {title = "^(Library)(.*)$" },                        center = true})
-hl.window_rule({match = {title = "^(Library)(.*)$" },                        float = true})
-hl.window_rule({match = {title = "^(File Upload)(.*)$" },                    center = true})
-hl.window_rule({match = {title = "^(File Upload)(.*)$" },                    float = true})
-hl.window_rule({match = {title = "^(.*)(wants to save)$" },                  center = true})
-hl.window_rule({match = {title = "^(.*)(wants to save)$" },                  float = true})
-hl.window_rule({match = {title = "^(.*)(wants to open)$" },                  center = true})
-hl.window_rule({match = {title = "^(.*)(wants to open)$" },                  float = true})
-hl.window_rule({match = {class = "^(blueberry\\.py)$" },                     float = true})
-hl.window_rule({match = {class = "^(guifetch)$" },                           float = true}) -- FlafyDev/guifetch
-hl.window_rule({match = {class = "^(pavucontrol)$" },                        float = true})
-hl.window_rule({match = {class = "^(pavucontrol)$" },                        size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
-hl.window_rule({match = {class = "^(pavucontrol)$" },                        center = true})
-hl.window_rule({match = {class = "^(org.pulseaudio.pavucontrol)$" },         float = true})
-hl.window_rule({match = {class = "^(org.pulseaudio.pavucontrol)$" },         size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
-hl.window_rule({match = {class = "^(org.pulseaudio.pavucontrol)$" },         center = true})
-hl.window_rule({match = {class = "^(nm-connection-editor)$" },               float = true})
-hl.window_rule({match = {class = "^(nm-connection-editor)$" },               size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
-hl.window_rule({match = {class = "^(nm-connection-editor)$" },               center = true})
-hl.window_rule({match = {class = ".*plasmawindowed.*" },                     float = true})
-hl.window_rule({match = {class = "kcm_.*" },                                  float = true})
-hl.window_rule({match = {class = ".*bluedevilwizard" },                      float = true})
-hl.window_rule({match = {title = ".*Welcome" },                              float = true})
-hl.window_rule({match = {title = "^(illogical-impulse Settings)$" },         float = true})
-hl.window_rule({match = {title = ".*Shell conflicts.*" },                    float = true})
-hl.window_rule({match = {class = "org.freedesktop.impl.portal.desktop.kde" }, float = true})
-hl.window_rule({match = {class = "org.freedesktop.impl.portal.desktop.kde" }, size = {"(monitor_w*0.60)", "(monitor_h*0.65)"} })
-hl.window_rule({match = {class = "^(Zotero)$" },                             float = true})
-hl.window_rule({match = {class = "^(Zotero)$" },                             size = {"(monitor_w*0.45)", "(monitor_h*0.45)"} })
+-- All tags
+local opaque_tag = "opaque"
+local float_tag = "float"
+local float_60_70_tag = "float_60_70"
+local float_70_80_tag = "float_70_80"
+local float_50_60_tag = "float_50_60"
+local game_tag = "game"
+local xwl_popup_tag = "xwl_popup"
+local system_monitor_tag = "system_monitor"
+local music_player_tag = "music_player"
+local communication_app_tag = "communication_app"
+local todo_app_tag = "todo_app"
 
--- Move
--- kde-material-you-colors spawns a window when changing dark/light theme. This is to make sure it doesn't interfere at all.
-hl.window_rule({match = {class = "^(plasma-changeicons)$" }, float = true})
-hl.window_rule({match = {class = "^(plasma-changeicons)$" }, no_initial_focus = true})
-hl.window_rule({match = {class = "^(plasma-changeicons)$" }, move = {999999, 999999}})
--- stupid dolphin copy
-hl.window_rule({match = {title = "^(Copying — Dolphin)$" }, move = {40, 80}})
 
--- Tiling
-hl.window_rule({match = {class = "^dev\\.warp\\.Warp$" }, tile = true})
+----------------------
+---- Window rules ----
+----------------------
 
--- Picture-in-Picture
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, float = true})
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, keep_aspect_ratio = true})
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, move = {"(monitor_w*0.73)", "(monitor_h*0.72)"} })
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, size = {"(monitor_w*0.25)", "(monitor_h*0.25)"} })
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, float = true})
-hl.window_rule({match = {title = "^([Pp]icture[-\\s]?[Ii]n[-\\s]?[Pp]icture)(.*)$" }, pin = true})
+-- Apply default opacity to all windows except fullscreen
+hl.window_rule({ match = { fullscreen = false }, opacity = vars.windowOpacity .. " override" })
 
--- Screen sharing
-hl.window_rule({match = {title = ".*is sharing (a window|your screen).*" }, float = true})
-hl.window_rule({match = {title = ".*is sharing (a window|your screen).*" }, pin = true})
-hl.window_rule({match = {title = ".*is sharing (a window|your screen).*" }, move = {"(monitor_w*.5-window_w*.5)", "(monitor_h-window_h-12)"} })
+-- Center all floating windows except xwayland windows (xwayland popups count as windows)
+hl.window_rule({ match = { float = true, xwayland = false }, center = true })
 
--- --- Tearing ---
-hl.window_rule({match = {title = ".*\\.exe" }, immediate = true})
-hl.window_rule({match = {title = ".*minecraft.*" }, immediate = true})
-hl.window_rule({match = {class = "^(steam_app).*" }, immediate = true})
+-- Picture in picture (move and resize done via resizer in execs.lua)
+hl.window_rule({
+    match             = { title = "Picture(-| )in(-| )[Pp]icture" },
+    move              = "(monitor_w*0.98-window_w) (monitor_h*0.97-window_h)", -- Initial move so window doesn't jump so much
+    pin               = true,
+    float             = true,
+    keep_aspect_ratio = true,
+})
 
--- No shadow for tiled windows
-hl.window_rule({match = {float = 0 }, no_shadow = true})
 
--- ######## Workspace rules ########
-hl.workspace_rule({ workspace = "special:special", gaps_out = 30 })
+----------------------
+---- Tagged rules ----
+----------------------
 
--- ######## Layer rules ########
-hl.layer_rule({ match = { namespace = ".*" }, xray = true})
-hl.layer_rule({ match = { namespace = "walker" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "selection" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "overview" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "anyrun" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "indicator.*" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "osk" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "hyprpicker" }, no_anim = true})
+-- Opaque apps
+tagged_rule(opaque_tag, {
+    "foot",                          -- Terminal
+    "equibop",                       -- Discord client
+    "org.quickshell",                -- Quickshell
+    "feh|imv|swappy",                -- Image viewers
+    "krita|gimp|inkscape|darktable", -- Image editors
+    "resolve|kdenlive|shotcut",      -- Video editors
+    "blender|godot",                 -- 3D editors
+}, "class")
 
-hl.layer_rule({ match = { namespace = "noanim" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "gtk-layer-shell" }, blur = true})
-hl.layer_rule({ match = { namespace = "gtk-layer-shell" }, ignore_alpha = 0})
-hl.layer_rule({ match = { namespace = "launcher" }, blur = true})
-hl.layer_rule({ match = { namespace = "launcher" }, ignore_alpha = 0.5})
-hl.layer_rule({ match = { namespace = "notifications" }, blur = true})
-hl.layer_rule({ match = { namespace = "notifications" }, ignore_alpha = 0.69})
-hl.layer_rule({ match = { namespace = "logout_dialog" }, blur = true}) -- wlogout
 
--- ags
-hl.layer_rule({ match = { namespace = "sideleft.*" }, animation = "slide left"})
-hl.layer_rule({ match = { namespace = "sideright.*" }, animation = "slide right"})
-hl.layer_rule({ match = { namespace = "session[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "bar[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "bar[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "barcorner.*" }, blur = true})
-hl.layer_rule({ match = { namespace = "barcorner.*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "dock[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "dock[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "indicator.*" }, blur = true})
-hl.layer_rule({ match = { namespace = "indicator.*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "overview[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "overview[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "cheatsheet[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "cheatsheet[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "sideright[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "sideright[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "sideleft[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "sideleft[0-9]*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "indicator.*" }, blur = true})
-hl.layer_rule({ match = { namespace = "indicator.*" }, ignore_alpha = 0.6})
-hl.layer_rule({ match = { namespace = "osk[0-9]*" }, blur = true})
-hl.layer_rule({ match = { namespace = "osk[0-9]*" }, ignore_alpha = 0.6})
+-- Floating apps
+tagged_rule(float_tag, {
+    "guifetch",                           -- System info
+    "yad|zenity",                         -- Dialogs
+    "wev",                                -- Input detector
+    "org.gnome.FileRoller|file-roller",   -- Archive manager
+    "blueman-manager",                    -- Bluetooth GUI
+    "com.github.GradienceTeam.Gradience", -- GTK themer (deprecated)
+    "feh|imv|swappy",                     -- Image viewers
+    "org.quickshell",                     -- Quickshell
+}, "class")
+tagged_rule(float_tag, {
+    "File (Operation|Upload)( Progress)?", -- File manager operation progress (upload, move, copy, etc)
+    ".* Properties",                       -- File properties
+    'Rename ".*"',                         -- File renaming
+}, "title")
 
--- Quickshell
--- Quickshell: illogical-impulse
-hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur_popups = true})
-hl.layer_rule({ match = { namespace = "quickshell:.*" }, blur = true})
-hl.layer_rule({ match = { namespace = "quickshell:.*" }, ignore_alpha = 0.79})
-hl.layer_rule({ match = { namespace = "quickshell:bar" }, animation = "slide"})
-hl.layer_rule({ match = { namespace = "quickshell:actionCenter" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:cheatsheet" }, animation = "slide bottom"})
-hl.layer_rule({ match = { namespace = "quickshell:dock" }, animation = "slide bottom"})
-hl.layer_rule({ match = { namespace = "quickshell:screenCorners" }, animation = "popin 120%"})
-hl.layer_rule({ match = { namespace = "quickshell:lockWindowPusher" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:notificationPopup" }, animation = "fade"})
-hl.layer_rule({ match = { namespace = "quickshell:overlay" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:overlay" }, ignore_alpha = 1})
-hl.layer_rule({ match = { namespace = "quickshell:overview" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:osk" }, animation = "slide bottom"})
-hl.layer_rule({ match = { namespace = "quickshell:polkit" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:popup" }, xray = false}) -- No weird color for bar tooltips (this in theory should suffice)
-hl.layer_rule({ match = { namespace = "quickshell:popup" }, ignore_alpha = 1}) -- No weird color for bar tooltips (but somehow this is necessary)
-hl.layer_rule({ match = { namespace = "quickshell:mediaControls" }, ignore_alpha = 1}) -- Same as above
-hl.layer_rule({ match = { namespace = "quickshell:reloadPopup" }, animation = "slide"})
-hl.layer_rule({ match = { namespace = "quickshell:regionSelector" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:screenshot" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:session" }, blur = true})
-hl.layer_rule({ match = { namespace = "quickshell:session" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:session" }, ignore_alpha = 0})
-hl.layer_rule({ match = { namespace = "quickshell:sidebarRight" }, animation = "slide right"})
-hl.layer_rule({ match = { namespace = "quickshell:sidebarLeft" }, animation = "slide left"})
-hl.layer_rule({ match = { namespace = "quickshell:verticalBar" }, animation = "slide"})
-hl.layer_rule({ match = { namespace = "quickshell:osk" }, order = -1})
--- Quickshell: waffles
-hl.layer_rule({ match = { namespace = "quickshell:wallpaperSelector" }, animation = "slide top"})
-hl.layer_rule({ match = { namespace = "quickshell:wNotificationCenter" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:wOnScreenDisplay" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:wStartMenu" }, no_anim = true})
-hl.layer_rule({ match = { namespace = "quickshell:wTaskView" }, ignore_alpha = 0})
-hl.layer_rule({ match = { namespace = "quickshell:wTaskView" }, no_anim = true})
 
--- Launchers need to be FAST
-hl.layer_rule({ match = { namespace = "gtk4-layer-shell" }, no_anim = true})
+-- Sized floaters
+-- 60% x 70%
+tagged_rule(float_60_70_tag, {
+    "(Select|Open)( a)? (File|Folder)(s)?", -- File dialogs
+    "Save As",                              -- Save dialogs
+    "Library",                              -- * I don't remember what this matches...
+}, "title")
+tagged_rule(float_60_70_tag, {
+    { title = "(Save|Export) Image", class = "gimp" }, -- GIMP export/save
+})
+tagged_rule(float_60_70_tag, {
+    "org.pulseaudio.pavucontrol|com.saivert.pwvucontrol", -- Audio control
+    "yad-icon-browser",                                   -- GTK icon browser
+}, "class")
+
+-- 70% x 80%
+tagged_rule(float_70_80_tag, {
+    "org.gnome.Settings", -- System settings
+}, "class")
+
+-- 50% x 60%
+tagged_rule(float_50_60_tag, {
+    "nwg-look",              -- GTK theme manager
+    "system-config-printer", -- Printer config
+}, "class")
+
+
+-- Games
+tagged_rule(game_tag, {
+    "steam_app_[0-9]+",  -- Steam games
+    "steam_app_default", -- Lutris games
+    "gamescope",         -- Gamescope
+}, "class")
+
+
+-- Xwayland popups
+tagged_rule(xwl_popup_tag, {
+    { xwayland = true, title = "win[0-9]+" },
+    { xwayland = true, title = "",         class = "", initial_title = "", initial_class = "" }
+})
+
+
+-- Special workspaces
+tagged_rule(system_monitor_tag, { "btop" }, "class")
+tagged_rule(music_player_tag, {
+    "feishin|Supersonic|Plexamp",                                  -- Self hosted
+    "Spotify",                                                     -- Spotify
+    "Cider",                                                       -- Apple music
+    "com.github.th-ch.youtube-music|com-maxrave-simpmusic-MainKt", -- YouTube music
+}, "class")
+tagged_rule(music_player_tag, {
+    "Spotify|Spotify Free" -- Spotify wayland, it has no class for some reason
+}, "initial_title")
+tagged_rule(communication_app_tag, {
+    "discord|equibop|vesktop", -- Discord clients
+    "whatsapp"                 -- Whatsapp
+}, "class")
+tagged_rule(todo_app_tag, {
+    "todoist" -- Todoist
+}, "class")
+
+
+-----------------------
+---- Per app rules ----
+-----------------------
+
+-- Steam
+tagged_rule(float_tag, { { class = "steam", title = "Friends List" } })
+tagged_rule(xwl_popup_tag, { { class = "steam", title = "" } })
+
+-- Ueberzugpp
+hl.window_rule({ match = { class = "ueberzugpp_.*" }, float = true, no_initial_focus = true })
+
+-- Autodesk Fusion 360
+hl.window_rule({ match = { class = "fusion360.exe", title = "Fusion360|(Marking Menu)" }, no_blur = true })
+
+-- Minecraft launcher consoles
+tagged_rule(float_tag, {
+    { class = "com-atlauncher-App", title = "ATLauncher Console" },
+    { class = "PandoraLauncher",    title = "Minecraft Game Output" },
+})
+
+
+-------------------------
+---- Tag definitions ----
+-------------------------
+-- These have to come after all uses of window tagging. Thank you Hyprland...
+
+create_tag(opaque_tag, { opaque = true })
+create_tag(float_tag, { float = true })
+create_tag(float_50_60_tag, { float = true, size = "(monitor_w*0.5) (monitor_h*0.6)", center = true })
+create_tag(float_60_70_tag, { float = true, size = "(monitor_w*0.6) (monitor_h*0.7)", center = true })
+create_tag(float_70_80_tag, { float = true, size = "(monitor_w*0.7) (monitor_h*0.8)", center = true })
+create_tag(game_tag, { opaque = true, immediate = true, idle_inhibit = "always" })
+create_tag(xwl_popup_tag, {
+    no_dim = true,
+    no_shadow = true,
+    no_blur = true,
+    opaque = true,
+    rounding = math.min(10, vars.windowRounding), -- Popups are usually small, so we want to limit the rounding
+})
+create_tag(system_monitor_tag, { workspace = "special:sysmon" })
+create_tag(music_player_tag, { workspace = "special:music" })
+create_tag(communication_app_tag, { workspace = "special:communication" })
+create_tag(todo_app_tag, { workspace = "special:todo" })
+
+
+-------------------------
+---- Workspace rules ----
+-------------------------
+
+hl.workspace_rule({ workspace = "w[tv1]s[false]", gaps_out = vars.singleWindowGapsOut })
+hl.workspace_rule({ workspace = "f[1]s[false]", gaps_out = vars.singleWindowGapsOut })
+
+
+---------------------
+---- Layer rules ----
+---------------------
+
+hl.layer_rule({ match = { namespace = "hyprpicker" }, animation = "fade" })                 -- Colour picker out animation
+hl.layer_rule({ match = { namespace = "logout_dialog" }, animation = "fade" })              -- wlogout
+hl.layer_rule({ match = { namespace = "selection" }, animation = "fade" })                  -- slurp
+hl.layer_rule({ match = { namespace = "wayfreeze" }, animation = "fade" })                  -- wayfreeze
+hl.layer_rule({ match = { namespace = "launcher" }, animation = "popin 80%", blur = true }) -- Fuzzel
+
+-- Shell
+hl.layer_rule({ match = { namespace = "caelestia-(border-exclusion|area-picker)" }, no_anim = true })
+hl.layer_rule({ match = { namespace = "caelestia-(drawers|background)" }, animation = "fade" })

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="64"
+   height="64"
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   sodipodi:docname="start-here.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="px"
+     inkscape:zoom="11.787767"
+     inkscape:cx="9.03479"
+     inkscape:cy="42.501688"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1"
+     showborder="false" />
+  <defs
+     id="defs1">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <path
+     id="path4422"
+     style="fill:currentColor;fill-opacity:1;stroke-width:0.75949"
+     class="ColorScheme-Text"
+     d="m 38.582961,12 -4.557292,4.557292 8.606772,8.60677 -8.606772,8.608632 4.557293,4.557291 13.164062,-13.165923 z m -16.709449,0.505952 c -1.402532,0 -2.531622,1.129091 -2.531622,2.531622 0,1.402532 1.12909,2.531622 2.531622,2.531622 1.402531,0 2.531622,-1.12909 2.531622,-2.531622 0,-1.402531 -1.129091,-2.531622 -2.531622,-2.531622 z m -6.077009,14.68378 c -1.963538,0 -3.543527,1.579989 -3.543527,3.543526 0,1.963539 1.579989,3.545388 3.543527,3.545388 h 0.0019 c 1.963538,0 3.543527,-1.581849 3.543527,-3.545388 0,-1.963537 -1.579989,-3.543526 -3.543527,-3.543526 z m 11.646205,14.68378 c -2.805064,0 -5.063244,2.258181 -5.063244,5.063243 0,2.805064 2.25818,5.063245 5.063244,5.063245 2.805063,0 5.063244,-2.258181 5.063244,-5.063245 0,-2.805062 -2.258181,-5.063243 -5.063244,-5.063243 z" />
+</svg>

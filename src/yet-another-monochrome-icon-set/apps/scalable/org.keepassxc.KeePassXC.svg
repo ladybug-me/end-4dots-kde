@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="org.keepassxc.KeePassXC.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.3531261"
+     inkscape:cx="36.295755"
+     inkscape:cy="40.430715"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+    <radialGradient
+       id="u"
+       cx="312.9946"
+       cy="-473.01779"
+       fx="312.9946"
+       fy="-473.01779"
+       r="223.5101"
+       gradientTransform="matrix(0.04534645,0,0,0.04534645,6.414429,4.4626148)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#f5f5f5"
+         id="stop16" />
+      <stop
+         offset=".5481"
+         stop-color="#f2f2f2"
+         id="stop17" />
+    </radialGradient>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="path5"
+     d="m 8.4665125,1.3197386 c -3.939016,0 -7.143622,3.206016 -7.143622,7.146761 0,3.9407464 3.204619,7.1467614 7.143622,7.1467614 3.9390025,0 7.1435965,-3.206053 7.1435965,-7.1467614 0,-3.940707 -3.204581,-7.146761 -7.1435965,-7.146761 z m -1.090903,1.22857 c 0.35821,-0.06514 0.732693,-0.09772 1.090903,-0.09772 0.374483,-0.01629 0.732693,0.03257 1.090903,0.09772 0.01629,0.08143 0.03257,0.162857 0.03257,0.244274 0,0.618846 -0.504743,1.123705 -1.123461,1.123705 -0.618719,0 -1.123462,-0.504846 -1.123462,-1.123705 0,-0.08143 0.01629,-0.162846 0.03257,-0.244274 z m 0.651277,4.967069 V 12.026459 H 7.5709875 V 7.5153776 Z m 0.439613,6.9701814 c -3.321541,0 -6.024363,-2.687101 -6.024363,-6.0256194 0,-2.117111 1.107189,-4.071365 2.930772,-5.162499 -0.03256,0.211715 -0.06513,0.407131 -0.06513,0.618847 0,1.253978 0.732693,2.345099 1.80731,2.849958 v 5.7162024 l 1.351411,1.351693 1.351412,-1.351693 -0.08142,-1.188836 0.6350035,-0.635132 -0.6350035,-0.635132 0.9606425,-0.9608474 -0.9606425,-0.960848 0.08142,-1.335407 c 1.0583315,-0.504846 1.8073105,-1.59598 1.8073105,-2.849958 0,-0.211716 -0.01629,-0.407132 -0.06513,-0.618847 1.80731,1.091134 2.914486,3.045388 2.930772,5.162499 0,3.3222324 -2.68655,6.0256194 -6.0243645,6.0256194 z"
+     class="ColorScheme-Text"
+     style="isolation:isolate;fill:currentColor;fill-opacity:1;stroke-width:0.128133" />
+</svg>

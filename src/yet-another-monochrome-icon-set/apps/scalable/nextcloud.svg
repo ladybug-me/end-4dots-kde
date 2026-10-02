@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="Nextcloud.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="29.64467" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path3-5" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text" d="M 31.999999 20.999679 A 11 11 0 0 0 21.378838 29.140638 A 7 7 0 0 0 15.0005 24.999653 A 7 7 0 0 0 8.0001532 32 A 7 7 0 0 0 15.0005 39.000347 A 7 7 0 0 0 21.378838 34.859363 A 11 11 0 0 0 31.999999 43.000322 A 11 11 0 0 0 42.621161 34.859363 A 7 7 0 0 0 48.999499 39.000347 A 7 7 0 0 0 55.999846 32 A 7 7 0 0 0 48.999499 24.999653 A 7 7 0 0 0 42.621161 29.140638 A 11 11 0 0 0 31.999999 20.999679 z M 32.125341 24.999653 A 7 7 0 0 1 39.125688 32 A 7 7 0 0 1 32.125341 39.000347 A 7 7 0 0 1 25.124994 32 A 7 7 0 0 1 32.125341 24.999653 z M 15.0005 28.999628 A 3 3 0 0 1 17.999306 32 A 3 3 0 0 1 15.0005 35.000373 A 3 3 0 0 1 12.000128 32 A 3 3 0 0 1 15.0005 28.999628 z M 48.999499 28.999628 A 3 3 0 0 1 51.999871 32 A 3 3 0 0 1 48.999499 35.000373 A 3 3 0 0 1 46.000693 32 A 3 3 0 0 1 48.999499 28.999628 z " transform="matrix(0.32982044,0,0,0.32982044,-2.0877542,-2.0877545)"/>
+</svg>

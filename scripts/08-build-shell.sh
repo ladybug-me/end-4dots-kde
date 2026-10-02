@@ -7,6 +7,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/install-fs.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/packages.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/download.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/toolchain.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/update-state.sh"
 
@@ -15,6 +16,7 @@ SHELL_DIR="$BUNDLE_DIR/shell"
 
 write_shell_environment() {
     local env_d="$HOME/.config/environment.d"
+    local plasma_env_d="$HOME/.config/plasma-workspace/env"
     local rc
 
     info "Writing the shell environment to $env_d/caelestia.conf"
@@ -28,6 +30,26 @@ CAELESTIA_BIN_DIR=$(install_bin_dir)
 CAELESTIA_SHELL_CONFIG=$(install_shell_config)
 EOF
     ok "Shell environment written."
+
+    info "Writing the Plasma session environment to $plasma_env_d/caelestia.sh"
+    mkdir -p "$plasma_env_d"
+    cat > "$plasma_env_d/caelestia.sh" << EOF
+#!/bin/sh
+# Written by Caelestia. Sourced by KDE Plasma during session startup for KWin,
+# kscreenlocker_greet, and graphical session processes.
+#
+# The command directory goes on PATH because a checkout's command lives in
+# ~/.local/bin, which a session does not carry on every distribution: without
+# this, a terminal here cannot run caelestia update by name. A package's
+# /usr/bin is already on PATH, so this only matters for a checkout.
+export PATH="$(install_bin_dir)\${PATH:+:\$PATH}"
+export QML2_IMPORT_PATH="$(install_qml_import_path)\${QML2_IMPORT_PATH:+:\$QML2_IMPORT_PATH}"
+export CAELESTIA_LIB_DIR="$(install_lib_dir)"
+export CAELESTIA_BIN_DIR="$(install_bin_dir)"
+export CAELESTIA_SHELL_CONFIG="$(install_shell_config)"
+EOF
+    chmod +x "$plasma_env_d/caelestia.sh"
+    ok "Plasma session environment written."
 
     for rc in "$HOME/.bashrc" "$HOME/.config/fish/config.fish" "$HOME/.zshrc"; do
         [[ -f "$rc" ]] || continue
@@ -121,6 +143,49 @@ cleanup_legacy_lockscreen() {
         kwriteconfig6 --file kscreenlockerrc --group Greeter --group LnF --group General --key showMediaControls --delete 2>/dev/null || true
         kwriteconfig6 --file kscreenlockerrc --group "Greeter" --key "Theme" --delete 2>/dev/null || true
     fi
+}
+
+# The shell used to load every font under `assets/fonts`, so an install can hold two copies
+# of them: the tree's own, which the CMake install puts in the config directory and never
+# deletes files from, and the copy the 12-fetch-assets.sh step (since removed) downloaded
+# into the user's asset directory. Nothing reads either directory now, and the two together
+# are about 600 MiB on a machine that has both. Only what those two mechanisms could have
+# put there is removed; anything the user added themselves stays.
+#
+# A package's tree lives under /etc and belongs to pacman, which drops the fonts with the
+# upgrade that removes them from the package, so install_shell_config() resolves to the
+# package's path there and the packaged half returns before this runs anyway.
+cleanup_legacy_fonts() {
+    local -a roots=(
+        "$(dirname -- "$(install_shell_config)")/assets/fonts"
+        "${XDG_DATA_HOME:-$HOME/.local/share}/caelestia/assets/fonts"
+    )
+    local -a removed
+    local root entry
+
+    for root in "${roots[@]}"; do
+        [[ -d "$root" ]] || continue
+
+        removed=()
+        for entry in SF-Pro SF-Mono google-sans-flex; do
+            if [[ -e "$root/$entry" ]]; then
+                rm -rf "${root:?}/$entry"
+                removed+=("$entry")
+            fi
+        done
+
+        # The download copied the tree's own three-line README along with the fonts, and it
+        # describes a directory nothing reads now. Only that exact text is removed.
+        if [[ "$(head -n 1 "$root/README.md" 2>/dev/null || true)" == "# Fonts" ]]; then
+            rm -f "$root/README.md"
+        fi
+
+        rmdir "$root" 2>/dev/null || true
+
+        if [[ ${#removed[@]} -gt 0 ]]; then
+            ok "Reclaimed the fonts an older install left in $root (${removed[*]}); the shell no longer loads them."
+        fi
+    done
 }
 
 install_lockscreen_greeter() {
@@ -223,6 +288,15 @@ if [[ "${CAELESTIA_SETUP_RUNNING:-0}" == "0" ]]; then
     if [[ -f "$BUNDLE_DIR/scripts/10-autostart.sh" ]]; then
         bash "$BUNDLE_DIR/scripts/10-autostart.sh" || warn "10-autostart.sh failed"
     fi
+
+    # The default wallpaper pack is a step of its own in a full install, but an
+    # update only runs 03-deploy-configs, this script and 09-system-tweaks, so
+    # fetch it from here to keep updates supplied with it. The script is
+    # idempotent: it exits on its own once the pack is already present.
+    info "Downloading the default wallpaper pack..."
+    if [[ -f "$BUNDLE_DIR/scripts/03a-wallpapers.sh" ]]; then
+        bash "$BUNDLE_DIR/scripts/03a-wallpapers.sh" || warn "03a-wallpapers.sh failed"
+    fi
 fi
 
 info "Building the Caelestia shell..."
@@ -273,7 +347,7 @@ checkout_may_use_prebuilt() {
 }
 
 try_download_prebuilt_shell() {
-    local arch qt_abi tag tmp_archive url checksum expected actual asset candidate
+    local arch qt_abi tag tmp_archive url checksum_status asset candidate
     arch="$(uname -m)"
     [[ "$arch" == "x86_64" ]] || return 1
     [[ -f /etc/arch-release ]] || return 1
@@ -286,7 +360,7 @@ try_download_prebuilt_shell() {
     info "Downloading prebuilt shell artifacts (${tag}, Qt ${qt_abi})..."
     for asset in "caelestia-kde-${arch}-qt${qt_abi}.tar.gz" "caelestia-shell-${arch}-qt${qt_abi}.tar.gz"; do
         candidate="https://github.com/ladybug-me/caelestia-kde/releases/download/${tag}/${asset}"
-        if curl -fL --connect-timeout 10 --progress-bar "$candidate" -o "$tmp_archive"; then
+        if fetch_asset "$candidate" "$tmp_archive" --progress-bar; then
             url="$candidate"
             break
         fi
@@ -297,21 +371,26 @@ try_download_prebuilt_shell() {
         return 1
     fi
 
-    checksum="$(mktemp)"
-    if curl -fsSL --connect-timeout 10 "$url.sha256" -o "$checksum"; then
-        expected="$(cut -d' ' -f1 < "$checksum")"
-        actual="$(sha256sum "$tmp_archive" | cut -d' ' -f1)"
-        if [[ -z "$expected" || "$expected" != "$actual" ]]; then
-            warn "Checksum mismatch for $url"
-            warn "Expected ${expected:-<empty>}, got $actual - falling back to a local build."
-            rm -f "$tmp_archive" "$checksum"
-            return 1
-        fi
-        ok "Prebuilt shell artifacts match the published checksum."
+    checksum_status=0
+    verify_download "$url" "$tmp_archive" || checksum_status=$?
+    if [[ "$checksum_status" -eq 1 ]]; then
+        warn "Checksum mismatch for $url - falling back to a local build."
+        rm -f "$tmp_archive"
+        return 1
+    elif [[ "$checksum_status" -eq 2 ]]; then
+        warn "No published checksum for $url - extracting without verification (SHA-256 $(file_sha256 "$tmp_archive"))."
     else
-        warn "No published checksum for $url - extracting without verification."
+        ok "Prebuilt shell artifacts match the published checksum."
     fi
-    rm -f "$checksum"
+
+    # Nothing above compared the archive against a published hash for the first two
+    # cases, and this extraction writes into $HOME/.config and $HOME/.local, so refuse an
+    # archive carrying setuid or escaping entries even when there is no hash to check.
+    if ! archive_entries_are_safe "$tmp_archive"; then
+        warn "Refusing to extract $url: the archive has setuid, setgid or escaping entries."
+        rm -f "$tmp_archive"
+        return 1
+    fi
 
     info "Extracting prebuilt shell artifacts..."
     mkdir -p "$HOME/.local" "$HOME/.config"
@@ -412,7 +491,7 @@ ws_built_effect() {
 ws_signature() {
     local built="$1" installed="$2"
     printf '%s %s\n' \
-        "$(sha256sum "$built" | cut -d' ' -f1)" \
+        "$(file_sha256 "$built")" \
         "$(stat -c '%s:%Y' "$installed" 2>/dev/null || echo missing)"
 }
 
@@ -519,6 +598,13 @@ install -m 755 "$BUNDLE_DIR/src/bin/caelestia-update" ~/.local/bin/caelestia-upd
 install -m 755 "$BUNDLE_DIR/src/bin/caelestia-check-updates" ~/.local/bin/caelestia-check-updates
 ok "Caelestia bin wrappers installed to ~/.local/bin"
 
+info "Installing the update-checker units..."
+install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.service" ~/.config/systemd/user/caelestia-update-checker.service
+install -m 644 "$BUNDLE_DIR/src/systemd/caelestia-update-checker.timer" ~/.config/systemd/user/caelestia-update-checker.timer
+systemctl --user daemon-reload
+systemctl --user enable --now caelestia-update-checker.timer
+ok "Update-checker timer enabled"
+
 CAELESTIA_SHARE="$HOME/.local/lib/caelestia"
 if [[ -d "$BUNDLE_DIR/src/matugen" && -d "$BUNDLE_DIR/src/schemes" ]]; then
     info "Installing the color pipeline data..."
@@ -558,6 +644,10 @@ else
 fi
 
 record_installed_revision "$BUNDLE_DIR" "$HOME/.config/quickshell/caelestia" || true
+
+# Outside the deploy guard on purpose: CAELESTIA_SKIP_DEPLOY is about the config files this
+# step deploys, and this is the assets an older install left behind.
+cleanup_legacy_fonts
 
 if [[ "${CAELESTIA_SKIP_DEPLOY:-0}" == "0" && "${APPLY_LOCKSCREEN:-true}" != "false" ]]; then
     cleanup_legacy_lockscreen

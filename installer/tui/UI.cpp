@@ -5,6 +5,7 @@
 #include "Input.hpp"
 #include "Draw.hpp"
 #include "Runner.hpp"
+#include "Sudo.hpp"
 #include <chrono>
 #include <cstdio>
 #include <cstdlib>
@@ -27,134 +28,6 @@ using namespace std;
 std::map<std::string, std::string> g_answers;
 
 namespace {
-
-bool write_password_file_secure(const string& path, const string& password) {
-    int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);
-    if (fd == -1) {
-        return false;
-    }
-    string data = password + "\n";
-    ssize_t written = write(fd, data.c_str(), data.size());
-    close(fd);
-    return written == static_cast<ssize_t>(data.size());
-}
-
-bool write_file_excl(const string& path, const string& content, int mode) {
-    int fd = open(path.c_str(), O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC, mode);
-    if (fd == -1) {
-        return false;
-    }
-    ssize_t written = write(fd, content.c_str(), content.size());
-    close(fd);
-    return written == static_cast<ssize_t>(content.size());
-}
-
-bool is_systemd_inhibit(pid_t pid) {
-    ifstream cmdline("/proc/" + to_string(pid) + "/cmdline", ios::binary);
-    string command((istreambuf_iterator<char>(cmdline)), istreambuf_iterator<char>());
-    return command.find("systemd-inhibit") != string::npos;
-}
-
-void release_kde_inhibit(const string& cookie_file) {
-    ifstream cookie(cookie_file);
-    string value;
-    getline(cookie, value);
-    if (value.empty())
-        return;
-    pid_t child = fork();
-    if (child == 0) {
-        execlp("qdbus6", "qdbus6", "org.freedesktop.ScreenSaver",
-               "/ScreenSaver", "org.freedesktop.ScreenSaver.UnInhibit",
-               value.c_str(), static_cast<char*>(nullptr));
-        _exit(127);
-    }
-    if (child > 0)
-        waitpid(child, nullptr, 0);
-}
-
-bool setup_sudo_environment(const string& pw) {
-    char tmpl[] = "/tmp/caelestia-bin.XXXXXX";
-    char* dir = mkdtemp(tmpl);
-    if (!dir) {
-        return false;
-    }
-    g_sudo_bin_dir = dir;
-
-    if (!write_password_file_secure(g_sudo_bin_dir + "/pass.txt", pw)) {
-        std::filesystem::remove_all(g_sudo_bin_dir);
-        g_sudo_bin_dir.clear();
-        return false;
-    }
-
-    string askpass = "#!/bin/bash\ncat " + g_sudo_bin_dir + "/pass.txt\n";
-    if (!write_file_excl(g_sudo_bin_dir + "/askpass.sh", askpass, 0700)) {
-        std::filesystem::remove_all(g_sudo_bin_dir);
-        g_sudo_bin_dir.clear();
-        return false;
-    }
-
-    string wrapper = "#!/bin/bash\nexport SUDO_ASKPASS=" + g_sudo_bin_dir +
-                     "/askpass.sh\nexec /usr/bin/sudo -A \"$@\"\n";
-    if (!write_file_excl(g_sudo_bin_dir + "/sudo", wrapper, 0700)) {
-        std::filesystem::remove_all(g_sudo_bin_dir);
-        g_sudo_bin_dir.clear();
-        return false;
-    }
-
-    setenv("SUDO_PASS", pw.c_str(), 1);
-
-    const char* runtime = getenv("XDG_RUNTIME_DIR");
-    const char* home = getenv("HOME");
-    string state_dir = string(runtime ? runtime : (getenv("XDG_STATE_HOME")
-        ? getenv("XDG_STATE_HOME")
-        : (home ? string(home) + "/.local/state" : "/tmp"))) + "/caelestia";
-    std::error_code state_error;
-    std::filesystem::create_directories(state_dir, state_error);
-    if (state_error || chmod(state_dir.c_str(), 0700) != 0) {
-        std::filesystem::remove_all(g_sudo_bin_dir);
-        g_sudo_bin_dir.clear();
-        return false;
-    }
-    const string pid_file = state_dir + "/inhibit.pid";
-    const string cookie_file = state_dir + "/kde_inhibit.cookie";
-
-    ifstream old_pid(pid_file);
-    pid_t pid = 0;
-    old_pid >> pid;
-    if (pid > 0 && is_systemd_inhibit(pid))
-        kill(pid, SIGKILL);
-    release_kde_inhibit(cookie_file);
-
-    pid = fork();
-    if (pid == 0) {
-        execlp("systemd-inhibit", "systemd-inhibit", "--what=idle:sleep",
-               "--who=Caelestia installer", "--why=Installation in progress",
-               "bash", "-c", "while :; do sleep 600; done",
-               static_cast<char*>(nullptr));
-        _exit(127);
-    }
-    if (pid > 0) {
-        ofstream pid_out(pid_file);
-        pid_out << pid << '\n';
-    }
-
-    int cookie_fd = open(cookie_file.c_str(), O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, 0600);
-    pid = fork();
-    if (pid == 0) {
-        if (cookie_fd >= 0)
-            dup2(cookie_fd, STDOUT_FILENO);
-        execlp("qdbus6", "qdbus6", "org.freedesktop.ScreenSaver",
-               "/ScreenSaver", "org.freedesktop.ScreenSaver.Inhibit",
-               "Caelestia installer", "Installation in progress",
-               static_cast<char*>(nullptr));
-        _exit(127);
-    }
-    if (cookie_fd >= 0)
-        close(cookie_fd);
-    if (pid > 0)
-        waitpid(pid, nullptr, 0);
-    return true;
-}
 
 string distro_label(const string& id) {
     if (id == "arch") return "Arch-based Linux";
@@ -204,6 +77,67 @@ bool is_caelestia_installed() {
         }
     }
     return false;
+}
+
+// Runs `<sudo> -S true` with the candidate on its stdin. No shell, and an absolute
+// binary when there is one: `sh -c "sudo ..."` would run whichever `sudo` the PATH
+// offers first, and the PATH is the one thing the caller decides.
+bool sudo_accepts_password(const string& password) {
+    string sudo_path;
+    for (const char* candidate : {"/usr/bin/sudo", "/bin/sudo"}) {
+        if (access(candidate, X_OK) == 0) {
+            sudo_path = candidate;
+            break;
+        }
+    }
+    if (sudo_path.empty())
+        return false;
+
+    int pipe_fds[2];
+    if (pipe(pipe_fds) != 0)
+        return false;
+
+    pid_t child = fork();
+    if (child < 0) {
+        close(pipe_fds[0]);
+        close(pipe_fds[1]);
+        return false;
+    }
+    if (child == 0) {
+        close(pipe_fds[1]);
+        if (dup2(pipe_fds[0], STDIN_FILENO) < 0)
+            _exit(127);
+        close(pipe_fds[0]);
+        int devnull = open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup2(devnull, STDOUT_FILENO);
+            dup2(devnull, STDERR_FILENO);
+            close(devnull);
+        }
+        execl(sudo_path.c_str(), "sudo", "-S", "true", static_cast<char*>(nullptr));
+        _exit(127);
+    }
+
+    close(pipe_fds[0]);
+    // A sudo that has already given up closes the read end, and the write below would
+    // take the installer down with SIGPIPE.
+    struct sigaction previous {};
+    struct sigaction ignore {};
+    ignore.sa_handler = SIG_IGN;
+    sigaction(SIGPIPE, &ignore, &previous);
+
+    const string line = password + "\n";
+    ssize_t written = write(pipe_fds[1], line.data(), line.size());
+    close(pipe_fds[1]);
+    sigaction(SIGPIPE, &previous, nullptr);
+
+    int status = 0;
+    if (waitpid(child, &status, 0) < 0)
+        return false;
+    // A short write leaves sudo waiting for the rest of the line, so only a complete
+    // one plus a zero exit counts as "this password works".
+    return written == static_cast<ssize_t>(line.size()) && WIFEXITED(status) &&
+           WEXITSTATUS(status) == 0;
 }
 
 } // anonymous namespace
@@ -410,18 +344,12 @@ namespace UI {
                 Draw::text(left + 2, top + 5, "Verifying...                                 ", "warning");
                 cout << Draw::sync_end() << flush;
 
-                FILE* pipe = popen("sudo -S true 2>/dev/null", "w");
-                if (pipe) {
-                    fprintf(pipe, "%s\n", candidate.c_str());
-                    fflush(pipe);
-                    int status = pclose(pipe);
-                    if (WIFEXITED(status) && WEXITSTATUS(status) == 0) {
-                        if (setup_sudo_environment(candidate))
-                            return true;
-                        error_msg = "Could not prepare secure sudo helpers.";
-                        pw.clear();
-                        return false;
-                    }
+                if (sudo_accepts_password(candidate)) {
+                    if (Sudo::prepare(candidate))
+                        return true;
+                    error_msg = "Could not prepare secure sudo helpers.";
+                    pw.clear();
+                    return false;
                 }
                 attempts++;
                 if (attempts >= 3) {

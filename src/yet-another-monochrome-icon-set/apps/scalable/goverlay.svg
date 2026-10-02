@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="goverlay.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="3.0781251"
+     inkscape:cx="81.380708"
+     inkscape:cy="63.999998"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="path5"
+     style="fill:currentColor"
+     d="m 2.4973445,1.4551795 c -0.958434,0 -1.745377,0.792637 -1.745377,1.751172 v 6.426523 c 0,0.9585345 0.786943,1.7512365 1.745377,1.7512355 h 7.9929585 c 0.958433,0 1.745376,-0.792701 1.745376,-1.7512355 v -6.426523 c 0,-0.958535 -0.786943,-1.751172 -1.745376,-1.751172 z m 0,1.165538 h 7.9929585 c 0.32974,0 0.579838,0.249516 0.579838,0.585634 v 6.426523 c 0,0.336118 -0.250098,0.5856985 -0.579838,0.5856985 H 2.4973445 c -0.329741,0 -0.579839,-0.2495805 -0.579839,-0.5856985 v -6.426523 c 0,-0.336118 0.250098,-0.585634 0.579839,-0.585634 z m 11.0462405,1.153432 c -0.365286,0 -0.659362,0.294075 -0.659362,0.659362 V 12.181011 H 3.4883185 c -0.365286,0 -0.659362,0.294075 -0.659362,0.659362 0,0.365286 0.294076,0.659361 0.659362,0.659361 H 13.543585 c 0.365287,0 0.659362,-0.294075 0.659362,-0.659361 V 4.4335115 c 0,-0.365287 -0.294075,-0.659362 -0.659362,-0.659362 z m 1.978085,1.978085 c -0.365286,0 -0.659362,0.294075 -0.659362,0.659362 V 14.159096 H 5.4664035 c -0.365286,0 -0.659361,0.294075 -0.659361,0.659362 0,0.365286 0.294075,0.659362 0.659361,0.659362 H 15.52167 c 0.365287,0 0.659362,-0.294076 0.659362,-0.659362 V 6.4115965 c 0,-0.365287 -0.294075,-0.659362 -0.659362,-0.659362 z"
+     class="ColorScheme-Text" />
+</svg>

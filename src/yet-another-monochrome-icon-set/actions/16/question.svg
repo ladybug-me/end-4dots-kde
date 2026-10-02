@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="question.svg"
+   width="64"
+   height="64"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#9c4444"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="6.562835"
+     inkscape:cx="61.254016"
+     inkscape:cy="34.436337"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <style
+     type="text/css"
+     id="current-color-scheme">.ColorScheme-Text { color: #d8dee9; } </style>
+  <path
+     style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:2.5"
+     d="M 31.92188,12 C 27.54455,12 23.40467,13.054005 19.5,15.15918 l 1.94336,4.467773 c 1.9523,-0.9588 3.70676,-1.643697 5.26856,-2.060547 1.58243,-0.416825 3.1948,-0.625 4.83885,-0.625 2.4661,0 4.35855,0.550624 5.67383,1.655274 1.31525,1.104675 1.97267,2.687501 1.97267,4.750976 0,1.104675 -0.142,2.076407 -0.4297,2.910156 -0.2877,0.8337 -0.78077,1.666275 -1.4795,2.5 C 36.58937,29.591537 35.1189,30.96619 32.8789,32.88379 30.1287,35.392115 27.25115,39.8475 27,44.5 h 5 l -0.015,-0.07813 c 0,-1.8967 0.32867,-3.41903 0.98633,-4.56543 0.6782,-1.167225 2.03282,-2.637505 4.06737,-4.40918 2.48667,-2.105175 4.14382,-3.68795 4.96583,-4.750975 0.8426,-1.063 1.46889,-2.185949 1.87989,-3.374025 C 44.29602,26.13419 44.5,24.767986 44.5,23.225586 44.5,19.682236 43.38067,16.927975 41.14063,14.96875 38.9006,12.98865 35.82653,12 31.92188,12 Z M 27,47 v 5 h 5 v -5 z"
+     class="ColorScheme-Text"
+     id="path1-5" />
+</svg>

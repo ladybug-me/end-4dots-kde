@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="preferences-tabs.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="7.625" inkscape:cx="32" inkscape:cy="31.934426" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="rect4239" class="ColorScheme-Text" style="fill:currentColor;stroke-width:0.417166;stroke-linejoin:round" d="M 3.7397641 4.1313737 C 3.584997 4.1313737 3.4604881 4.3041564 3.4604881 4.5184405 L 3.4604881 5.4135936 C 3.4604881 5.6278777 3.584997 5.8001704 3.7397641 5.8001704 L 7.7701579 5.8001704 C 7.9249249 5.8001704 8.0494339 5.6278777 8.0494339 5.4135936 L 8.0494339 4.5184405 C 8.0494339 4.3041564 7.9249249 4.1313737 7.7701579 4.1313737 L 3.7397641 4.1313737 z M 9.3777098 4.1313737 C 9.103896 4.1313737 8.8838322 4.3041564 8.8838322 4.5184405 L 8.8838322 5.4135936 C 8.8838322 5.6278777 9.103896 5.8001704 9.3777098 5.8001704 L 12.97841 5.8001704 C 13.252224 5.8001704 13.472288 5.6278777 13.472288 5.4135936 L 13.472288 4.5184405 C 13.472288 4.3041564 13.252224 4.1313737 12.97841 4.1313737 L 9.3777098 4.1313737 z M 4.4908696 6.747259 C 3.93135 6.747259 3.4810663 7.1883792 3.4810663 7.7359941 L 3.4810663 12.377365 C 3.4810663 12.92498 3.93135 13.3661 4.4908696 13.3661 L 12.485023 13.3661 C 13.044542 13.3661 13.494826 12.92498 13.494826 12.377365 L 13.494826 7.7359941 C 13.494826 7.1883792 13.044542 6.747259 12.485023 6.747259 L 4.4908696 6.747259 z " transform="matrix(1.0546909,0,0,1.0546909,-0.47480778,-0.76071341)"/>
+</svg>

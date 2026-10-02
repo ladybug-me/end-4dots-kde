@@ -1,0 +1,18 @@
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+base_path: "."
+preserve_hierarchy: true
+
+files:
+  - source: /shell/translations/caelestia_en.ts
+    translation: /shell/translations/caelestia_%two_letters_code%.ts
+    # %two_letters_code% is ISO 639-1, so the variants of one language collapse
+    # to the same bare code. Keys are Crowdin's language codes, values are the
+    # names Qt looks for. Neither Chinese language is a target on the project,
+    # so those two entries sit idle: both catalogues are contributed by hand.
+    languages_mapping:
+      two_letters_code:
+        pt-PT: pt_PT
+        pt-BR: pt_BR
+        zh-CN: zh_CN
+        zh-TW: zh_TW

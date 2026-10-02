@@ -30,7 +30,17 @@ tweak_disable_kde_osd() {
     ok "KDE OSD popups disabled."
 }
 
+first_install() {
+    local existing
+    existing="$(kreadconfig6 --file kwinrc --group "Desktops" --key "Number" 2>/dev/null || true)"
+    [[ -z "$existing" ]]
+}
+
 tweak_five_desktops() {
+    if ! first_install; then
+        skip "Existing virtual desktop configuration found - leaving it untouched."
+        return 0
+    fi
     info "Configuring 5 virtual desktops..."
 
     kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "5"
@@ -43,6 +53,10 @@ tweak_five_desktops() {
 }
 
 tweak_remove_panels() {
+    if ! first_install; then
+        skip "Not a first install - leaving Plasma panels alone."
+        return 0
+    fi
     info "Removing KDE Plasma panels..."
 
     if qdbus6 org.kde.plasmashell /PlasmaShell org.kde.PlasmaShell.evaluateScript \
@@ -152,7 +166,7 @@ tweak_default_shell() {
         shell_path="$(command -v "$target_shell")"
 
         local current_shell
-        current_shell="$(getent passwd "$USER" | cut -d: -f7)"
+        current_shell="$(getent passwd "$(id -un)" | cut -d: -f7)"
         if [[ -z "$current_shell" ]]; then
             current_shell="$SHELL"
         fi
@@ -160,7 +174,7 @@ tweak_default_shell() {
         if [[ "$current_shell" == "$shell_path" ]]; then
             info "Shell is already set to $shell_path. Skipping chsh."
         else
-            caelestia_sudo_quiet chsh -s "$shell_path" "$USER" 2>/dev/null || warn "Failed to change shell for $USER without prompting. You may need to run 'sudo chsh -s $shell_path $USER' manually."
+            caelestia_sudo_quiet chsh -s "$shell_path" "$(id -un)" 2>/dev/null || warn "Failed to change shell without prompting. You may need to run 'sudo chsh -s $shell_path $(id -un)' manually."
         fi
 
         local konsole_profile_dir="$HOME/.local/share/konsole"

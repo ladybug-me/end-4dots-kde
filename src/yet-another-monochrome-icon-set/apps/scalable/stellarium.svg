@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="stellarium.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="33.949239" inkscape:cy="29.725888" inkscape:window-width="2560" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path2" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text" d="M 30.999974 5.999291 C 28.569974 5.999291 26.227782 6.3542384 23.999782 6.9722384 C 34.977782 10.017038 43.000304 20.025406 43.000304 32.000006 C 43.000304 43.974006 34.977782 53.981773 23.999782 57.027773 C 26.227782 57.645773 28.569974 58.000721 30.999974 58.000721 C 45.403974 58.000721 57.000689 46.404006 57.000689 32.000006 C 57.000689 17.596006 45.403974 6.0012253 30.999974 6.0012253 L 30.999974 5.999291 z M 20.999699 15.999566 L 18.999644 18.999648 L 14.999534 18.999648 L 17.999617 21.999731 L 16.999589 25.999841 L 20.999699 23.999786 L 24.999809 25.999841 L 23.999782 21.999731 L 26.999864 18.999648 L 22.999754 18.999648 L 20.999699 15.999566 z M 27.999892 23.999786 L 25.218384 28.999923 L 18.999644 30.11214 L 23.498801 34.210898 L 21.999727 40.000226 L 27.999892 37.267075 L 34.000057 40.000226 L 32.499048 34.210898 L 37.000139 30.11214 L 30.781399 28.999923 L 27.999892 23.999786 z M 17.999617 36.000116 L 14.601071 43.000308 L 6.9993141 44.000336 L 12.500433 48.76449 L 10.999424 56.000666 L 17.999617 52.584711 L 24.999809 56.000666 L 23.500735 48.76449 L 28.999919 44.000336 L 21.400097 43.000308 L 17.999617 36.000116 z " transform="matrix(0.26715456,0,0,0.26715456,-0.08244601,-0.08244717)"/>
+</svg>

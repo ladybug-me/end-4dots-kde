@@ -4,7 +4,6 @@ CAELESTIA_TEST_HELPERS_SOURCED=1
 
 CAELESTIA_TEST_FAILURES=0
 CAELESTIA_TEST_COUNT=0
-CAELESTIA_TEST_TMPDIRS=()
 
 fail() {
     CAELESTIA_TEST_FAILURES=$((CAELESTIA_TEST_FAILURES + 1))
@@ -76,17 +75,7 @@ assert_not_contains() {
 new_tmpdir() {
     local dir
     dir="$(mktemp -d "${TMPDIR:-/tmp}/caelestia-test.XXXXXX")"
-    CAELESTIA_TEST_TMPDIRS+=("$dir")
     printf '%s\n' "$dir"
-}
-
-cleanup_tmpdirs() {
-    local dir
-    for dir in "${CAELESTIA_TEST_TMPDIRS[@]:-}"; do
-        [[ -n "$dir" ]] && rm -rf -- "$dir"
-    done
-    CAELESTIA_TEST_TMPDIRS=()
-    return 0
 }
 
 stub_bin() {
@@ -106,6 +95,18 @@ calls_to() {
     local log="$1" name="$2"
     [[ -f "$log" ]] || return 0
     awk -v want="$name" '$1 == want { sub(/^[^ ]+ /, ""); print }' "$log"
+}
+
+# Prints a function's body out of a script, so a test can drive the real implementation
+# rather than a copy of it. The body ends at the first closing brace at column zero, which
+# is how the scripts in this repository close their functions.
+extract_function() {
+    local file="$1" name="$2"
+    awk -v name="$name" '
+        $0 ~ "^" name "\\(\\) \\{" { capture = 1 }
+        capture { print }
+        capture && $0 == "}" { exit }
+    ' "$file"
 }
 
 # Runs its command with PATH holding only $1, so the command can only reach the
@@ -128,8 +129,6 @@ run_tests() {
         printf '  %s\n' "$fn"
         "$fn"
     done < <(declare -F | awk '{ print $3 }' | grep '^test_' | sort)
-
-    cleanup_tmpdirs
 
     if [[ "$CAELESTIA_TEST_FAILURES" -gt 0 ]]; then
         printf '  %s assertion(s) failed across %s test(s)\n' \

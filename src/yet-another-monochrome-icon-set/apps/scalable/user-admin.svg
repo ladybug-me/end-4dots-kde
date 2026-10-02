@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="user-admin.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="29.725888" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="35" inkscape:window-y="32" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g id="g6" transform="matrix(0.10350115,0,0,0.10350115,-4.6449506,-4.7287322)" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text">
+    <path d="m 144.857,99.7144 c 0,7.2966 -2.762,13.9476 -7.299,18.9646 3.63,6.74 10.751,11.321 18.942,11.321 11.874,0 21.5,-9.626 21.5,-21.5 0,-11.8746 -9.626,-21.5005 -21.5,-21.5005 -4.846,0 -9.317,1.6033 -12.913,4.3084 0.826,2.6557 1.27,5.4791 1.27,8.4065 z" id="path2" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text"/>
+    <path d="m 147.636,143.538 c 14.719,5.798 24.65,16.482 24.65,32.462 v 3 H 200 v -6.667 c 0,-20 -19.846,-29.333 -43,-29.333 -3.199,0 -6.335,0.178 -9.364,0.538 z" id="path3-7" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text"/>
+    <path d="M 138,96.5 C 138,112.24 125.24,125 109.5,125 93.7599,125 81,112.24 81,96.5 81,80.7599 93.7599,68 109.5,68 125.24,68 138,80.7599 138,96.5 Z" id="path4" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text"/>
+    <path d="M 54,179.481 C 54,153.926 79.6154,142 109.5,142 c 29.885,0 55.5,11.926 55.5,37.481 0,3.327 0,8.519 0,8.519 H 54 c 0,0 0,-5.192 0,-8.519 z" id="path5" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text"/>
+  </g>
+  </svg>

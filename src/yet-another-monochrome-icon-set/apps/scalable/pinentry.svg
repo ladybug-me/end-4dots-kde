@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="pinentry.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.15625"
+     inkscape:cx="15.675127"
+     inkscape:cy="30.050761"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     d="m 8.4665,1.4551796 c -2.202774,0 -4.006471,1.8036931 -4.006471,4.0064687 v 2.0032342 c -1.111167,0 -2.003233,0.8920653 -2.003233,2.0032346 v 5.0080859 c 0,0.555585 0.446033,1.001617 1.001617,1.001617 h 10.016175 c 0.555584,0 1.001616,-0.446032 1.001616,-1.001617 V 9.4681171 c 0,-1.1111693 -0.892065,-2.0032346 -2.003237,-2.0032346 V 5.4616483 c 0,-2.2027756 -1.803692,-4.0064687 -4.006467,-4.0064687 z m 0,2.0032343 c 1.126818,0 2.003234,0.876415 2.003234,2.0032344 V 7.4648825 H 6.463267 V 5.4616483 c 0,-1.1268194 0.876415,-2.0032344 2.003233,-2.0032344 z m 0,0"
+     id="path5"
+     style="fill:currentColor"
+     class="ColorScheme-Text" />
+</svg>

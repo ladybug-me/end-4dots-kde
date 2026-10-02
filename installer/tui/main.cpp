@@ -2,10 +2,12 @@
 #include "Term.hpp"
 #include "UI.hpp"
 #include "Runner.hpp"
+#include "Sudo.hpp"
 #include <iostream>
 #include <fstream>
 #include <csignal>
 #include <cstdlib>
+#include <filesystem>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -30,9 +32,7 @@ void check_signals() {
     if (g_sigint_received || g_sigterm_received) {
         g_quit = true;
         Term::restore();
-        if (!g_sudo_bin_dir.empty() && run_shell("rm -rf \"" + g_sudo_bin_dir + "\"") != 0) {
-            cerr << "[installer] warning: could not remove the sudo shim directory " << g_sudo_bin_dir << endl;
-        }
+        Sudo::cleanup();
         exit(130);
     }
 }
@@ -96,6 +96,8 @@ int main(int argc, char** argv) {
     signal(SIGWINCH, handle_sigwinch);
     signal(SIGINT, handle_sigint);
     signal(SIGTERM, handle_sigterm);
+    signal(SIGHUP, handle_sigterm);
+    signal(SIGQUIT, handle_sigterm);
 
     const char* env_distro = getenv("BASE_DISTRO");
     if (env_distro && string(env_distro) != "") {
@@ -223,13 +225,16 @@ int main(int argc, char** argv) {
         string cache_dir = xdg_cache_dir() + "/caelestia-kde";
         // Best effort: the cache is scratch space, and a failed removal only costs
         // the next run the disk space it was asked to free.
-        (void)run_shell("rm -rf \"" + cache_dir + "\"");
+        //
+        // std::filesystem rather than `rm -rf`: the path is built from
+        // XDG_CACHE_HOME, and inside the shell's double quotes a `$`, a backtick or a
+        // quote in that variable would be a command, not a character.
+        std::error_code remove_error;
+        std::filesystem::remove_all(cache_dir, remove_error);
     }
 
     // Secure cleanup of sudo credentials
-    if (!g_sudo_bin_dir.empty() && run_shell("rm -rf \"" + g_sudo_bin_dir + "\"") != 0) {
-        cerr << "[installer] warning: could not remove the sudo shim directory " << g_sudo_bin_dir << endl;
-    }
+    Sudo::cleanup();
 
     if (g_logout) {
         cout << "\nLogging out...\n";

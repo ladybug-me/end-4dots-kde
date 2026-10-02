@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="48"
+   height="48"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="emblem-dropbox-app.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="16"
+     inkscape:cx="17.25"
+     inkscape:cy="16"
+     inkscape:window-width="2560"
+     inkscape:window-height="1376"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <path
+     id="path3"
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;fill:currentColor;enable-background:accumulate;stop-color:#000000"
+     class="ColorScheme-Text"
+     d="M 24 2 C 11.873425 2 2 11.873425 2 24 C 2 36.126575 11.873425 46 24 46 C 36.126575 46 46 36.126575 46 24 C 46 11.873425 36.126575 2 24 2 z M 24 6 C 33.964815 6 42 14.035185 42 24 C 42 33.964815 33.964815 42 24 42 C 14.035185 42 6 33.964815 6 24 C 6 14.035185 14.035185 6 24 6 z M 23.1875 10.625 C 21.629375 10.625 20.375 11.879375 20.375 13.4375 L 20.375 15.625 L 14.75 15.625 C 13.71125 15.625 12.875 16.46125 12.875 17.5 L 12.875 22.5 L 15.0625 22.5 C 16.620625 22.5 17.875 23.754375 17.875 25.3125 C 17.875 26.870625 16.620625 28.125 15.0625 28.125 L 12.875 28.125 L 12.875 33.75 C 12.875 34.78875 13.71125 35.625 14.75 35.625 L 20.375 35.625 L 20.375 33.4375 C 20.375 31.879375 21.629375 30.625 23.1875 30.625 C 24.745625 30.625 26 31.879375 26 33.4375 L 26 35.625 L 31 35.625 C 32.03875 35.625 32.76 34.7825 32.875 33.75 L 32.875 28.125 L 35.0625 28.125 C 36.620625 28.125 37.875 26.870625 37.875 25.3125 C 37.875 23.754375 36.620625 22.5 35.0625 22.5 L 32.875 22.5 L 32.875 17.5 C 32.875 16.46125 32.03875 15.625 31 15.625 L 26 15.625 L 26 13.4375 C 26 11.879375 24.745625 10.625 23.1875 10.625 z " />
+</svg>

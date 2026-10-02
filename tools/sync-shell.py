@@ -2,18 +2,21 @@
 """
 Caelestia upstream-sync tool.
 
-Keeps the repository in sync with the upstream caelestia-kde repo
-(https://github.com/ladybug-me/caelestia-kde, dev branch), tracked as
-the `upstream` git remote.
+Keeps the vendored shell (shell/) in sync with the upstream shell repo
+(caelestia-dots/shell), tracked as the `upstream` git remote.
 
-Checks all files across the repository EXCEPT `shell/`, while INCLUDING
-`shell/plugin/`.
+The vendored shell is a fork, not a copy: roughly half its files are
+KDE-specific additions that must never be overwritten by a sync, and a
+large number of shared files have drifted. This tool therefore does NOT
+auto-merge the whole tree. It classifies the difference between shell/
+and upstream into buckets, and lets you bring down chosen upstream paths
+one at a time for adaptation.
 
 Commands:
     fetch                 fetch upstream and refresh the mirror branch
-    report                classify repo files vs upstream/dev (the sync report)
-    bring PATH...         copy upstream paths into repo (then you adapt)
-    bring --force PATH... overwrite an existing local file with upstream
+    report                classify shell/ vs upstream/main (the sync report)
+    bring PATH...         copy upstream paths into shell/ (then you adapt)
+    bring --force PATH... overwrite an existing shell/ file with upstream
 
 See docs/upstream-sync.md for the full process.
 """
@@ -25,26 +28,19 @@ import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-UPSTREAM_REMOTE = "upstream"
-UPSTREAM_URL = "https://github.com/ladybug-me/caelestia-kde.git"
-UPSTREAM_BRANCH = "dev"
-UPSTREAM = f"{UPSTREAM_REMOTE}/{UPSTREAM_BRANCH}"
-LOCAL_TREE = "HEAD"
+UPSTREAM = "upstream/main"
+SHELL_TREE = "HEAD:shell"
 MIRROR_BRANCH = "mirror/upstream"
 
-
-def is_included_path(path: str) -> bool:
-    """Return True if path should be tracked by this sync tool.
-
-    Includes all files in the repository EXCEPT `shell/`,
-    while explicitly INCLUDING `shell/plugin/`, `shell/kwin-effects/`, `shell/extras/`.
-    """
-    if path in ("shell/plugin", "shell/kwin-effects", "shell/extras") or \
-       path.startswith(("shell/plugin/", "shell/kwin-effects/", "shell/extras/")):
-        return True
-    if path == "shell" or path.startswith("shell/"):
-        return False
-    return True
+SKIP_PREFIXES = (
+    ".github",
+    ".vscode",
+    "nix",
+    "flake.nix",
+    "flake.lock",
+    "README.md",
+    "LICENSE",
+)
 
 
 def git(*args: str, cwd: str = ROOT) -> str:
@@ -67,19 +63,14 @@ def git_bytes(*args: str, cwd: str = ROOT) -> bytes:
 
 
 def ls_tree(tree: str) -> dict[str, str]:
-    """Return {path: blob_hash} for every included file under `tree`."""
+    """Return {path: blob_hash} for every file under `tree` (paths are
+    relative to the tree root, so they map 1:1 between shell/ and upstream)."""
     out = git("ls-tree", "-r", tree)
     result: dict[str, str] = {}
     for line in out.splitlines():
-        if "\t" not in line:
-            continue
         meta, path = line.split("\t", 1)
-        parts = meta.split()
-        if len(parts) != 3:
-            continue
-        _mode, obj_type, blob = parts
-        if obj_type in {"blob", "commit"} and is_included_path(path):
-            result[path] = blob
+        _mode, _type, blob = meta.split()
+        result[path] = blob
     return result
 
 
@@ -87,180 +78,127 @@ def kind(path: str) -> str:
     """Rough file category used only to make the report scannable."""
     name = os.path.basename(path)
     ext = os.path.splitext(path)[1].lower()
-    if path.startswith((".github", ".vscode", "nix")) or name in {"flake.nix", "flake.lock", "crowdin.yml"}:
+    if path.startswith(SKIP_PREFIXES):
         return "meta"
-    if ext in {".cpp", ".hpp", ".h", ".c", ".cc", ".frag", ".vert", ".cmake"} or name == "CMakeLists.txt":
+    if ext in {".cpp", ".hpp", ".h", ".c", ".cc", ".frag", ".vert", ".cmake"}:
         return "cpp"
-    if ext in {".sh", ".bash"} or path.startswith(("scripts/", "installer/", "tests/")):
-        return "script"
+    if name == "CMakeLists.txt":
+        return "cpp"
     if path.startswith("assets/") or ext in {
         ".ttf", ".otf", ".webp", ".png", ".svg", ".jpg", ".jpeg", ".gif", ".pam",
     }:
         return "asset"
-    if ext == ".qml":
-        return "qml"
-    return "other"
+    return "qml"
 
 
 def hypr_paths(tree: str) -> set[str]:
     """Paths under `tree` whose content mentions Hypr (Hyprland coupling)."""
-    try:
-        proc = subprocess.run(
-            ["git", "grep", "-l", "-i", "-e", "Hypr", tree],
-            cwd=ROOT,
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-        )
-        if proc.returncode not in (0, 1):
-            return set()
-        out = proc.stdout
-    except Exception:
-        return set()
-
-    result: set[str] = set()
-    for line in out.splitlines():
-        p = line.strip()
-        if not p:
-            continue
-        if ":" in p:
-            p = p.split(":", 1)[1]
-        if is_included_path(p):
-            result.add(p)
-    return result
-
-
-def ensure_remote() -> None:
-    remotes = git("remote").splitlines()
-    if UPSTREAM_REMOTE not in remotes:
-        print(f"Adding remote '{UPSTREAM_REMOTE}' -> {UPSTREAM_URL} ...")
-        git("remote", "add", UPSTREAM_REMOTE, UPSTREAM_URL)
-    else:
-        url = git("remote", "get-url", UPSTREAM_REMOTE).strip()
-        if "caelestia-kde" not in url:
-            print(f"Updating remote '{UPSTREAM_REMOTE}' URL to {UPSTREAM_URL} ...")
-            git("remote", "set-url", UPSTREAM_REMOTE, UPSTREAM_URL)
+    out = git("grep", "-l", "-e", "Hypr", tree, "--", "*.qml")
+    return {p for p in out.splitlines() if p}
 
 
 def do_fetch() -> None:
-    ensure_remote()
-    print(f"Fetching {UPSTREAM_REMOTE} {UPSTREAM_BRANCH} ...")
-    try:
-        git("fetch", UPSTREAM_REMOTE, UPSTREAM_BRANCH)
-    except SystemExit:
-        local_dir = os.path.join(ROOT, "caelestia-kde")
-        if os.path.isdir(os.path.join(local_dir, ".git")):
-            print(f"Fetch failed; attempting local fetch from {local_dir} ...")
-            git("fetch", local_dir, f"refs/remotes/origin/{UPSTREAM_BRANCH}:refs/remotes/{UPSTREAM_REMOTE}/{UPSTREAM_BRANCH}")
-        else:
-            raise
+    print("Fetching upstream ...")
+    git("fetch", "upstream")
     git("branch", "-f", MIRROR_BRANCH, UPSTREAM)
-    rev = git("rev-parse", "--short", UPSTREAM).strip()
-    print(f"{MIRROR_BRANCH} -> {rev}")
+    print(f"{MIRROR_BRANCH} -> {git('rev-parse', '--short', UPSTREAM).strip()}")
 
 
 def do_report(full: bool) -> None:
-    local_files = ls_tree(LOCAL_TREE)
-    up_files = ls_tree(UPSTREAM)
+    shell = ls_tree(SHELL_TREE)
+    up = ls_tree(UPSTREAM)
 
     in_sync: list[str] = []
     missing: list[str] = []
-    local_only: list[str] = []
+    kde_only: list[str] = []
     diverged: list[str] = []
 
-    for path, blob in up_files.items():
-        if path not in local_files:
+    for path, blob in up.items():
+        if path not in shell:
             missing.append(path)
-        elif local_files[path] == blob:
+        elif shell[path] == blob:
             in_sync.append(path)
         else:
             diverged.append(path)
-    for path in local_files:
-        if path not in up_files:
-            local_only.append(path)
+    for path in shell:
+        if path not in up:
+            kde_only.append(path)
+
+    missing_kept = [p for p in missing if not p.startswith(SKIP_PREFIXES)]
+    missing_skipped = [p for p in missing if p.startswith(SKIP_PREFIXES)]
 
     up_hypr = hypr_paths(UPSTREAM)
-    local_hypr = hypr_paths(LOCAL_TREE)
+    shell_hypr = hypr_paths(SHELL_TREE)
 
     def flag(path: str) -> str:
         tags = kind(path)
-        if path in up_hypr or path in local_hypr:
+        if path in up_hypr or path in shell_hypr:
             tags += ",hypr"
         return tags
 
-    print(f"=== SYNC REPORT: repo (excluding shell/ except shell/plugin/) vs {UPSTREAM} ===")
-    print(f"local files: {len(local_files)}   upstream files: {len(up_files)}")
-    print(f"  in sync   : {len(in_sync)}")
-    print(f"  local-only: {len(local_only)}  (never touched by sync)")
-    print(f"  missing   : {len(missing)}  (bring down + adapt)")
-    print(f"  diverged  : {len(diverged)}  (triage each)")
+    print(f"=== SYNC REPORT: shell/ vs {UPSTREAM} ===")
+    print(f"shell files: {len(shell)}   upstream files: {len(up)}")
+    print(f"  in sync : {len(in_sync)}")
+    print(f"  kde-only: {len(kde_only)}  (never touched by sync)")
+    print(f"  missing : {len(missing_kept)}  (bring down + adapt)")
+    print(f"  diverged: {len(diverged)}  (triage each)")
     print()
 
-    print(f"--- MISSING ({len(missing)}) ---")
-    shown_missing = missing if full else missing[:60]
-    for p in shown_missing:
+    print(f"--- MISSING ({len(missing_kept)}) ---")
+    for p in missing_kept:
         print(f"  [{flag(p):<9}] {p}")
-    if not full and len(missing) > 60:
-        print(f"  ... {len(missing) - 60} more (use --full)")
+    if missing_skipped and full:
+        print(f"  ... plus {len(missing_skipped)} skipped repo-meta paths "
+              f"(.github, nix, README, ...)")
     print()
 
     print(f"--- DIVERGED ({len(diverged)}) ---")
-    shown_diverged = diverged if full else diverged[:60]
-    for p in shown_diverged:
+    shown = diverged if full else diverged[:60]
+    for p in shown:
         print(f"  [{flag(p):<9}] {p}")
     if not full and len(diverged) > 60:
         print(f"  ... {len(diverged) - 60} more (use --full)")
     print()
 
-    print("Bring a missing file with:  python3 tools/sync-shell.py bring <path>")
+    print("Bring a missing file with:  python tools/sync-shell.py bring <path>")
 
 
 def do_bring(paths: list[str], force: bool) -> None:
     for path in paths:
-        norm_path = os.path.normpath(path).lstrip("./")
-        if not is_included_path(norm_path):
-            print(f"skip {norm_path}: excluded path (shell/ is excluded except shell/plugin/)")
-            continue
-
-        up_blob = git("ls-tree", UPSTREAM, "--", norm_path).strip()
+        up_blob = git("ls-tree", UPSTREAM, "--", path).strip()
         if not up_blob:
-            print(f"skip {norm_path}: not present in {UPSTREAM}")
+            print(f"skip {path}: not present in {UPSTREAM}")
             continue
 
-        exists = bool(git("ls-tree", LOCAL_TREE, "--", norm_path).strip())
+        exists = bool(git("ls-tree", SHELL_TREE, "--", path).strip())
         if exists and not force:
-            print(f"skip {norm_path}: already exists locally (use --force to overwrite)")
+            print(f"skip {path}: already exists in shell/ (use --force to overwrite)")
             continue
         if exists and force:
-            print(f"overwrite {norm_path}")
+            print(f"overwrite {path}")
 
-        content = git_bytes("show", f"{UPSTREAM}:{norm_path}")
-        dest = os.path.join(ROOT, norm_path)
+        content = git_bytes("show", f"{UPSTREAM}:{path}")
+        dest = os.path.join(ROOT, "shell", path)
         os.makedirs(os.path.dirname(dest), exist_ok=True)
         with open(dest, "wb") as fh:
             fh.write(content)
-        git("add", norm_path)
-        print(f"brought  {norm_path}")
+        git("add", os.path.join("shell", path))
+        print(f"brought  {path}")
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(
-        description="Caelestia upstream-sync tool (github.com/ladybug-me/caelestia-kde dev branch)"
-    )
+    parser = argparse.ArgumentParser(description="Caelestia upstream-sync tool")
     sub = parser.add_subparsers(dest="cmd", required=True)
 
-    sub.add_parser("fetch", help="fetch upstream dev and refresh the mirror branch")
+    sub.add_parser("fetch", help="fetch upstream and refresh the mirror branch")
 
-    rep = sub.add_parser("report", help="classify repo files vs upstream/dev")
-    rep.add_argument("--full", action="store_true", help="show every missing and diverged file")
+    rep = sub.add_parser("report", help="classify shell/ vs upstream/main")
+    rep.add_argument("--full", action="store_true", help="show every diverged file")
 
-    br = sub.add_parser("bring", help="copy upstream paths into local repo")
+    br = sub.add_parser("bring", help="copy upstream paths into shell/")
     br.add_argument("--force", action="store_true", help="overwrite existing files")
-    br.add_argument(
-        "paths",
-        nargs="+",
-        help="paths relative to repo root, e.g. scripts/08-build-shell.sh or shell/plugin/src/foo.cpp",
-    )
+    br.add_argument("paths", nargs="+", help="paths relative to shell/, e.g. "
+                   "modules/nexus/pages/network/AddNetworkPage.qml")
 
     args = parser.parse_args()
     if args.cmd == "fetch":

@@ -120,7 +120,7 @@ The project enables ccache in both `installer/CMakeLists.txt` and `shell/CMakeLi
 
 **RPM Fusion requirement:** `ffmpeg` with H264 support requires RPM Fusion. The script auto-enables it, but this may fail behind a proxy or on air-gapped systems.
 
-**matugen on Fedora:** there is no package for it, and it is what generates the palette. The installer reports it when it is missing; `cargo install matugen` fixes it.
+**matugen on Fedora:** available from the `avengemedia/danklinux` COPR repository. The installer auto-enables it and installs `matugen` via DNF.
 
 ### 2.3 CRLF / dos2unix Failure
 
@@ -166,9 +166,9 @@ quickshell -d -n -p ~/.config/quickshell/caelestia/shell.qml
 
 ### 3.2 Environment Variables Not Set On Login
 
-They live in one file, `~/.config/environment.d/caelestia.conf`, which systemd
-imports into every session process and into the user manager the shell's unit runs
-under:
+They live in two locations:
+1. `~/.config/environment.d/caelestia.conf`: read by systemd for every session process and for the user manager the shell's unit runs under.
+2. `~/.config/plasma-workspace/env/caelestia.sh`: sourced by KDE Plasma on session startup for KWin, `kscreenlocker_greet`, and graphical applications.
 
 ```bash
 QML2_IMPORT_PATH=$HOME/.local/lib/qt6/qml:$HOME/.config/quickshell/caelestia
@@ -178,12 +178,7 @@ CAELESTIA_SHELL_CONFIG=$HOME/.config/quickshell/caelestia/shell.qml
 ```
 
 **If they are missing:** re-run `scripts/08-build-shell.sh`, then log out and back
-in - systemd reads the directory at login, so a running session keeps the old
-values. `systemctl --user show-environment` lists what the user manager has.
-
-**If a session is not managed by systemd**, the file does nothing and the values
-have to be exported by hand; the shell's own autostart script sets them for the
-shell either way, so only tools started outside it are affected.
+in. `systemctl --user show-environment` lists what the systemd user manager has.
 
 ### 3.3 Window Thumbnails / Screencast Not Working
 
@@ -331,7 +326,7 @@ ls -la ~/.local/share/plasma/shells/caelestia.desktop/contents/lockscreen/LockSc
 | Symptom | Cause | Solution |
 |---|---|---|
 | Stock Breeze lock screen appears | `ShellPackage` reset after KDE update or theme switch. | Caelestia autostart (`caelestia-autostart.sh`) automatically self-heals this at next login if `caelestia.desktop` is present. To restore immediately in session: `kwriteconfig6 --file plasmashellrc --group "Shell" --key "ShellPackage" "caelestia.desktop" && kwriteconfig6 --file kscreenlockerrc --group "Greeter" --key "Theme" --delete`. |
-| Lock screen fails or crashes | Greeter files missing or corrupted in `~/.local/share/plasma/shells/`. | Re-deploy via `BUNDLE_DIR=. ./scripts/02-packages.sh` or `cp -r src/kde/shells/caelestia.desktop ~/.local/share/plasma/shells/`. |
+| Lock screen fails or crashes | Greeter files missing or corrupted in `~/.local/share/plasma/shells/`. | Re-deploy via `BUNDLE_DIR=. ./scripts/08-build-shell.sh` or `cp -r src/kde/shells/caelestia.desktop ~/.local/share/plasma/shells/`. |
 | Lock screen shows wallpaper error | Legacy `PlasmaApplicationWallpaper` left in `kscreenlockerrc`. | Reset WallpaperPlugin: `kwriteconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin "org.kde.image"`. |
 | Profile picture missing | `~/.face` does not exist and no system user avatar set. | Place your avatar image at `~/.face` or configure an avatar in KDE System Settings → Users. |
 
@@ -385,21 +380,6 @@ systemctl --user status plasma-kglobalaccel.service
 ```
 
 If `keyd` is active and manages Meta+1..5, the tweak script skips KWin bindings for those combos to avoid conflicts.
-
-### 5.5 Terminal Sequence Bleeding (Garbled Output)
-
-If ANSI escape sequences leak from the `caelestia` CLI into your terminal:
-
-```bash
-cat $XDG_CACHE_HOME/caelestia-kde/failed_patches.txt
-```
-
-If `Caelestia CLI Theme Sequence Patch` appears in the failed list, re-run:
-```bash
-bash scripts/09-system-tweaks.sh
-```
-
----
 
 ## 6. Network & Proxy Issues
 
@@ -465,15 +445,19 @@ The recording patch restarts `plasma-xdg-desktop-portal-kde` before each recordi
 
 ### 7.3 ydotoold (On-Screen Keyboard)
 
-`ydotoold` needs access to `/dev/uinput`. The installer:
-1. Creates `/etc/udev/rules.d/80-uinput.rules`
-2. Adds user to `input` group
-3. Creates sudoers NOPASSWD rule
+`ydotoold` needs access to `/dev/uinput`. The installer writes
+`/etc/udev/rules.d/70-uinput.rules`, which tags the device for the active session
+(`TAG+="uaccess"`). Nothing is added to a group, and the device stays closed to
+programs running outside your session.
 
 **If ydotoold doesn't work:**
-- Re-login (group changes take effect on next login)
-- Verify: `groups $USER` should include `input`
+- Check the rule exists and `/dev/uinput` is present (`sudo modprobe uinput` if not)
 - Verify: `ls -la /run/user/$(id -u)/.ydotool_socket`
+- Restart it: `systemctl --user restart ydotoold.service`
+
+Installs older than this rule put your user in the `input` group instead. The
+installer removes that membership when it replaces the old rule, and the change
+takes effect on your next login.
 
 ### 7.4 Krohnkite Tiling Disabled on Uninstall
 
@@ -493,7 +477,7 @@ configured in different places, and the installer picks a branch at install time
 
 | | Plasma Login | SDDM |
 |---|---|---|
-| How to tell | `command -v plasmalogin`, or `/etc/plasmalogin.conf` exists | `command -v sddm` |
+| How to tell | `plasmalogin.service` is active/enabled | `sddm.service` is active/enabled |
 | Theme | none: its greeter is a Plasma shell, and it loads no SDDM theme | `/usr/share/sddm/themes/caelestia` |
 | Wallpaper | `[Greeter][Wallpaper][org.kde.image][General] Image` in `/etc/plasmalogin.conf`, pointing at a copy under the `plasmalogin` user's `wallpapers/` | `assets/background` inside the theme |
 | Colors | the `plasmalogin` user's own `~/.config/kdeglobals` plus the scheme files in its `~/.local/share/color-schemes/` | `theme.conf` inside the theme |
@@ -656,20 +640,36 @@ the files on disk.
 Choosing **ignore** at the prompt continues anyway. The plugin build may then fail with Wayland or
 ABI errors that look unrelated to the upgrade.
 
-### 8.7 Prebuilt Shell Download Is Rejected
+### 8.7 Checksums on Downloaded Artifacts
 
-`08-build-shell.sh` extracts the release tarball straight over `$HOME`, so it first checks the
-download against the `.sha256` published beside it:
+Three artifacts the installer fetches are checked against the `.sha256` published beside them. A
+mismatch always means the file is not used. What happens when a release publishes no checksum at
+all depends on what the artifact is for:
+
+| Artifact | No published checksum | On mismatch |
+|---|---|---|
+| Prebuilt shell tarball (`08-build-shell.sh`, extracted over `$HOME`) | Warns and extracts | Builds the shell locally instead |
+| Prebuilt installer binary (executed straight away) | Compiles the installer locally instead | Same |
+| Prebuilt CAVA SDK (unpacked into `/usr` as root) | Warns and unpacks | Not unpacked; `libcava` comes from the repositories instead |
+
+Messages to expect:
 
 | Message | Meaning |
 |---|---|
 | `Prebuilt shell artifacts match the published checksum.` | Normal: the prebuilt archive is installed. |
 | `No published checksum for ... - extracting without verification.` | The release predates checksums. The install continues. |
+| `No published checksum for the prebuilt installer - compiling locally.` | The release predates checksums. The installer is built from source instead. |
+| `No published checksum for ... - unpacking without verification.` | The CAVA release publishes no checksums. The SDK is unpacked anyway. |
 | `No prebuilt shell artifacts published for <tag> (Qt <abi>) - falling back to a local build.` | The release carries no archive for this Qt feature version. The step builds locally instead. |
-| `Checksum mismatch for ...` | The download was truncated or tampered with. The step falls back to building the shell locally. |
+| `Checksum mismatch for ...` | The download was truncated or tampered with. That artifact is not used. |
 
-A mismatch is not fatal: the installer builds from source instead, which takes longer but cannot
-unpack a damaged tree into `~/.local/lib/qt6/qml`.
+A mismatch is not fatal for any of the three: each one has somewhere else to get what it needs,
+and none of them is used in a damaged state.
+
+The CAVA SDK is the one artifact that still installs without verification. Its releases come from
+a separate repository that publishes no checksums, and refusing them would only move the same work
+to the `libcava` package. Publishing an `<asset>.sha256` in that repository turns verification on
+with no change here.
 
 The archive is also only used for the revision it was built from: `main` sitting on its remote
 tip, or a checkout that is exactly the released tag (an update pinned to a version). A branch, a
@@ -705,23 +705,12 @@ Package removal is optional. It uses `yay -Rns` / `dnf remove` which does NOT re
 - Packages installed outside the defined lists
 - `base-devel` or build tools that existed before install
 
-### 9.5 Input Group Membership Persists
+### 9.5 Legacy Input Group Membership
 
-The uninstaller runs `sudo gpasswd -d $USER input`. This only works if the user was added to the group during installation, and takes effect on next login.
-
-### 9.6 Failed Patches Tracking
-
-Failed patches are logged to:
-```text
-$XDG_CACHE_HOME/caelestia-kde/failed_patches.txt
-```
-
-Possible entries:
-- `Caelestia CLI Hyprctl Mock Patch`
-- `Caelestia CLI Record/Dolphin Patch`
-- `Caelestia CLI Theme Sequence Patch`
-
-These are **cosmetic** — the shell works without them, but certain features (screenshot, recording, terminal colors) may be degraded.
+Installs from before the `/dev/uinput` rule moved to `TAG+="uaccess"` added the
+user to the `input` group. The installer removes that membership when it finds the
+old `/etc/udev/rules.d/80-uinput.rules`, and the uninstaller runs
+`sudo gpasswd -d $USER input`. Either way it takes effect on next login.
 
 ---
 
@@ -784,9 +773,6 @@ kreadconfig6 --file kscreenlockerrc --group Greeter --key WallpaperPlugin
 
 # View failed packages log
 cat $XDG_CACHE_HOME/caelestia-kde/failed_packages.txt 2>/dev/null
-
-# View failed patches log
-cat $XDG_CACHE_HOME/caelestia-kde/failed_patches.txt 2>/dev/null
 
 # View installer build log
 cat /tmp/caelestia_build.log 2>/dev/null | tail -60

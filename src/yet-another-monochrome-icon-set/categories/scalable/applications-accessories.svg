@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="applications-accessories.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.918782" inkscape:cy="29.725888" inkscape:window-width="2560" inkscape:window-height="1376" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="1" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:0.377733;stroke-dasharray:none;stroke-opacity:0.3" d="m 6.1195187,3.2328691 c -0.3397683,0 -0.6690892,0.077262 -0.9727622,0.1818859 l 1.6037463,1.5848772 c 0.3295702,0.3256859 0.3295702,0.8434633 0,1.1691682 L 6.1458115,6.7663755 c -0.3295725,0.3256864 -0.8535203,0.3256864 -1.1830923,0 L 3.3589751,5.1815003 C 3.2530954,5.4815874 3.1749375,5.8070388 3.1749375,6.1428136 c 0,1.6071136 1.3183346,2.9099272 2.9445812,2.9099272 0.3397702,0 0.6690915,-0.077262 0.9727658,-0.1818684 l 4.3681635,4.3259266 c 1.404071,1.391366 3.164,-0.403037 1.814067,-1.740757 L 8.880064,7.1041277 C 8.9859422,6.8040401 9.0640982,6.4785886 9.0640982,6.1428144 c 0,-1.607114 -1.3183328,-2.9099453 -2.9445828,-2.9099453 z" id="path10" class="ColorScheme-Text"/>
+  <g id="g9" transform="matrix(0.33780075,0,0,0.33780075,3.7555321,3.0630882)" style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.58349;stroke-dasharray:none;stroke-opacity:0.3"/>
+  </svg>

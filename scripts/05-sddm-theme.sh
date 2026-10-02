@@ -98,10 +98,36 @@ PYEOF
         ALL_OK=false
     fi
 
+    # The rule is checked before it is installed: a malformed file in sudoers.d stops
+    # sudo working for the whole machine, and $USER is only an environment variable, so
+    # the name comes from id instead.
+    local target_user="${SUDO_USER:-$(id -un)}"
+    if [[ ! "$target_user" =~ ^[A-Za-z0-9._-]+$ ]]; then
+        warn "Could not tell which user the login screen sync belongs to (got '$target_user')."
+        ALL_OK=false
+        return
+    fi
+
+    local rule_tmp
+    rule_tmp="$(mktemp)"
+    printf '%s ALL=(root) NOPASSWD: %s\n' "$target_user" "$SYNC_SCRIPT" > "$rule_tmp"
+
+    if ! caelestia_sudo visudo -cf "$rule_tmp"; then
+        rm -f "$rule_tmp"
+        warn "The generated sudoers rule for $SYNC_SCRIPT did not validate; leaving sudoers alone."
+        ALL_OK=false
+        return
+    fi
+
     SUDOERS_FILE="/etc/sudoers.d/caelestia-sddm-sync"
-    echo "$USER ALL=(root) NOPASSWD: $SYNC_SCRIPT" | caelestia_sudo tee "$SUDOERS_FILE" >/dev/null
-    caelestia_sudo chmod 440 "$SUDOERS_FILE"
-    ok "Sudoers drop-in written for $SYNC_SCRIPT."
+    if caelestia_sudo install -m 0440 -o root -g root "$rule_tmp" "$SUDOERS_FILE"; then
+        rm -f "$rule_tmp"
+        ok "Sudoers drop-in written for $SYNC_SCRIPT."
+    else
+        rm -f "$rule_tmp"
+        warn "Could not write $SUDOERS_FILE; the login screen will not follow the theme."
+        ALL_OK=false
+    fi
 
     if [[ "$ALL_OK" == "true" ]]; then
         ok "$label"
@@ -110,8 +136,25 @@ PYEOF
     fi
 }
 
+is_plasmalogin_active() {
+    if systemctl is-active plasmalogin.service &>/dev/null || \
+       systemctl is-enabled plasmalogin.service &>/dev/null || \
+       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"plasmalogin"* ]]; then
+        return 0
+    fi
+    if systemctl is-active sddm.service &>/dev/null || \
+       systemctl is-enabled sddm.service &>/dev/null || \
+       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"sddm"* ]]; then
+        return 1
+    fi
+    if [[ -e /etc/plasmalogin.conf ]] && ! command -v sddm >/dev/null 2>&1; then
+        return 0
+    fi
+    return 1
+}
+
 DISPLAY_MANAGER="sddm"
-if command -v plasmalogin >/dev/null 2>&1 || [[ -e /etc/plasmalogin.conf ]]; then
+if is_plasmalogin_active; then
     DISPLAY_MANAGER="plasmalogin"
 fi
 

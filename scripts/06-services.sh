@@ -38,32 +38,37 @@ else
     echo "  Existing virtual desktop configuration found - leaving it untouched."
 fi
 
+UINPUT_RULE="/etc/udev/rules.d/70-uinput.rules"
+LEGACY_UINPUT_RULE="/etc/udev/rules.d/80-uinput.rules"
+UINPUT_RULE_LINE='KERNEL=="uinput", MODE="0600", OPTIONS+="static_node=uinput", TAG+="uaccess"'
+
+uinput_rule_current() {
+    [[ -f "$UINPUT_RULE" ]] && grep -q 'TAG+="uaccess"' "$UINPUT_RULE"
+}
+
 system_setup_needed() {
     install_is_packaged && return 1
     systemctl is-enabled --quiet keyd.service 2>/dev/null && return 0
     systemctl is-active --quiet keyd.service 2>/dev/null && return 0
-    [[ -f /etc/udev/rules.d/80-uinput.rules ]] || return 0
-    groups "$USER" | grep -q '\binput\b' || return 0
-    if [[ -e /dev/uinput ]]; then
-        [[ "$(stat -c '%a' /dev/uinput 2>/dev/null)" == *660 ]] || return 0
-        [[ "$(stat -c '%G' /dev/uinput 2>/dev/null)" == "input" ]] || return 0
-    fi
+    uinput_rule_current || return 0
+    [[ ! -f "$LEGACY_UINPUT_RULE" ]] || return 0
     return 1
 }
 
 if ! system_setup_needed; then
     if install_is_packaged; then
         skip "System-level configuration belongs to the package."
-        if ! groups "$USER" | grep -q '\binput\b'; then
-            info "For the on-screen keyboard, add yourself to the 'input' group: sudo usermod -aG input $USER"
-        fi
     else
         skip "System-level configuration already in place."
     fi
 else
 echo "  Applying system-level configurations (requires root)..."
-caelestia_sudo bash -s -- "$USER" << 'EOF'
+caelestia_sudo bash -s -- "$USER" "$UINPUT_RULE" "$LEGACY_UINPUT_RULE" "$UINPUT_RULE_LINE" << 'EOF'
 TARGET_USER="$1"
+UINPUT_RULE="$2"
+LEGACY_UINPUT_RULE="$3"
+UINPUT_RULE_LINE="$4"
+RULE_CHANGED=""
 
 if systemctl is-enabled --quiet keyd.service 2>/dev/null || \
    systemctl is-active --quiet keyd.service 2>/dev/null; then
@@ -73,27 +78,31 @@ fi
 
 echo "  Setting up ydotoold (OSK key injection daemon)..."
 
-if [[ ! -f /etc/udev/rules.d/80-uinput.rules ]]; then
-    echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' > /etc/udev/rules.d/80-uinput.rules
-    udevadm control --reload-rules 2>/dev/null || true
-    udevadm trigger 2>/dev/null || true
-    ok "udev rule for uinput created."
-fi
-
-if ! groups "$TARGET_USER" | grep -q '\binput\b'; then
-    usermod -aG input "$TARGET_USER"
-    ok "Added $TARGET_USER to 'input' group (takes effect on next login)."
-else
-    ok "$TARGET_USER already in 'input' group."
-fi
-
-if [[ -e /dev/uinput ]]; then
-    UINPUT_PERMS=$(stat -c "%a" /dev/uinput 2>/dev/null)
-    UINPUT_GROUP=$(stat -c "%G" /dev/uinput 2>/dev/null)
-    if [[ "$UINPUT_PERMS" != *"660" ]] || [[ "$UINPUT_GROUP" != "input" ]]; then
-        chmod 660 /dev/uinput 2>/dev/null || true
-        chgrp input /dev/uinput 2>/dev/null || true
+if [ -f "$LEGACY_UINPUT_RULE" ]; then
+    rm -f "$LEGACY_UINPUT_RULE"
+    RULE_CHANGED=1
+    if id -nG "$TARGET_USER" | grep -qw input; then
+        if gpasswd -d "$TARGET_USER" input >/dev/null 2>&1; then
+            echo "  Removed $TARGET_USER from the 'input' group (takes effect on next login)."
+        else
+            echo "  Could not remove $TARGET_USER from the 'input' group; run: sudo gpasswd -d $TARGET_USER input"
+        fi
     fi
+fi
+
+if [ ! -f "$UINPUT_RULE" ]; then
+    printf '%s\n' "$UINPUT_RULE_LINE" > "$UINPUT_RULE"
+    RULE_CHANGED=1
+    echo "  udev rule for uinput created (active session only, no group membership)."
+fi
+
+if [ -n "$RULE_CHANGED" ]; then
+    udevadm control --reload-rules 2>/dev/null || true
+    udevadm trigger --sysname-match=uinput 2>/dev/null || true
+fi
+
+if [ ! -e /dev/uinput ]; then
+    echo "  /dev/uinput is not present yet; the on-screen keyboard needs it. Load it with: modprobe uinput"
 fi
 EOF
 fi
@@ -101,7 +110,7 @@ fi
 mkdir -p "$HOME/.local/bin"
 cat > "$HOME/.local/bin/ydotoold-wrapper" << 'WRAPPER'
 #!/bin/bash
-# ydotoold-wrapper  starts ydotoold with uinput access (user is in 'input' group)
+# ydotoold-wrapper  starts ydotoold with uinput access (the active session gets it from the udev rule)
 SOCKET="${YDOTOOL_SOCKET:-/run/user/$(id -u)/.ydotool_socket}"
 if [ -S "$SOCKET" ] && pidof ydotoold > /dev/null 2>&1; then
     exit 0
@@ -131,11 +140,10 @@ WantedBy=graphical-session.target
 UNIT
 systemctl --user daemon-reload
 systemctl --user enable ydotoold.service 2>/dev/null || true
-if id -nG | grep -q '\binput\b'; then
-    systemctl --user start ydotoold.service 2>/dev/null || \
-        info "ydotoold will start on next login."
+if systemctl --user start ydotoold.service 2>/dev/null; then
+    ok "ydotoold started."
 else
-    info "ydotoold starts on next login (input group takes effect then)."
+    info "ydotoold will start on next login."
 fi
 ok "ydotoold service configured."
 

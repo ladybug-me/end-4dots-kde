@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="blueman.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.15625"
+     inkscape:cx="15.837563"
+     inkscape:cy="29.725888"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:currentColor;stroke-width:0.876399"
+     class="ColorScheme-Text"
+     d="m 7.6479834,1.5422756 a 0.87648696,0.87648696 0 0 0 -0.496399,0.7891018 v 3.563796 L 5.0598674,4.2690416 a 0.87639931,0.87639931 0 0 0 -1.229014,0.154055 0.87639931,0.87639931 0 0 0 0.154061,1.2290132 l 3.166677,2.463162 v 0.7018038 l -3.166677,2.4631614 a 0.87639931,0.87639931 0 0 0 -0.154061,1.229012 0.87639931,0.87639931 0 0 0 1.229014,0.154055 l 2.091717,-1.626131 v 3.563796 a 0.87648696,0.87648696 0 0 0 1.424148,0.684687 L 12.95773,11.780058 A 0.87648696,0.87648696 0 0 0 12.94746,10.403837 L 10.456912,8.4661738 12.947463,6.528509 a 0.87648696,0.87648696 0 0 0 0.01027,-1.3762204 L 8.5757354,1.6466903 A 0.87648696,0.87648696 0 0 0 7.6479834,1.5422756 Z M 8.9043824,4.1560682 10.99439,5.8284161 9.0293374,7.3569806 8.9043924,7.2594127 Z M 9.0293274,9.5753661 10.99438,11.103929 8.9043724,12.776278 V 9.672934 Z"
+     id="path1" />
+</svg>

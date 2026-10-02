@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="accessories-calculator.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.15625"
+     inkscape:cx="15.51269"
+     inkscape:cy="30.050761"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:currentColor"
+     d="m 4.4541625,1.4551797 c -1.259847,0.014672 -2.182234,-0.030323 -2.936382,0.3853877 -0.390279,0.2220383 -0.687633,0.5771038 -0.839245,0.999661 -0.165306,0.4391857 -0.224973,0.9615135 -0.224973,1.6198028 v 8.0129378 c 0,0.659267 0.05966,1.180617 0.224973,1.619803 0.164327,0.440163 0.46266,0.791316 0.839245,0.999661 0.754148,0.416688 1.676535,0.370715 2.936382,0.385387 h 8.0246745 c 1.259847,-0.01467 2.182235,0.03032 2.936382,-0.385387 0.390279,-0.222039 0.687633,-0.577104 0.839246,-0.999661 0.164327,-0.439186 0.224972,-0.961514 0.224972,-1.619803 V 4.4600312 c 0,-0.6592674 -0.05966,-1.1806171 -0.224972,-1.6198028 C 16.102852,2.4176712 15.805498,2.0626057 15.415219,1.8405674 14.661072,1.4238791 13.738684,1.4698519 12.478837,1.4551797 Z m 0.0059,1.0016172 h 4.006469 V 14.476203 h -4.006501 c -1.260824,-0.01467 -2.093223,-0.05967 -2.459048,-0.262142 -0.182912,-0.09977 -0.287573,-0.213235 -0.385387,-0.473421 -0.096837,-0.260185 -0.160416,-0.674917 -0.160416,-1.267671 V 4.4600312 c 0,-0.592754 0.06358,-1.0074861 0.160416,-1.2676717 0.09781,-0.2601856 0.202475,-0.372672 0.385387,-0.4734206 0.366804,-0.2024754 1.198224,-0.2474698 2.459049,-0.262142 z m 0,2.0032343 v 1.0016172 h -1.001618 v 1.0016172 h 1.001618 v 1.0016173 h 1.001617 V 6.4632656 h 1.001617 V 5.4616484 H 5.4616795 V 4.4600312 Z m 6.0097025,2.0032344 h 4.006469 v 1.0016173 h -4.006469 z m 0,2.0032344 h 4.006469 v 1.0016172 h -4.006469 z m -7.0113195,2.003234 v 1.001618 h 3.004852 v -1.001618 z m 0,0"
+     id="path5"
+     class="ColorScheme-Text" />
+</svg>

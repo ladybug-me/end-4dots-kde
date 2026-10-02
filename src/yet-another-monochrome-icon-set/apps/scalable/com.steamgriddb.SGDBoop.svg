@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="com.steamgriddb.SGDBoop.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="12.3125"
+     inkscape:cx="47.796954"
+     inkscape:cy="27.126904"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1"
+       is_visible="true"
+       lpeversion="1.3"
+       linejoin_type="round"
+       unit="px"
+       offset="-0.53701443"
+       miter_limit="4"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <linearGradient
+       id="linearGradient2933">
+      <stop
+         id="stop2935"
+         offset="0"
+         style="stop-color:#9cd93d;stop-opacity:1;" />
+      <stop
+         id="stop2937"
+         offset="1"
+         style="stop-color:#609a05;stop-opacity:1;" />
+    </linearGradient>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="path5"
+     style="fill:currentColor"
+     d="m 9.395727,1.4552055 c -3.407376,0 -6.160242,2.80182 -6.079629,6.226824 0.07593,3.2253555 2.706944,5.8558035 5.932981,5.9317285 3.425645,0.08061 6.227998,-2.671682 6.227998,-6.0783765 0,-1.197493 -0.0017,-3.981329 -0.0025,-5.325104 -2.42e-4,-0.416005 -0.336639,-0.752562 -0.752725,-0.752803 -1.318533,-8.02e-4 -4.029704,-0.0023 -5.326121,-0.0023 z m -0.929736,0.0053 A 7.0100727,7.00867 0 0 0 1.455923,8.4691655 7.0100727,7.00867 0 0 0 8.465991,15.477825 7.0100727,7.00867 0 0 0 15.47606,8.4691655 7.0100727,7.00867 0 0 0 15.46096,8.2386295 6.5462283,6.5449061 0 0 1 8.930353,14.54449 6.5462283,6.5449061 0 0 1 2.384175,7.9996415 6.5462283,6.5449061 0 0 1 8.654117,1.4727915 7.0100727,7.00867 0 0 0 8.465994,1.4605015 Z"
+     class="ColorScheme-Text" />
+</svg>

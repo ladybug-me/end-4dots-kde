@@ -1,139 +1,357 @@
 pragma Singleton
-pragma ComponentBehavior: Bound
-import qs.modules.common
-import QtQuick
-import Quickshell
-import Quickshell.Services.Pipewire
 
-/**
- * A nice wrapper for default Pipewire audio sink and source.
- */
+import QtQuick
+import QtMultimedia
+import Quickshell
+import Quickshell.Io
+import Quickshell.Services.Pipewire
+import Caelestia
+import Caelestia.Config
+import Caelestia.Services
+
 Singleton {
     id: root
 
-    // Misc props
-    property bool ready: Pipewire.defaultAudioSink?.ready ?? false
-    property PwNode sink: Pipewire.defaultAudioSink
-    property PwNode source: Pipewire.defaultAudioSource
-    readonly property real hardMaxValue: 2.00 // People keep joking about setting volume to 5172% so...
-    property string audioTheme: Config.options.sounds.theme
-    property real value: sink?.audio.volume ?? 0
-    
-    function friendlyDeviceName(node) {
-        return (node.nickname || node.description || Translation.tr("Unknown"));
-    }
-    function appNodeDisplayName(node) {
-        return (node.properties["application.name"] || node.description || node.name)
-    }
+    property bool showInactiveDevices: false
+    property var cards: AudioBackend.cards
 
-    // Lists
-    function correctType(node, isSink) {
-        return (node.isSink === isSink) && node.audio
-    }
-    function appNodes(isSink) {
-        return Pipewire.nodes.values.filter((node) => { // Should be list<PwNode> but it breaks ScriptModel
-            return root.correctType(node, isSink) && node.isStream
-        })
-    }
-    function devices(isSink) {
-        return Pipewire.nodes.values.filter(node => {
-            return root.correctType(node, isSink) && !node.isStream
-        })
-    }
-    readonly property list<var> outputAppNodes: root.appNodes(true)
-    readonly property list<var> inputAppNodes: root.appNodes(false)
-    readonly property list<var> outputDevices: root.devices(true)
-    readonly property list<var> inputDevices: root.devices(false)
+    property string previousSinkName: ""
+    property string previousSourceName: ""
 
-    // Signals
-    signal sinkProtectionTriggered(string reason);
+    property list<PwNode> sinks: []
+    property list<PwNode> sources: []
+    property list<PwNode> streams: []
 
-    // Controls
-    function toggleMute() {
-        Audio.sink.audio.muted = !Audio.sink.audio.muted
-    }
+    property list<PwNode> appStreams: []
 
-    function toggleMicMute() {
-        Audio.source.audio.muted = !Audio.source.audio.muted
-    }
+    readonly property string selfAppName: "caelestia-shell"
 
-    function incrementVolume() {
-        const currentVolume = Audio.value;
-        const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
-        Audio.sink.audio.volume = Math.min(1, Audio.sink.audio.volume + step);
-    }
-    
-    function decrementVolume() {
-        const currentVolume = Audio.value;
-        const step = currentVolume < 0.1 ? 0.01 : 0.02 || 0.2;
-        Audio.sink.audio.volume -= step;
-    }
+    readonly property PwNode sink: Pipewire.defaultAudioSink
+    readonly property PwNode source: Pipewire.defaultAudioSource
 
-    function setDefaultSink(node) {
-        Pipewire.preferredDefaultAudioSink = node;
-    }
+    readonly property bool muted: !!sink?.audio?.muted
+    readonly property real volume: sink?.audio?.volume ?? 0
 
-    function setDefaultSource(node) {
-        Pipewire.preferredDefaultAudioSource = node;
-    }
+    readonly property bool sourceMuted: !!source?.audio?.muted
+    readonly property real sourceVolume: source?.audio?.volume ?? 0
 
-    // Internals
-    PwObjectTracker {
-        objects: [sink, source]
-    }
+    property var cava: null
+    readonly property alias beatTracker: beatTracker
 
-    Connections { // Protection against sudden volume changes
-        target: sink?.audio ?? null
-        property bool lastReady: false
-        property real lastVolume: 0
-        function onVolumeChanged() {
-            if (!Config.options.audio.protection.enable) return;
-            const newVolume = sink.audio.volume;
-            // when resuming from suspend, we should not write volume to avoid pipewire volume reset issues
-            if (isNaN(newVolume) || newVolume === undefined || newVolume === null) {
-                lastReady = false;
-                lastVolume = 0;
-                return;
-            }
-            if (!lastReady) {
-                lastVolume = newVolume;
-                lastReady = true;
-                return;
-            }
-            const maxAllowedIncrease = Config.options.audio.protection.maxAllowedIncrease / 100; 
-            const maxAllowed = Config.options.audio.protection.maxAllowed / 100;
+    property var _sfxCache: ({})
 
-            if (newVolume - lastVolume > maxAllowedIncrease) {
-                sink.audio.volume = lastVolume;
-                root.sinkProtectionTriggered(Translation.tr("Illegal increment"));
-            } else if (newVolume > maxAllowed || newVolume > root.hardMaxValue) {
-                root.sinkProtectionTriggered(Translation.tr("Exceeded max allowed"));
-                sink.audio.volume = Math.min(lastVolume, maxAllowed);
-            }
-            lastVolume = sink.audio.volume;
+    function setVolume(newVolume: real): void {
+        if (sink?.ready && sink?.audio) {
+            sink.audio.muted = false;
+            sink.audio.volume = Math.max(0, Math.min(GlobalConfig.services.maxVolume, newVolume));
         }
     }
 
-    function playSystemSound(soundName) {
-        const ogaPath = `/usr/share/sounds/${root.audioTheme}/stereo/${soundName}.oga`;
-        const oggPath = `/usr/share/sounds/${root.audioTheme}/stereo/${soundName}.ogg`;
-
-        // Try playing .oga first
-        let command = [
-            "ffplay",
-            "-nodisp",
-            "-autoexit",
-            ogaPath
-        ];
-        Quickshell.execDetached(command);
-
-        // Also try playing .ogg (ffplay will just fail silently if file doesn't exist)
-        command = [
-            "ffplay",
-            "-nodisp",
-            "-autoexit",
-            oggPath
-        ];
-        Quickshell.execDetached(command);
+    function incrementVolume(amount: real): void {
+        setVolume(volume + (amount || GlobalConfig.services.audioIncrement));
     }
+
+    function decrementVolume(amount: real): void {
+        setVolume(volume - (amount || GlobalConfig.services.audioIncrement));
+    }
+
+    function setSourceVolume(newVolume: real): void {
+        if (source?.ready && source?.audio) {
+            source.audio.muted = false;
+            source.audio.volume = Math.max(0, Math.min(GlobalConfig.services.maxVolume, newVolume));
+        }
+    }
+
+    function incrementSourceVolume(amount: real): void {
+        setSourceVolume(sourceVolume + (amount || GlobalConfig.services.audioIncrement));
+    }
+
+    function decrementSourceVolume(amount: real): void {
+        setSourceVolume(sourceVolume - (amount || GlobalConfig.services.audioIncrement));
+    }
+
+    function setAudioSink(newSink: PwNode): void {
+        Pipewire.preferredDefaultAudioSink = newSink;
+    }
+
+    function setAudioSource(newSource: PwNode): void {
+        Pipewire.preferredDefaultAudioSource = newSource;
+    }
+
+    function getNodeDisplayName(node: PwNode): string {
+        return node?.properties?.["node.nick"] || node?.description || node?.name || qsTr("Unknown Device");
+    }
+
+    function cycleNextAudioOutput(): void {
+        if (sinks.length === 0)
+            return;
+
+        const currentIndex = sinks.findIndex(s => s === sink);
+        const nextIndex = (currentIndex + 1) % sinks.length;
+        setAudioSink(sinks[nextIndex]);
+    }
+
+    function setStreamVolume(stream: PwNode, newVolume: real): void {
+        if (stream?.ready && stream?.audio) {
+            stream.audio.muted = false;
+            stream.audio.volume = Math.max(0, Math.min(GlobalConfig.services.maxVolume, newVolume));
+        }
+    }
+
+    function setStreamMuted(stream: PwNode, muted: bool): void {
+        if (stream?.ready && stream?.audio) {
+            stream.audio.muted = muted;
+        }
+    }
+
+    function getStreamVolume(stream: PwNode): real {
+        return stream?.audio?.volume ?? 0;
+    }
+
+    function getStreamMuted(stream: PwNode): bool {
+        return !!stream?.audio?.muted;
+    }
+
+    function getStreamName(stream: PwNode): string {
+        if (!stream)
+            return qsTr("Unknown");
+        return stream.properties["application.name"] || stream.description || stream.name || qsTr("Unknown Application");
+    }
+
+    // App-level controls operate on every stream sharing the same app name, so a
+    // single "caelestia-shell" row adjusts all of its streams together.
+    function getAppVolume(stream: PwNode): real {
+        if (!stream)
+            return 0;
+
+        const name = getStreamName(stream);
+        let volume = 0;
+        for (const s of root.streams) {
+            if (getStreamName(s) === name && s?.audio)
+                volume = Math.max(volume, s.audio.volume ?? 0);
+        }
+        return volume;
+    }
+
+    function getAppMuted(stream: PwNode): bool {
+        if (!stream)
+            return true;
+
+        const name = getStreamName(stream);
+        let hasStream = false;
+        let allMuted = true;
+        for (const s of root.streams) {
+            if (getStreamName(s) !== name || !s?.audio)
+                continue;
+            hasStream = true;
+            if (!s.audio.muted)
+                allMuted = false;
+        }
+        return hasStream && allMuted;
+    }
+
+    function setAppVolume(stream: PwNode, newVolume: real): void {
+        const name = getStreamName(stream);
+        const clamped = Math.max(0, Math.min(GlobalConfig.services.maxVolume, newVolume));
+        for (const s of root.streams) {
+            if (getStreamName(s) === name && s?.ready && s?.audio) {
+                s.audio.muted = false;
+                s.audio.volume = clamped;
+            }
+        }
+    }
+
+    function setAppMuted(stream: PwNode, muted: bool): void {
+        const name = getStreamName(stream);
+        for (const s of root.streams) {
+            if (getStreamName(s) === name && s?.ready && s?.audio)
+                s.audio.muted = muted;
+        }
+    }
+
+    Component {
+        id: sfxComponent
+
+        SoundEffect {}
+    }
+
+    function playSoundSource(sourcePath: string, enabled: bool, volume: real): void {
+        if (!GlobalConfig.audio.sounds.enabled || !enabled)
+            return;
+            
+        let sfx = root._sfxCache[sourcePath];
+        if (!sfx) {
+            sfx = sfxComponent.createObject(root, { source: sourcePath, volume: volume });
+            root._sfxCache[sourcePath] = sfx;
+        } else {
+            sfx.volume = volume;
+        }
+        sfx.play();
+    }
+
+    function playNotification(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/notifications/" + GlobalConfig.audio.sounds.notificationSound), true, GlobalConfig.audio.sounds.notificationVolume);
+    }
+
+    function playCameraClick(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/camera_click.wav"), GlobalConfig.audio.sounds.cameraClick, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playChargingStarted(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/ChargingStarted.wav"), GlobalConfig.audio.sounds.chargingStarted, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playEffectTick(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/Effect_Tick.wav"), GlobalConfig.audio.sounds.effectTick, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playLock(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/Lock.wav"), GlobalConfig.audio.sounds.lock, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playUnlock(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/Unlock.wav"), GlobalConfig.audio.sounds.unlock, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playLowBattery(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/LowBattery.wav"), GlobalConfig.audio.sounds.lowBattery, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playVideoRecord(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/VideoRecord.wav"), GlobalConfig.audio.sounds.screenRecord, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function playVideoStop(): void {
+        playSoundSource(Qt.resolvedUrl("../assets/sounds/VideoStop.wav"), GlobalConfig.audio.sounds.screenRecord, GlobalConfig.audio.sounds.sfxVolume);
+    }
+
+    function refreshNodes(): void {
+        const newStreams = [];
+        const newAppStreams = [];
+        const seenApps = new Set();
+        const seenSinks = new Map();
+        const seenSources = new Map();
+
+        for (const node of Pipewire.nodes.values) {
+            if (!node.isStream) {
+                if (node.isSink) {
+                    if (root.showInactiveDevices || !AudioBackend.isSinkInactive(node.name)) {
+                        if (!seenSinks.has(node.name)) {
+                            seenSinks.set(node.name, node);
+                        } else {
+                            const existing = seenSinks.get(node.name);
+                            if (node === Pipewire.defaultAudioSink || (existing !== Pipewire.defaultAudioSink && node.id > existing.id)) {
+                                seenSinks.set(node.name, node);
+                            }
+                        }
+                    }
+                }
+                else if (node.audio) {
+                    if (root.showInactiveDevices || !AudioBackend.isSourceInactive(node.name)) {
+                        if (!seenSources.has(node.name)) {
+                            seenSources.set(node.name, node);
+                        } else {
+                            const existing = seenSources.get(node.name);
+                            if (node === Pipewire.defaultAudioSource || (existing !== Pipewire.defaultAudioSource && node.id > existing.id)) {
+                                seenSources.set(node.name, node);
+                            }
+                        }
+                    }
+                }
+            } else if (node.audio) {
+                newStreams.push(node);
+
+                const name = getStreamName(node);
+                if (name === root.selfAppName)
+                    continue;
+                if (!seenApps.has(name)) {
+                    seenApps.add(name);
+                    newAppStreams.push(node);
+                }
+            }
+        }
+
+        root.appStreams = newAppStreams;
+        root.sinks = [...seenSinks.values()];
+        root.sources = [...seenSources.values()];
+        root.streams = newStreams;
+    }
+
+    onShowInactiveDevicesChanged: {
+        AudioBackend.showInactiveDevices = showInactiveDevices;
+        refreshNodes();
+    }
+
+    onSinkChanged: {
+        if (!sink?.ready)
+            return;
+
+        const newSinkName = root.getNodeDisplayName(sink);
+
+        if (previousSinkName && previousSinkName !== newSinkName && GlobalConfig.utilities.toasts.audioOutputChanged)
+            Toaster.toast(qsTr("Audio output changed"), qsTr("Now using: %1").arg(newSinkName), "volume_up");
+
+        previousSinkName = newSinkName;
+    }
+
+    onSourceChanged: {
+        if (!source?.ready)
+            return;
+
+        const newSourceName = root.getNodeDisplayName(source);
+
+        if (previousSourceName && previousSourceName !== newSourceName && GlobalConfig.utilities.toasts.audioInputChanged)
+            Toaster.toast(qsTr("Audio input changed"), qsTr("Now using: %1").arg(newSourceName), "mic");
+
+        previousSourceName = newSourceName;
+    }
+
+    Component.onCompleted: {
+        AudioBackend.showInactiveDevices = root.showInactiveDevices;
+        refreshNodes();
+        previousSinkName = root.getNodeDisplayName(sink);
+        previousSourceName = root.getNodeDisplayName(source);
+
+        try {
+            root.cava = Qt.createQmlObject(
+                'import Caelestia.Config\nimport Caelestia.Services\nCavaProvider { bars: GlobalConfig.services.visualiserBars }',
+                root, "CavaProviderDynamic");
+        } catch (e) {
+            console.warn("Caelestia: CavaProvider unavailable, visualiser disabled:", e);
+        }
+    }
+
+    Connections {
+        function onValuesChanged(): void {
+            root.refreshNodes();
+        }
+
+        target: Pipewire.nodes
+    }
+
+    Connections {
+        function onDevicesChanged(): void {
+            root.refreshNodes();
+        }
+
+        target: AudioBackend
+    }
+
+    PwObjectTracker {
+        objects: [root.sink, root.source, ...root.sinks, ...root.sources, ...root.streams].filter(n => n)
+    }
+
+    BeatTracker {
+        id: beatTracker
+    }
+
+
+    IpcHandler {
+        function cycleOutput(): void {
+            root.cycleNextAudioOutput();
+        }
+
+        target: "audio"
+    }
+
 }

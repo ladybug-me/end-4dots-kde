@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="engrampa.svg" inkscape:version="1.4 (e7c3feb100, 2024-10-09)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.756345" inkscape:cy="29.563452" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="35" inkscape:window-y="32" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style></defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path d="m 8.4664997,1.240334 c -0.3348132,0 -0.6690248,0.086714 -0.9695136,0.2601425 l -4.5783929,2.643581 a 1.9372208,1.9372208 0 0 0 -0.969514,1.6788846 v 5.2871619 c 0,0.693112 0.3685358,1.332027 0.969514,1.678885 l 4.5783929,2.643578 a 1.9372208,1.9372208 0 0 0 1.9390276,0 l 4.5783943,-2.643578 a 1.9372208,1.9372208 0 0 0 0.969511,-1.678885 V 5.8229421 A 1.9372208,1.9372208 0 0 0 14.014408,4.1440575 L 9.4360137,1.5004765 A 1.9378231,1.9378231 0 0 0 8.4664997,1.240334 Z m 0,1.4199462 c 0.09033,0 0.1800535,0.023486 0.2595408,0.069251 L 13.305033,5.373112 c 0.07946,0.046368 0.144514,0.1126092 0.189677,0.1902911 l -5.0282103,2.90312 V 14.272765 A 0.51968344,0.51968346 0 0 1 8.2069593,14.202912 L 3.6279637,11.559332 A 0.52148998,0.52149 0 0 1 3.3684233,11.110104 V 5.8229421 c 0,-0.092135 0.024691,-0.1818585 0.069854,-0.2589383 l 5.0282233,2.9025193 z" stroke-width="0.602184" id="path719" style="fill:currentColor" class="ColorScheme-Text"/>
+  <g id="g9" transform="matrix(0.46959567,0,0,0.46959567,4.7471229,3.7470598)" style="fill:#999999;fill-opacity:1;stroke:none;stroke-width:0.58349;stroke-dasharray:none;stroke-opacity:0.3"/>
+  </svg>

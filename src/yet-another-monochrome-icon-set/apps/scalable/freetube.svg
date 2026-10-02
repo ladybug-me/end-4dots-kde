@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="freetube.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.837563" inkscape:cy="29.64467" inkscape:window-width="1183" inkscape:window-height="941" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path id="path4" style="fill:currentColor;fill-opacity:1" class="ColorScheme-Text" d="M 14.750015 12.000441 C 13.226515 12.000441 12.000327 13.273814 12.000327 14.856671 L 12.000327 44.857262 C 12.000327 49.142976 17.499393 52.000185 20.249393 52.000185 L 23.000648 52.000185 L 23.000648 49.142389 L 23.000648 44.857262 L 23.000648 14.856671 C 23.000648 13.273814 21.772893 12.000441 20.249393 12.000441 L 14.750015 12.000441 z M 28.841582 12.000441 C 27.267056 12.000441 25.999454 13.22663 25.999454 14.75013 L 25.999454 20.249507 C 25.999454 21.773007 27.267056 23.000763 28.841582 23.000763 L 45.894352 23.000763 C 50.15751 23.000763 52.999672 17.50013 52.999672 14.75013 L 52.999672 12.000441 L 50.157544 12.000441 L 45.894352 12.000441 L 28.841582 12.000441 z M 27.321811 25.999568 A 1.2913161 1.1414724 0 0 0 25.999454 27.143313 L 25.999454 34.502451 L 25.999454 41.860023 A 1.2913161 1.1414724 0 0 0 27.935986 42.847091 L 35.146281 39.168305 L 42.355009 35.487952 A 1.2913161 1.1414724 0 0 0 42.355009 33.51225 L 35.146281 29.833465 L 27.935986 26.153112 A 1.2913161 1.1414724 0 0 0 27.321811 25.999568 z " transform="matrix(0.32982044,0,0,0.32982044,-2.1203754,-1.9819231)"/>
+</svg>

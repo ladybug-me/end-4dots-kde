@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 64 64"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="configure.svg"
+   width="64"
+   height="64"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#9c4444"
+     bordercolor="#eeeeee"
+     borderopacity="1"
+     inkscape:showpageshadow="0"
+     inkscape:pageopacity="0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#505050"
+     inkscape:zoom="13.12567"
+     inkscape:cx="23.960682"
+     inkscape:cy="32.988792"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1" />
+  <defs
+     id="defs3051">
+    <style
+       type="text/css"
+       id="current-color-scheme">.ColorScheme-Text { color: #d8dee9; } </style>
+  </defs>
+  <path
+     style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:3.63636"
+     d="m 39.272727,12 c -3.38902,0 -6.238317,2.317457 -7.045454,5.454546 H 10.181818 v 3.636363 h 22.045455 c 0.807137,3.137088 3.656434,5.454546 7.045454,5.454546 3.389022,0 6.238316,-2.317458 7.045455,-5.454546 h 7.5 v -3.636363 h -7.5 C 45.511043,14.317457 42.661749,12 39.272727,12 Z M 21.090909,37.454545 c -3.389022,0 -6.238318,2.317459 -7.045455,5.454546 h -3.863636 v 3.636364 h 3.863636 C 14.852591,49.682542 17.701887,52 21.090909,52 c 3.389021,0 6.238318,-2.317458 7.045454,-5.454545 h 0.227273 7.272727 18.181819 V 42.909091 H 35.636363 28.363636 28.136363 C 27.329227,39.772004 24.47993,37.454545 21.090909,37.454545 Z m 0,3.636364 c 2.008291,0 3.636364,1.628073 3.636364,3.636364 0,2.008291 -1.628073,3.636363 -3.636364,3.636363 -2.008291,0 -3.636364,-1.628072 -3.636364,-3.636363 0,-2.008291 1.628073,-3.636364 3.636364,-3.636364 z"
+     class="ColorScheme-Text"
+     id="path1" />
+</svg>

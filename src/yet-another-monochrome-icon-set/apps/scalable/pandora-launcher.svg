@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="pandora-launcher.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.15625"
+     inkscape:cx="58.80203"
+     inkscape:cy="-6.822335"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="path5"
+     style="fill:currentColor;stroke-width:1.00095"
+     d="M 6.8999083,1.4551797 1.8517564,6.5033306 H 4.1473899 L 9.4480852,1.4551797 Z M 9.8687645,1.8293247 4.6612409,6.7886871 5.9424241,8.0699224 8.2682114,5.7441361 9.8687645,4.143583 Z m 0.5609055,0.022431 v 2.2956335 l 5.048151,5.3006953 V 6.899908 Z m -0.285356,2.8094849 -1.2812365,1.2811832 2.3257875,2.3257863 1.600553,1.6005541 h 2.314309 z M 8.4665001,6.3390022 6.3390025,8.4664998 8.4665001,10.593997 10.593998,8.4664998 Z M 1.829324,7.0642353 6.7886864,12.271758 8.0699217,10.990574 5.7441354,8.6647885 4.1435823,7.0642353 Z M 1.455179,7.4849147 v 2.5481763 l 5.0481509,5.048151 v -2.295634 z m 9.535397,1.3781625 -2.3257872,2.3257868 -1.6005531,1.600553 v 2.314309 l 5.2075233,-4.959413 z m 1.795033,1.5665918 -5.300694,5.048151 h 2.548177 l 5.048152,-5.048151 z"
+     class="ColorScheme-Text" />
+</svg>

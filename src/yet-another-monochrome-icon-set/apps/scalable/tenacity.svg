@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="tenacity.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="8.7062522"
+     inkscape:cx="83.847789"
+     inkscape:cy="47.207454"
+     inkscape:window-width="2560"
+     inkscape:window-height="1392"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+    <linearGradient
+       xlink:href="#linearGradient135126"
+       id="linearGradient70771"
+       x1="13.410914"
+       y1="89.657997"
+       x2="36.958832"
+       y2="66.110077"
+       gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       id="linearGradient135126">
+      <stop
+         style="stop-color:#e93c17;stop-opacity:1"
+         offset="0"
+         id="stop135122" />
+      <stop
+         style="stop-color:#ca153e;stop-opacity:1"
+         offset="1"
+         id="stop135124" />
+    </linearGradient>
+    <linearGradient
+       xlink:href="#linearGradient135126"
+       id="linearGradient89893"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="translate(-4.9571544e-6)"
+       x1="36.958832"
+       y1="66.110077"
+       x2="13.410914"
+       y2="89.657997" />
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="rect1657-4-6-1-4-10-2-6"
+     class="ColorScheme-Text"
+     style="fill:currentColor;fill-opacity:1;stroke-width:0.0379043;paint-order:markers fill stroke"
+     d="m 3.2080081,1.4551796 c -0.963468,0 -1.7528285,0.7893527 -1.7528285,1.7528284 v 10.516981 c 0,0.403689 0.1395534,0.775967 0.3714506,1.073264 0.3215709,0.412263 0.8215958,0.679567 1.3813779,0.679567 H 13.72499 c 0.963471,0 1.75283,-0.789356 1.75283,-1.752831 V 3.2080074 c 0,-0.3878237 -0.128323,-0.7459841 -0.344062,-1.0373193 v -0.00173 c -0.0017,-0.00232 -0.0033,-0.00464 -0.0053,-0.00696 -0.0057,-0.00762 -0.01126,-0.014905 -0.01723,-0.022188 -0.004,-0.00494 -0.0079,-0.010272 -0.01193,-0.015239 -0.01192,-0.015239 -0.02517,-0.02981 -0.03767,-0.044519 C 14.739272,1.6990956 14.259307,1.4552713 13.724763,1.4552713 Z m 0,0.8764139 H 13.72499 c 0.493105,0 0.876413,0.3833087 0.876413,0.8764145 V 7.5900843 H 11.972158 V 5.8372534 H 10.21933 V 3.208008 H 8.4664982 V 6.7136703 H 6.7136674 V 4.9608395 H 4.9608389 V 7.5900843 H 2.3315935 V 3.208008 c 0,-0.4931058 0.3833087,-0.8764145 0.8764146,-0.8764145 z M 2.3315935,9.3429154 H 4.9608389 V 11.97216 h 1.7528285 v -1.752831 h 1.7528308 v 3.50566 H 10.21933 v -2.629247 h 1.752828 V 9.3429144 h 1.314623 1.314622 v 4.3820736 c 0,0.493106 -0.383308,0.876417 -0.876413,0.876417 H 3.2080081 c -0.4931059,0 -0.8764146,-0.383312 -0.8764146,-0.876417 z" />
+</svg>

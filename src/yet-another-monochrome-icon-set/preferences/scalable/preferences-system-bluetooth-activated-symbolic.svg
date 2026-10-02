@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="preferences-system-bluetooth-activated-symbolic.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="4.3531262"
+     inkscape:cx="89.935366"
+     inkscape:cy="34.457995"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:currentColor;stroke-width:0.661436"
+     class="ColorScheme-Text"
+     d="m 7.7559735,3.1768067 c -0.08257,0.00645 -0.163222,0.026355 -0.237696,0.062577 -0.228847,0.1101359 -0.374443,0.3415752 -0.374643,0.5955511 V 6.5246023 L 5.5649665,5.2973294 C 5.2766535,5.0735375 4.8615615,5.1255693 4.6374045,5.4135978 4.4136075,5.7019092 4.4656325,6.1170025 4.7536785,6.3411586 l 2.389954,1.858997 V 8.729821 l -2.389954,1.858997 c -0.288029,0.224156 -0.340058,0.639249 -0.116274,0.92756 0.224147,0.288028 0.639249,0.340059 0.927562,0.116268 l 1.578661,-1.227273 v 2.689667 c -2.3e-4,0.554859 0.641626,0.863444 1.074835,0.516747 l 3.3071785,-2.645744 c 0.33373,-0.267347 0.329933,-0.776324 -0.0077,-1.038661 L 9.6382255,8.4649879 11.517893,7.0025946 c 0.337683,-0.2623368 0.341483,-0.7713145 0.0078,-1.0386615 L 8.2184625,3.318189 C 8.0879645,3.213658 7.9227185,3.1644387 7.7559735,3.1768067 Z m 0.710525,2.0352594 1.5773705,1.2621546 -1.4830635,1.1536369 -0.0943,-0.073636 z m -3.968614,2.5930718 c -0.365303,0 -0.661436,0.2961346 -0.661436,0.661436 0,0.3653012 0.296133,0.661436 0.661436,0.661436 0.3653,0 0.661436,-0.2961348 0.661436,-0.661436 0,-0.3653014 -0.296136,-0.661436 -0.661436,-0.661436 z m 7.9372315,0 c -0.3653,0 -0.661436,0.2961346 -0.661436,0.661436 0,0.3653012 0.296136,0.661436 0.661436,0.661436 0.365302,0 0.661435,-0.2961348 0.661435,-0.661436 0,-0.3653014 -0.296133,-0.661436 -0.661435,-0.661436 z M 8.5608055,9.3021178 10.043869,10.455756 8.4664985,11.71791 V 9.3757542 Z"
+     id="path5" />
+</svg>

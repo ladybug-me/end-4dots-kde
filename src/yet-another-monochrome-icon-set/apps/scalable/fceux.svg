@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="64"
+   height="64"
+   version="1.1"
+   viewBox="0 0 16.933 16.933"
+   id="svg7"
+   sodipodi:docname="fxeux.svg"
+   inkscape:version="1.4.3 (0d15f75042, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview7"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="8.7062522"
+     inkscape:cx="83.675499"
+     inkscape:cy="47.666894"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7"
+     showgrid="false" />
+  <defs
+     id="defs2">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+    <linearGradient
+       x1="5"
+       y1="50"
+       x2="95"
+       y2="50"
+       id="gradient_rect"
+       xlink:href="#gradient_black"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(0.15580712,0,0,0.15580712,0.6761435,0.67614391)" />
+    <linearGradient
+       id="gradient_black">
+      <stop
+         style="stop-color:#000000;stop-opacity:1"
+         offset="0"
+         id="stop1" />
+      <stop
+         style="stop-color:#000000;stop-opacity:0.9"
+         offset="1"
+         id="stop2" />
+    </linearGradient>
+  </defs>
+  <metadata
+     id="metadata2">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     id="path5"
+     style="fill:currentColor"
+     d="m 4.9629556,1.4551797 c -1.9421343,0 -3.5055356,1.563401 -3.5055356,3.505536 v 7.0115693 c 0,1.942134 1.5634013,3.505535 3.5055356,3.505535 h 7.0070894 c 1.942134,0 3.505535,-1.563401 3.505535,-3.505535 V 4.9607157 c 0,-1.942135 -1.563401,-3.505536 -3.505535,-3.505536 z m -0.2927086,1.78413 h 7.592506 c 0.754062,1.87e-4 1.364978,0.606928 1.364978,1.3560177 v 3.8091962 0.015433 H 3.3052684 V 8.4045236 4.5953274 C 3.3054578,3.8462387 3.916395,3.2394967 4.670247,3.2393097 Z m 1.045886,1.0633091 v 3.2471753 h 5.500734 V 4.3026188 Z M 3.3052684,8.7634403 H 13.627731 v 0.01593 3.8091957 c 0,0.749089 -0.610937,1.355333 -1.364978,1.355521 H 4.670247 C 3.916395,13.94392 3.3054578,13.337676 3.3052684,12.588567 V 8.7793704 Z m 3.0241591,0.723807 V 12.641333 H 10.603573 V 9.4872473 Z m 5.6670005,0.6456517 c -0.163192,0 -0.295695,0.130731 -0.295695,0.293207 0,0.161743 0.132503,0.293704 0.295695,0.293704 0.163192,0 0.295696,-0.131961 0.295696,-0.293704 0,-0.162476 -0.132504,-0.293207 -0.295696,-0.293207 z m -7.2629599,0.05725 V 10.82186 H 4.0972746 v 0.485359 h 0.6361935 v 0.631713 H 5.2223114 V 11.307219 H 5.8580072 V 10.82186 H 5.2223114 v -0.631714 z m 6.6207929,0.580937 c -0.163381,0 -0.295717,0.131108 -0.295695,0.293207 0,0.16212 0.132335,0.293704 0.295695,0.293704 0.163002,0 0.295198,-0.131584 0.295198,-0.293704 0,-0.162099 -0.132216,-0.293207 -0.295198,-0.293207 z m 1.284334,0 c -0.16317,0 -0.295197,0.131108 -0.295197,0.293207 -1e-6,0.16212 0.132027,0.293704 0.295197,0.293704 0.163192,0 0.295696,-0.131584 0.295696,-0.293704 0,-0.162099 -0.132504,-0.293207 -0.295696,-0.293207 z m -0.642167,0.637687 c -0.163192,0 -0.295695,0.131605 -0.295695,0.293704 0,0.16212 0.132503,0.293207 0.295695,0.293207 0.163192,0 0.295696,-0.131087 0.295696,-0.293207 0,-0.162099 -0.132504,-0.293704 -0.295696,-0.293704 z"
+     class="ColorScheme-Text" />
+</svg>

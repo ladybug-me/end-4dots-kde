@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   id="svg3297"
+   height="64"
+   width="64"
+   version="1.0"
+   sodipodi:docname="drive-harddisk.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#9c4444"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="6.546875"
+     inkscape:cx="33.374702"
+     inkscape:cy="55.904535"
+     inkscape:window-width="2560"
+     inkscape:window-height="1388"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg3297" />
+  <metadata
+     id="metadata58">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs3299">
+    <style
+       id="current-color-scheme"
+       type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <path
+     class="ColorScheme-Text"
+     d="m 18.25,12 c -2.07731,0 -3.75,1.67269 -3.75,3.75 v 32.5 c 0,2.07354 1.67269,3.75 3.75,3.75 h 27.5 c 2.07354,0 3.75,-1.67269 3.75,-3.75 V 15.75 C 49.5,13.676458 47.81505,12 45.75,12 Z M 32,17 c 6.89006,0 12.5,5.609937 12.5,12.5 C 44.5,36.390062 38.89327,42 32,42 H 19.5 V 29.5 C 19.5,22.60568 25.109937,17 32,17 Z m 0,5 c -4.158975,0 -7.5,3.341025 -7.5,7.5 0,4.158975 3.341025,7.5 7.5,7.5 4.158975,0 7.5,-3.339988 7.5,-7.5 C 39.5,25.339987 36.158975,22 32,22 Z"
+     style="fill:currentColor;stroke-width:2.5"
+     id="path5" />
+</svg>

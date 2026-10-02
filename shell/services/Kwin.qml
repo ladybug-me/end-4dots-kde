@@ -8,6 +8,7 @@ import Quickshell.Wayland
 import Caelestia
 import Caelestia.Config
 import Caelestia.Services
+import qs.components.misc
 import qs.services
 
 Singleton {
@@ -24,15 +25,6 @@ Singleton {
     readonly property real swipeOffset: KWinWorkspaceState.swipeOffset
     readonly property var swipeOffsetByOutput: KWinWorkspaceState.swipeOffsetByOutput || ({})
     readonly property bool showingDesktop: KWinWorkspaceState.showingDesktop
-    readonly property var addresses: root.windowList.map(w => w.address)
-    readonly property var windowByAddress: {
-        let map = {};
-        for (let i = 0; i < root.windowList.length; i++) {
-            map[root.windowList[i].address] = root.windowList[i];
-        }
-        return map;
-    }
-    readonly property var layers: ({})
     readonly property var toplevels: ({ values: root.windowList })
     readonly property var activeToplevel: root.activeWindow
     readonly property var focusedWorkspace: ({ id: root.activeWsId, name: root.activeWsId.toString() })
@@ -149,15 +141,6 @@ Singleton {
 
     function windowsForWorkspace(workspace: var, includeAll: bool): var {
         return KWinActiveWindowBridge.windowsForWorkspace(workspace, includeAll ?? true);
-    }
-
-    function biggestWindowForWorkspace(workspaceId: var): var {
-        const windowsInThisWorkspace = root.windowList.filter(w => w.workspace?.id === workspaceId);
-        return windowsInThisWorkspace.reduce((maxWin, win) => {
-            const maxArea = (maxWin?.width ?? 0) * (maxWin?.height ?? 0);
-            const winArea = (win?.width ?? 0) * (win?.height ?? 0);
-            return winArea > maxArea ? win : maxWin;
-        }, null);
     }
 
     function activeWorkspaceFor(screenName: string): int {
@@ -466,8 +449,6 @@ Singleton {
     }
 
     function monitorFor(screen: ShellScreen): var {
-        if (!screen)
-            return null;
         let cached = root._monitorCache[screen.name];
         if (!cached) {
             cached = root.createMonitorMock(screen.name, Object.keys(root._monitorCache).filter(k => k !== "values").length);
@@ -568,6 +549,15 @@ Singleton {
         }
 
         target: "hypr"
+    }
+
+    // qmllint disable unresolved-type
+    CustomShortcut {
+        // qmllint enable unresolved-type
+        name: "refreshDevices"
+        description: qsTr("Reload devices")
+        onPressed: extras.refreshDevices()
+        onReleased: extras.refreshDevices()
     }
 
     HyprExtras {

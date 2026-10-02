@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<svg xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" width="64" height="64" version="1.1" viewBox="0 0 16.933 16.933" id="svg7" sodipodi:docname="preferences-desktop-sound.svg" inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)">
+  <sodipodi:namedview id="namedview7" pagecolor="#9c4444" bordercolor="#000000" borderopacity="0.25" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" inkscape:zoom="6.15625" inkscape:cx="15.756345" inkscape:cy="27.208122" inkscape:window-width="1226" inkscape:window-height="669" inkscape:window-x="0" inkscape:window-y="0" inkscape:window-maximized="0" inkscape:current-layer="svg7" showgrid="false"/>
+  <defs id="defs2">
+    <style id="current-color-scheme" type="text/css">.ColorScheme-Text {color:#d8dee9}</style>
+  </defs>
+  <metadata id="metadata2">
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path style="fill:currentColor;fill-opacity:1;stroke:none;stroke-width:0.355154;stroke-dasharray:none;stroke-opacity:0.3" class="ColorScheme-Text" d="m 5.8023845,3.1749373 c -1.3320588,0 -1.3320588,1.4110832 -1.3320588,1.4110832 v 7.7609575 c 0,1.411085 1.2609936,1.408543 1.3320588,1.411085 h 5.3282335 c 0,0 1.332056,-0.0028 1.332056,-1.411085 V 4.5860205 c 0,-1.4110832 -1.332056,-1.4110832 -1.332056,-1.4110832 z m 2.6641163,1.4110832 c 0.3690269,0 0.6660287,0.3171062 0.6660287,0.7055422 0,0.3884994 -0.2970018,0.7055416 -0.6660287,0.7055416 -0.3691397,0 -0.666029,-0.3170422 -0.666029,-0.7055416 0,-0.388436 0.2968893,-0.7055422 0.666029,-0.7055422 z m 0,2.116625 c 1.4713248,0 2.6641172,1.2635553 2.6641172,2.8221684 0,1.5586091 -1.1927924,2.8221641 -2.6641172,2.8221641 -1.4713253,0 -2.6641163,-1.263555 -2.6641163,-2.8221641 0,-1.5586131 1.192791,-2.8221684 2.6641163,-2.8221684 z m 0,1.4110835 c -0.7356962,0 -1.332058,0.6317628 -1.332058,1.4110842 0,0.7793178 0.5963827,1.4110818 1.332058,1.4110818 0.7356754,0 1.3320584,-0.631764 1.3320584,-1.4110818 0,-0.7793214 -0.596383,-1.4110842 -1.3320584,-1.4110842 z" id="path5"/>
+</svg>

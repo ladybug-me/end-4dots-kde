@@ -1,180 +1,300 @@
-import qs.modules.common
-import qs.modules.common.models
-import qs.modules.common.functions
+pragma Singleton
+
 import QtQuick
-import Qt.labs.folderlistmodel
+import QtCore
 import Quickshell
 import Quickshell.Io
-pragma Singleton
-pragma ComponentBehavior: Bound
+import Caelestia
+import Caelestia.Config
+import Caelestia.Models
+import qs.services
+import qs.utils
 
-/**
- * Provides a list of wallpapers and an "apply" action that calls the existing
- * switchwall.sh script. Pretty much a limited file browsing service.
- */
-Singleton {
+Searcher {
     id: root
 
-    property string thumbgenScriptPath: `${FileUtils.trimFileProtocol(Directories.scriptPath)}/thumbnails/thumbgen-venv.sh`
-    property string generateThumbnailsMagickScriptPath: `${FileUtils.trimFileProtocol(Directories.scriptPath)}/thumbnails/generate-thumbnails-magick.sh`
-    property alias directory: folderModel.folder
-    readonly property string effectiveDirectory: FileUtils.trimFileProtocol(folderModel.folder.toString())
-    property url defaultFolder: Qt.resolvedUrl(`${Directories.pictures}/Wallpapers`)
-    property alias folderModel: folderModel // Expose for direct binding when needed
-    property string searchQuery: ""
-    readonly property list<string> extensions: [ // TODO: add videos
-        "jpg", "jpeg", "png", "webp", "avif", "bmp", "svg"
-    ]
-    property list<string> wallpapers: [] // List of absolute file paths (without file://)
-    readonly property bool thumbnailGenerationRunning: thumbgenProc.running
-    property real thumbnailGenerationProgress: 0
+    readonly property string currentNamePath: `${Paths.state}/wallpaper/path.txt`
+    readonly property string fallback: Quickshell.shellPath("assets/wallpaper.webp")
 
-    signal changed()
-    signal thumbnailGenerated(directory: string)
-    signal thumbnailGeneratedFile(filePath: string)
+    property bool showPreview: false
+    readonly property string current: showPreview ? previewPath : actualCurrent
+    property string previewPath
+    property string actualCurrent
+    property bool previewColourLock
+    property bool pendingPreviewClear
+    property var videoThumbs: ({})
+    property var videoThumbsPending: ({})
 
-    function load () {} // For forcing initialization
-    
-    function openFallbackPicker(darkMode = Appearance.m3colors.darkmode) {
-        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", darkMode ? "dark" : "light"]);
-    }
+    property string currentMediaFilter: "All"
 
-    function apply(path, darkMode = Appearance.m3colors.darkmode) {
-        if (!path || path.length === 0) return;
-        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", darkMode ? "dark" : "light", "--image", path]);
-        root.changed()
-    }
-
-    Process {
-        id: selectProc
-        property string filePath: ""
-        property bool darkMode: Appearance.m3colors.darkmode
-        function select(filePath, darkMode = Appearance.m3colors.darkmode) {
-            selectProc.filePath = filePath
-            selectProc.darkMode = darkMode
-            selectProc.exec(["test", "-d", FileUtils.trimFileProtocol(filePath)])
+    property var filteredList: {
+        const res = wallpapers.entries || [];
+        if (currentMediaFilter === "Image") {
+            return res.filter(w => !Images.isVideo(w.relativePath) && !Images.isAnimated(w.relativePath));
+        } else if (currentMediaFilter === "Video") {
+            return res.filter(w => Images.isVideo(w.relativePath));
+        } else if (currentMediaFilter === "Animated") {
+            return res.filter(w => Images.isAnimated(w.relativePath));
         }
-        onExited: (exitCode, exitStatus) => {
-            if (exitCode === 0) {
-                setDirectory(selectProc.filePath);
-                return;
-            }
-            root.apply(selectProc.filePath, selectProc.darkMode);
-        }
+        return res;
     }
 
-    function select(filePath, darkMode = Appearance.m3colors.darkmode) {
-        selectProc.select(filePath, darkMode);
-    }
-
-    function randomFromCurrentFolder(darkMode = Appearance.m3colors.darkmode) {
-        if (folderModel.count === 0) return;
-        const randomIndex = Math.floor(Math.random() * folderModel.count);
-        const filePath = folderModel.get(randomIndex, "filePath");
-        print("Randomly selected wallpaper:", filePath);
-        root.select(filePath, darkMode);
-    }
-
-    Process {
-        id: validateDirProc
-        property string nicePath: ""
-        function setDirectoryIfValid(path) {
-            validateDirProc.nicePath = FileUtils.trimFileProtocol(path).replace(/\/+$/, "")
-            if (/^\/*$/.test(validateDirProc.nicePath)) validateDirProc.nicePath = "/";
-            validateDirProc.exec([
-                "bash", "-c",
-                `if [ -d "${validateDirProc.nicePath}" ]; then echo dir; elif [ -f "${validateDirProc.nicePath}" ]; then echo file; else echo invalid; fi`
-            ])
-        }
-        stdout: StdioCollector {
-            onStreamFinished: {
-                    root.directory = Qt.resolvedUrl(validateDirProc.nicePath)
-                const result = text.trim()
-                if (result === "dir") {
-                } else if (result === "file") {
-                    root.directory = Qt.resolvedUrl(FileUtils.parentDirectory(validateDirProc.nicePath))
-                } else {
-                    // Ignore
-                }
+    readonly property var categories: {
+        let dummy = root.list;
+        const baseDir = Paths.wallsdir;
+        let cats = [];
+        for (let i = 0; i < root.list.length; i++) {
+            let p = root.list[i].parentDir;
+            if (p !== baseDir) {
+                let cat = p.slice(baseDir.length + 1);
+                if (cat.includes("/")) cat = cat.slice(0, cat.indexOf("/"));
+                if (!cats.includes(cat)) cats.push(cat);
             }
         }
-    }
-    function setDirectory(path) {
-        validateDirProc.setDirectoryIfValid(path)
-    }
-    function navigateUp() {
-        folderModel.navigateUp()
-    }
-    function navigateBack() {
-        folderModel.navigateBack()
-    }
-    function navigateForward() {
-        folderModel.navigateForward()
+        return ["Main"].concat(cats.sort());
     }
 
-    // Folder model
-    FolderListModelWithHistory {
-        id: folderModel
-        folder: Qt.resolvedUrl(root.defaultFolder)
-        caseSensitive: false
-        nameFilters: root.extensions.map(ext => `*${searchQuery.split(" ").filter(s => s.length > 0).map(s => `*${s}*`)}*.${ext}`)
-        showDirs: true
-        showDotAndDotDot: false
-        showOnlyReadable: true
-        sortField: FolderListModel.Time
-        sortReversed: false
-        onCountChanged: {
-            root.wallpapers = []
-            for (let i = 0; i < folderModel.count; i++) {
-                const path = folderModel.get(i, "filePath") || FileUtils.trimFileProtocol(folderModel.get(i, "fileURL"))
-                if (path && path.length) root.wallpapers.push(path)
+    readonly property var grouped: {
+        let dummy = root.list;
+        const baseDir = Paths.wallsdir;
+        let grp = { "Main": [] };
+        for (let i = 0; i < root.list.length; i++) {
+            let w = root.list[i];
+            let p = w.parentDir;
+            if (p === baseDir) {
+                grp["Main"].push(w);
+            } else {
+                let cat = p.slice(baseDir.length + 1);
+                if (cat.includes("/")) cat = cat.slice(0, cat.indexOf("/"));
+                if (!grp[cat]) grp[cat] = [];
+                grp[cat].push(w);
             }
+        }
+        return grp;
+    }
+
+    function getCategoryFor(w: FileSystemEntry): string {
+        let category = w.parentDir.slice(Paths.wallsdir.length + 1);
+        if (category.includes("/"))
+            category = category.slice(0, category.indexOf("/"));
+        return category;
+    }
+
+    function setRandom(): void {
+        if (!root.list || root.list.length === 0) return;
+        let idx = Math.floor(Math.random() * root.list.length);
+        if (root.list.length > 1 && root.list[idx].path === actualCurrent)
+            idx = (idx + 1) % root.list.length;
+        setWallpaper(root.list[idx].path);
+    }
+
+    function setNextSequential(): void {
+        if (!root.list || root.list.length === 0) return;
+        let idx = -1;
+        for (let i = 0; i < root.list.length; i++) {
+            if (root.list[i].path === actualCurrent) {
+                idx = i;
+                break;
+            }
+        }
+        idx = (idx + 1) % root.list.length;
+        setWallpaper(root.list[idx].path);
+    }
+
+    function next(): void {
+        if (GlobalConfig.background.slideshowRandom) {
+            setRandom();
+        } else {
+            setNextSequential();
         }
     }
 
-    // Thumbnail generation
-    function generateThumbnail(size: string) {
-        if (!["normal", "large", "x-large", "xx-large"].includes(size)) throw new Error("Invalid thumbnail size");
-        thumbgenProc.directory = root.directory
-        thumbgenProc.running = false
-        thumbgenProc.command = [
-            "bash", "-c",
-            `${thumbgenScriptPath} --size ${size} --machine_progress -d ${FileUtils.trimFileProtocol(root.directory)} || ${generateThumbnailsMagickScriptPath} --size ${size} -d ${FileUtils.trimFileProtocol(root.directory)}`,
-        ]
-        // console.log("[Wallpapers] Updating thumbnails with command ", thumbgenProc.command.join(" "))
-        root.thumbnailGenerationProgress = 0
-        thumbgenProc.running = true
+    function setWallpaper(path: string): void {
+        actualCurrent = path;
+        if (Images.isVideo(path)) {
+            const thumb = thumbFor(path);
+            if (thumb !== "") {
+                const script = 'caelestia wallpaper -f "$1" ' + Colours.smartArg.join(" ") + '; printf "%s" "$2" > "$3"';
+                Quickshell.execDetached(["sh", "-c", script, "--", thumb, path, root.currentNamePath]);
+                syncPlasmaWallpaper(thumb);
+            } else {
+                Quickshell.execDetached(["sh", "-c", 'printf "%s" > "$1"', "--", path, root.currentNamePath]);
+            }
+        } else {
+            Quickshell.execDetached(["caelestia", "wallpaper", "-f", path, ...Colours.smartArg]);
+            syncPlasmaWallpaper(path);
+        }
     }
-    Process {
-        id: thumbgenProc
-        property string directory
-        stdout: SplitParser {
-            onRead: data => {
-                // print("thumb gen proc:", data)
-                let match = data.match(/PROGRESS (\d+)\/(\d+)/)
-                if (match) {
-                    const completed = parseInt(match[1])
-                    const total = parseInt(match[2])
-                    root.thumbnailGenerationProgress = completed / total
-                }
-                match = data.match(/FILE (.+)/)
-                if (match) {
-                    const filePath = match[1]
-                    root.thumbnailGeneratedFile(filePath)
-                }
+
+    // Mirrors the wallpaper onto Plasma's own desktop background so it doesn't
+    // stay stale (e.g. showing the deploy-time default) whenever the shell
+    // isn't running to keep it in sync itself, such as after a crash/exit.
+    function syncPlasmaWallpaper(imagePath: string): void {
+        if (!imagePath)
+            return;
+        const script = 'var allDesktops = desktops();' +
+            'for (var i = 0; i < allDesktops.length; i++) {' +
+            '    var d = allDesktops[i];' +
+            '    d.wallpaperPlugin = "org.kde.image";' +
+            '    d.currentConfigGroup = ["Wallpaper", "org.kde.image", "General"];' +
+            '    d.writeConfig("Image", "file://" + ' + JSON.stringify(imagePath) + ');' +
+            '}';
+        Quickshell.execDetached(["qdbus6", "org.kde.plasmashell", "/PlasmaShell", "org.kde.PlasmaShell.evaluateScript", script]);
+
+        if (GlobalConfig.lock.syncWallpaper)
+            Quickshell.execDetached(["kwriteconfig6", "--file", "kscreenlockerrc", "--group", "Greeter", "--group", "Wallpaper", "--group", "org.kde.image", "--group", "General", "--key", "Image", "file://" + imagePath]);
+    }
+
+    function preview(path: string): void {
+        previewPath = path;
+        showPreview = true;
+
+        if (Colours.scheme === "dynamic")
+            getPreviewColoursProc.running = true;
+    }
+
+    function stopPreview(): void {
+        showPreview = false;
+        if (previewColourLock)
+            pendingPreviewClear = true;
+        else
+            Colours.showPreview = false;
+    }
+
+    function getThumbnailPath(path: string): string {
+        if (Images.isVideo(path)) {
+            return `${Paths.cache}/wallpapers/${CUtils.sha256(path)}/first_frame.png`;
+        }
+        return path;
+    }
+
+    function thumbFor(path: string): string {
+        const p = String(path || "").replace(/^file:\/\//, "");
+        if (p === "" || !Images.isVideo(p))
+            return p;
+        if (root.videoThumbs[p])
+            return root.videoThumbs[p];
+        requestVideoThumb(p);
+        return "";
+    }
+
+    function requestVideoThumb(path: string): void {
+        if (root.videoThumbsPending[path] || root.videoThumbs[path])
+            return;
+        const pending = root.videoThumbsPending;
+        pending[path] = true;
+        root.videoThumbsPending = pending;
+
+        const out = getThumbnailPath(path);
+        const script = 'out="$1"; src="$2"; [ -s "$out" ] || { mkdir -p "$(dirname "$out")"; ' +
+                       'ffmpeg -y -loglevel error -i "$src" -vf "thumbnail,scale=640:-1" -frames:v 1 "$out" >/dev/null 2>&1; }; ' +
+                       '[ -s "$out" ] && printf %s "$out"';
+        const qml = 'import QtQuick\nimport Quickshell.Io\n' +
+            'Process {\n' +
+            '    id: p\n' +
+            '    command: ' + JSON.stringify(["sh", "-c", script, "--", out, path]) + '\n' +
+            '    stdout: StdioCollector { onStreamFinished: root.onVideoThumb(' + JSON.stringify(path) + ', (text || "").trim(), p); }\n' +
+            '    onExited: code => { if (code !== 0) p.destroy(); }\n' +
+            '}';
+        try {
+            const o = Qt.createQmlObject(qml, root, "videoThumbProc");
+            o.running = true;
+        } catch (e) {
+            Logger.log("[wallpapers] video thumbnail error: " + e.message);
+        }
+    }
+
+    function onVideoThumb(path: string, out: string, proc: var): void {
+        if (out !== "") {
+            const m = root.videoThumbs;
+            m[path] = out;
+            root.videoThumbs = Object.assign({}, m);
+            if (path === root.actualCurrent) {
+                const script = 'caelestia wallpaper -f "$1" ' + Colours.smartArg.join(" ") + '; printf "%s" "$2" > "$3"';
+                Quickshell.execDetached(["sh", "-c", script, "--", out, path, root.currentNamePath]);
+                syncPlasmaWallpaper(out);
             }
         }
-        onExited: (exitCode, exitStatus) => {
-            // print("[Wallpapers] Thumbnail generation completed with exit code", exitCode)
-            root.thumbnailGenerated(thumbgenProc.directory)
-        }
+        const pending = root.videoThumbsPending;
+        delete pending[path];
+        root.videoThumbsPending = pending;
+        if (proc)
+            proc.destroy();
     }
+
+    onPreviewColourLockChanged: {
+        if (!previewColourLock && pendingPreviewClear)
+            Colours.showPreview = false;
+    }
+
+    list: filteredList
+    key: "relativePath"
+    useFuzzy: GlobalConfig.launcher.useFuzzy.wallpapers
+    extraOpts: useFuzzy ? ({}) : ({
+            forward: false
+        })
 
     IpcHandler {
-        target: "wallpapers"
+        function get(): string {
+            return root.actualCurrent;
+        }
 
-        function apply(path: string): void {
-            root.apply(path);
+        function set(path: string): void {
+            root.setWallpaper(path);
+        }
+
+        function list(): string {
+            return root.list.map(w => w.path).join("\n");
+        }
+
+        target: "wallpaper"
+    }
+
+    FileView {
+        path: root.currentNamePath
+        watchChanges: true
+        printErrors: false
+        onFileChanged: reload()
+        onLoaded: {
+            let wall = text().trim();
+            if (!wall) {
+                wall = root.fallback;
+                Quickshell.execDetached(["caelestia", "wallpaper", "-f", root.fallback, ...Colours.smartArg]);
+            }
+            if (Images.isVideo(root.actualCurrent) && wall === root.getThumbnailPath(root.actualCurrent)) {
+                return;
+            }
+            root.actualCurrent = wall;
+            root.previewColourLock = false;
+            if (!Images.isVideo(wall))
+                syncPlasmaWallpaper(wall);
+        }
+        onLoadFailed: {
+            root.actualCurrent = root.fallback;
+            root.previewColourLock = false;
+            Quickshell.execDetached(["caelestia", "wallpaper", "-f", root.fallback, ...Colours.smartArg]);
+            syncPlasmaWallpaper(root.fallback);
+        }
+    }
+
+    FileSystemModel {
+        id: wallpapers
+
+        recursive: true
+        path: Paths.wallsdir
+        filter: FileSystemModel.Files
+        nameFilters: Images.validImageExtensions.concat(Images.validVideoExtensions).map(e => `*.${e}`)
+    }
+
+    Process {
+        id: getPreviewColoursProc
+
+        command: ["caelestia", "wallpaper", "-p", root.previewPath, ...Colours.smartArg]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                Colours.load(text, true);
+                Colours.showPreview = true;
+            }
         }
     }
 }

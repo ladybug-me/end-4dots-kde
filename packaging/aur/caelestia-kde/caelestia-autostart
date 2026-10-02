@@ -1,0 +1,35 @@
+#!/bin/bash
+# Started by caelestia-shell.service on login.
+#
+# The environment is set here rather than in the unit, so that a shell started by
+# hand gets the same one, and because the variables have to reach every process the
+# shell spawns. This mirrors what the source install writes into
+# ~/.local/bin/caelestia-autostart.sh.
+
+set -euo pipefail
+
+export QML2_IMPORT_PATH="/usr/lib/qt6/qml:/etc/xdg/quickshell/caelestia"
+export CAELESTIA_LIB_DIR="/usr/lib/caelestia"
+export CAELESTIA_SHELL_CONFIG="/etc/xdg/quickshell/caelestia/shell.qml"
+export CAELESTIA_BIN_DIR="/usr/bin"
+export QS_NO_RELOAD_POPUP=1
+export QS_DROP_EXPENSIVE_FONTS=1
+export QS_DISABLE_CRASH_HANDLER=1
+export QSG_RENDER_LOOP=threaded
+export QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+
+# Quickshell imports its Hyprland IPC module even on KDE for API compatibility.
+# Its missing-socket warning is expected when this KDE port has no Hyprland instance.
+if [[ -z "${HYPRLAND_INSTANCE_SIGNATURE:-}" ]]; then
+	if [[ -n "${QT_LOGGING_RULES:-}" ]]; then
+		export QT_LOGGING_RULES="${QT_LOGGING_RULES};quickshell.hyprland.ipc.warning=false"
+	else
+		export QT_LOGGING_RULES="quickshell.hyprland.ipc.warning=false"
+	fi
+fi
+
+# No --daemonize: the autostart entry runs under a systemd user unit, which
+# supervises the process and connects its output to the journal. Detaching would
+# hand every application the shell launches a stdout that goes nowhere, and
+# Vesktop deadlocks in exactly that state (issue #402).
+exec /usr/bin/quickshell -n -p "$CAELESTIA_SHELL_CONFIG"

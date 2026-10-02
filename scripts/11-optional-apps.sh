@@ -5,6 +5,7 @@
 set -euo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/download.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
 # shellcheck source=scripts/lib/packages.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/packages.sh"
@@ -96,9 +97,20 @@ if [[ "${INSTALL_TODOIST:-false}" == "true" ]]; then
     else
         mkdir -p "$HOME/.local/bin"
         echo "  Downloading Todoist AppImage..."
-        if curl -L --fail -o "$appimage" "https://todoist.com/linux_app/appimage" 2>/dev/null; then
-            chmod +x "$appimage"
-            ok "Todoist installed to $appimage"
+        appimage_url="https://todoist.com/linux_app/appimage"
+        if curl -L --fail -o "$appimage" "$appimage_url" 2>/dev/null; then
+            appimage_status=0
+            verify_download "$appimage_url" "$appimage" || appimage_status=$?
+            if [[ "$appimage_status" -eq 1 ]]; then
+                rm -f "$appimage"
+                warn "Checksum mismatch for the Todoist AppImage - not installing it."
+            else
+                if [[ "$appimage_status" -eq 2 ]]; then
+                    warn "Todoist publishes no checksum; the AppImage's SHA-256 is $(file_sha256 "$appimage")."
+                fi
+                chmod +x "$appimage"
+                ok "Todoist installed to $appimage"
+            fi
         else
             warn "Todoist download failed (network?). Skipping."
         fi

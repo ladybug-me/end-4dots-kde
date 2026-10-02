@@ -131,7 +131,24 @@ else
     fi
 fi
 
-if command -v plasmalogin >/dev/null 2>&1 || [[ -e /etc/plasmalogin.conf ]]; then
+is_plasmalogin_active() {
+    if systemctl is-active plasmalogin.service &>/dev/null || \
+       systemctl is-enabled plasmalogin.service &>/dev/null || \
+       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"plasmalogin"* ]]; then
+        return 0
+    fi
+    if systemctl is-active sddm.service &>/dev/null || \
+       systemctl is-enabled sddm.service &>/dev/null || \
+       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"sddm"* ]]; then
+        return 1
+    fi
+    if [[ -e /etc/plasmalogin.conf ]] && ! command -v sddm >/dev/null 2>&1; then
+        return 0
+    fi
+    return 1
+}
+
+if is_plasmalogin_active; then
     PLASMALOGIN_HOME="$(getent passwd plasmalogin | cut -d: -f6)"
     if [[ -z "$PLASMALOGIN_HOME" || "$PLASMALOGIN_HOME" = "/" ]]; then
         PLASMALOGIN_HOME="/var/lib/plasmalogin"
@@ -140,13 +157,14 @@ if command -v plasmalogin >/dev/null 2>&1 || [[ -e /etc/plasmalogin.conf ]]; the
     PLASMALOGIN_CONFIG="$PLASMALOGIN_HOME/.config"
     PLASMALOGIN_SCHEMES="$PLASMALOGIN_HOME/.local/share/color-schemes"
     PLASMALOGIN_WALLPAPERS="$PLASMALOGIN_HOME/wallpapers/caelestia"
+    MAX_LOGIN_SCHEME_BYTES=$((1024 * 1024))
     MAX_LOGIN_WALLPAPER_BYTES=$((50 * 1024 * 1024))
 
     install -d -o root -g root -m 0755 "$PLASMALOGIN_CONFIG" "$PLASMALOGIN_SCHEMES" "$PLASMALOGIN_WALLPAPERS"
 
     for scheme in "$REAL_HOME"/.local/share/color-schemes/Matugen*.colors; do
-        [[ -f "$scheme" ]] || continue
-        install -o root -g root -m 0644 "$scheme" "$PLASMALOGIN_SCHEMES/$(basename -- "$scheme")"
+        [[ -e "$scheme" ]] || continue
+        copy_user_file "$scheme" "$PLASMALOGIN_SCHEMES/$(basename -- "$scheme")" "$MAX_LOGIN_SCHEME_BYTES" || true
     done
 
     for file in kdeglobals plasmarc kxkbrc kcminputrc plasma-localerc; do
