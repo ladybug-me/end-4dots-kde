@@ -4,12 +4,12 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Qt.labs.folderlistmodel
 import Quickshell
-import Quickshell.Io
 import Quickshell.Hyprland
+import Quickshell.Io
 import Caelestia
 import qs.modules.common
-import qs.modules.common.models
 import qs.modules.common.functions
+import qs.modules.common.models
 
 Singleton {
     id: root
@@ -26,6 +26,7 @@ Singleton {
 
     // https://specifications.freedesktop.org/menu/latest/category-registry.html
     property list<string> mainRegisteredCategories: ["AudioVideo", "Development", "Education", "Game", "Graphics", "Network", "Office", "Science", "Settings", "System", "Utility"]
+
     property list<string> appCategories: DesktopEntries.applications.values.reduce((acc, entry) => {
         for (const category of entry.categories) {
             if (!acc.includes(category) && mainRegisteredCategories.includes(category)) {
@@ -57,6 +58,7 @@ Singleton {
 
     FolderListModel {
         id: userActionsFolder
+
         folder: Qt.resolvedUrl(Directories.userActions)
         showDirs: false
         showHidden: false
@@ -126,6 +128,7 @@ Singleton {
     property var allActions: searchActions.concat(userActionScripts)
 
     property string mathResult: ""
+
     property bool clipboardWorkSafetyActive: {
         const enabled = Config.options.workSafety.enable.clipboard;
         const sensitiveNetwork = (StringUtils.stringListContainsSubstring(Network.networkName.toLowerCase(), Config.options.workSafety.triggerCondition.networkNameKeywords));
@@ -349,6 +352,7 @@ Singleton {
 
     Component {
         id: resultComp
+
         LauncherSearchResult {}
     }
 }

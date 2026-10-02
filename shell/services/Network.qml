@@ -1,10 +1,10 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import qs.services.network
 import QtQuick
 import Quickshell
 import Caelestia.Services
-import qs.services.network
 
 /**
  * Network service backed by the native C++ NmQt (NetworkManagerQt) plugin.
