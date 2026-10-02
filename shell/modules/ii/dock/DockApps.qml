@@ -204,7 +204,7 @@ Item {
                                     LiveWindowPreview {
                                         id: screencopyView
                                         anchors.centerIn: parent
-                                        address: Kwin.windowList.find(w => w.class === windowButton.modelData?.appId && w.title === windowButton.modelData?.title)?.address ?? ""
+                                        address: windowButton.modelData?.address ?? ""
                                         active: previewPopup.show
                                         fallbackIcon: AppSearch.guessIcon(windowButton.modelData?.appId)
                                         layer.enabled: true

@@ -84,7 +84,7 @@ Button {
             LiveWindowPreview {
                 id: screencopyView
                 anchors.centerIn: parent
-                address: Kwin.windowList.find(w => w.class === root.toplevel?.appId && w.title === root.toplevel?.title)?.address ?? ""
+                address: root.toplevel?.address ?? ""
                 active: true
                 fallbackIcon: AppSearch.guessIcon(root.toplevel?.appId)
             }

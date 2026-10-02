@@ -37,9 +37,10 @@ def is_included_path(path: str) -> bool:
     """Return True if path should be tracked by this sync tool.
 
     Includes all files in the repository EXCEPT `shell/`,
-    while explicitly INCLUDING `shell/plugin/`.
+    while explicitly INCLUDING `shell/plugin/`, `shell/kwin-effects/`, `shell/extras/`.
     """
-    if path == "shell/plugin" or path.startswith("shell/plugin/"):
+    if path in ("shell/plugin", "shell/kwin-effects", "shell/extras") or \
+       path.startswith(("shell/plugin/", "shell/kwin-effects/", "shell/extras/")):
         return True
     if path == "shell" or path.startswith("shell/"):
         return False

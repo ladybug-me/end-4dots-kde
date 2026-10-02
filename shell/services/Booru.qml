@@ -1,25 +1,23 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import qs.modules.common
+import QtQuick
+import Quickshell
 import qs.services
-import Quickshell;
-import QtQuick;
+import qs.modules.common
 
 /**
  * A service for interacting with various booru APIs.
  */
 Singleton {
     id: root
+
     property Component booruResponseDataComponent: BooruResponseData {}
-
-    signal tagSuggestion(string query, var suggestions)
-    signal responseFinished()
-
     property string failMessage: Translation.tr("That didn't work. Tips:\n- Check your tags and NSFW settings\n- If you don't have a tag in mind, type a page number")
     property var responses: []
     property int runningRequests: 0
     property var defaultUserAgent: Config.options?.networking?.userAgent || "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36"
+    property var currentTagRequest: null
     property var providerList: Object.keys(providers).filter(provider => provider !== "system" && providers[provider].api)
     property var providers: {
         "system": { "name": Translation.tr("System") },
@@ -274,6 +272,9 @@ Singleton {
     }
     property var currentProvider: Persistent.states.booru.provider
 
+    signal tagSuggestion(string query, var suggestions)
+    signal responseFinished()
+
     function getWorkingImageSource(url) {
         if (url?.includes('pximg.net')) {
             return `https://www.pixiv.net/en/artworks/${url.substring(url.lastIndexOf('/') + 1).replace(/_p\d+\.(png|jpg|jpeg|gif)$/, '')}`;
@@ -417,10 +418,9 @@ Singleton {
             xhr.send()
         } catch (error) {
             console.log("Could not set User-Agent:", error)
-        } 
+        }
     }
 
-    property var currentTagRequest: null
     function triggerTagSearch(query) {
         if (currentTagRequest) {
             currentTagRequest.abort();

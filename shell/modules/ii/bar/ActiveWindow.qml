@@ -1,18 +1,21 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
+pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
 
 Item {
     id: root
+
     readonly property var monitor: Kwin.monitorFor(root.QsWindow.window?.screen)
     readonly property var activeWindow: Kwin.activeWindow
 
-    property string activeWindowAddress: activeWindow?.address
-    property bool focusingThisMonitor: Kwin.activeOutputName == monitor?.name
+    property string activeWindowAddress: activeWindow?.address ?? ""
+    property bool focusingThisMonitor: Boolean(Kwin.activeOutputName && monitor?.name && Kwin.activeOutputName === monitor.name)
     property var biggestWindow: Kwin.biggestWindowForWorkspace(Kwin.activeWsId)
 
     implicitWidth: colLayout.implicitWidth
@@ -33,7 +36,6 @@ Item {
             text: root.focusingThisMonitor && root.activeWindow?.focused && root.biggestWindow ? 
                 root.activeWindow?.class :
                 (root.biggestWindow?.class) ?? Translation.tr("Desktop")
-
         }
 
         StyledText {
@@ -45,7 +47,5 @@ Item {
                 root.activeWindow?.title :
                 (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${Kwin.activeWsId}`
         }
-
     }
-
 }
