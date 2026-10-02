@@ -28,6 +28,7 @@ QML2_IMPORT_PATH=$(install_qml_import_path)
 CAELESTIA_LIB_DIR=$(install_lib_dir)
 CAELESTIA_BIN_DIR=$(install_bin_dir)
 CAELESTIA_SHELL_CONFIG=$(install_shell_config)
+ILLOGICAL_IMPULSE_VIRTUAL_ENV=$HOME/.local/state/quickshell/.venv
 EOF
     ok "Shell environment written."
 
@@ -47,6 +48,7 @@ export QML2_IMPORT_PATH="$(install_qml_import_path)\${QML2_IMPORT_PATH:+:\$QML2_
 export CAELESTIA_LIB_DIR="$(install_lib_dir)"
 export CAELESTIA_BIN_DIR="$(install_bin_dir)"
 export CAELESTIA_SHELL_CONFIG="$(install_shell_config)"
+export ILLOGICAL_IMPULSE_VIRTUAL_ENV="\$HOME/.local/state/quickshell/.venv"
 EOF
     chmod +x "$plasma_env_d/caelestia.sh"
     ok "Plasma session environment written."
