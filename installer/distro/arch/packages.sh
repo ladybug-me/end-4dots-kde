@@ -63,7 +63,7 @@ THEME_PACKAGES=(
 UTILITY_PACKAGES=(
     fuzzel swappy ddcutil networkmanager imagemagick tesseract tesseract-data-eng
     satty spectacle gpu-screen-recorder slurp grim brightnessctl power-profiles-daemon
-    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs
+    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs songrec translate-shell
 )
 
 PACKAGES=()

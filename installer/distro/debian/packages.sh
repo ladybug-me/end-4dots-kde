@@ -86,7 +86,7 @@ UTILITY_PACKAGES=(
     fuzzel swappy ddcutil network-manager imagemagick
     tesseract-ocr tesseract-ocr-eng kde-spectacle slurp grim
     brightnessctl power-profiles-daemon
-    xdg-utils sassc python3-venv uv konsave
+    xdg-utils sassc python3-venv uv konsave songrec translate-shell
 )
 
 FALLBACK_PKGS=(

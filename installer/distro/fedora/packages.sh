@@ -71,7 +71,7 @@ UTILITY_PACKAGES=(
     fuzzel swappy ddcutil NetworkManager ImageMagick
     tesseract tesseract-langpack-eng spectacle gpu-screen-recorder
     slurp grim brightnessctl power-profiles-daemon
-    xdg-utils sassc bat ripgrep xdg-user-dirs
+    xdg-utils sassc bat ripgrep xdg-user-dirs songrec translate-shell
 )
 
 COPR_CORE=(app2unit libcava)
