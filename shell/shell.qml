@@ -1,150 +1,77 @@
-pragma ComponentBehavior: Bound
+//@ pragma UseQApplication
+//@ pragma Env QS_NO_RELOAD_POPUP=1
+//@ pragma Env QT_QUICK_CONTROLS_STYLE=Basic
+//@ pragma Env QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
 
-// Environment variables originally set via //@ pragma directives moved to
-// the launcher scripts (08-build-shell.sh, 10-autostart.sh) for broader
-// quickshell version compatibility.
-//@ pragma Env QS_CRASHREPORT_URL=https://github.com/ladybug-me/caelestia-kde/issues/new?template=crash.yml
-// //@ pragma DefaultEnv QS_NO_RELOAD_POPUP=1
-// //@ pragma DefaultEnv QS_DROP_EXPENSIVE_FONTS=1
-// //@ pragma DefaultEnv QSG_RENDER_LOOP=threaded
-// //@ pragma DefaultEnv QT_QUICK_FLICKABLE_WHEEL_DECELERATION=10000
+// Remove two slashes below and adjust the value to change the UI scale
+////@ pragma Env QT_SCALE_FACTOR=1
+
+import "modules/common"
+import "services"
+import "panelFamilies"
 
 import QtQuick
-import QtQml
+import QtQuick.Window
 import Quickshell
 import Quickshell.Io
-import Caelestia
-import Caelestia.Config
-import qs.components.containers
-import qs.services
-import qs.services.api
-import qs.utils
-import "services" as Services
-import "modules"
-import "modules/drawers"
-import "modules/background"
-import "modules/screenshot/regionSelector"
-import "modules/overview"
-import "modules/whatsnew" as WhatsNew
+import Quickshell.Hyprland
 
 ShellRoot {
     id: root
 
-    property var regionSelector: RegionSelector {}
-
-    property var _arpcInit: null
-    property var _gameModeInit: null
-    property var _updateCheckerInit: null
-    property var _autoSchemeInit: null
-
-    settings.watchFiles: false
+    // Stuff for every panel family
+    ReloadPopup {}
 
     Component.onCompleted: {
-        deferredStartup.start();
+        MaterialThemeLoader.reapplyTheme()
+        Hyprsunset.load()
+        FirstRunExperience.load()
+        ConflictKiller.load()
+        Cliphist.refresh()
+        Wallpapers.load()
+        Updates.load()
     }
 
-    Binding {
-        target: ShellState
-        property: "shellRoot"
-        value: root
+
+    // Panel families
+    property list<string> families: ["ii", "waffle"]
+    function cyclePanelFamily() {
+        const currentIndex = families.indexOf(Config.options.panelFamily)
+        const nextIndex = (currentIndex + 1) % families.length
+        Config.options.panelFamily = families[nextIndex]
     }
 
-    Binding {
-        target: Translations
-        property: "extraSearchPaths"
-        value: [Qt.resolvedUrl("translations")]
+    component PanelFamilyLoader: LazyLoader {
+        required property string identifier
+        property bool extraCondition: true
+        active: Config.ready && Config.options.panelFamily === identifier && extraCondition
+    }
+    
+    PanelFamilyLoader {
+        identifier: "ii"
+        component: IllogicalImpulseFamily {}
     }
 
-    Binding {
-        target: Translations
-        property: "language"
-        value: GlobalConfig.general.language
+    PanelFamilyLoader {
+        identifier: "waffle"
+        component: WaffleFamily {}
     }
 
-    GSFLoader {}
-    ServiceLoader {}
 
-    Background {}
-    BadAppleOverlay {}
-
-    Drawers {}
-
+    // Shortcuts
     IpcHandler {
-        function screenshot(): void {
-            regionSelector.screenshot();
-        }
+        target: "panelFamily"
 
-        function search(): void {
-            regionSelector.search();
-        }
-
-        function ocr(): void {
-            regionSelector.ocr();
-        }
-
-        function record(): void {
-            regionSelector.record();
-        }
-
-        function recordWithSound(): void {
-            regionSelector.recordWithSound();
-        }
-
-        target: "region"
-    }
-
-    IpcHandler {
-        function lock(): void {
-            Quickshell.execDetached(["loginctl", "lock-session"]);
-            Audio.playLock();
-        }
-
-        function unlock(): void {
-            Quickshell.execDetached(["loginctl", "unlock-session"]);
-        }
-
-        target: "lock"
-    }
-
-    Shortcuts {}
-    ScreenCorners {}
-
-    Timer {
-        id: deferredStartup
-
-        interval: 250
-        repeat: false
-
-        onTriggered: {
-            PluginLoader.loadPlugins();
-            bbdxCheckProcess.running = true;
-            root._arpcInit = DiscordRPC;
-            root._gameModeInit = GameMode;
-            root._updateCheckerInit = UpdateChecker;
-            root._autoSchemeInit = AutoScheme;
+        function cycle(): void {
+            root.cyclePanelFamily()
         }
     }
 
-    Services.StartupTasks {}
-    WhatsNew.WhatsNewWindow {}
+    GlobalShortcut {
+        name: "panelFamilyCycle"
+        description: "Cycles panel family"
 
-    Process {
-        id: bbdxCheckProcess
-
-        running: false
-        command: ["bash", Quickshell.shellDir + "/scripts/bbdx-window-classes.sh"]
-
-        stdout: StdioCollector {
-            id: bbdxStdout
-        }
-
-        onExited: {
-            if (bbdxStdout.text.trim() === "BBDX_ENABLED") {
-                GlobalConfig.appearance.blur = true;
-            }
-        }
+        onPressed: root.cyclePanelFamily()
     }
-
-    BatteryMonitor {}
-    BluetoothReconnect {}
 }
+

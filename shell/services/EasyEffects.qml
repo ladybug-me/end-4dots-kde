@@ -1,74 +1,61 @@
-pragma Singleton
-
+import qs.modules.common
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs.utils
+import Quickshell.Services.Pipewire
+pragma Singleton
+pragma ComponentBehavior: Bound
 
+/**
+ * Handles EasyEffects active state and presets.
+ */
 Singleton {
     id: root
 
     property bool available: false
     property bool active: false
 
-    function refresh(): void {
-        activeProc.running = true;
+    function fetchAvailability() {
+        fetchAvailabilityProc.running = true
     }
 
-    function enable(): void {
-        Launch.exec(["bash", "-c",
-            "easyeffects --hide-window --service-mode >/dev/null 2>&1 || "
-            + "flatpak run com.github.wwmm.easyeffects --hide-window --service-mode >/dev/null 2>&1"]);
-        confirmTimer.restart();
+    function fetchActiveState() {
+        fetchActiveStateProc.running = true
     }
 
-    function disable(): void {
-        Launch.exec(["bash", "-c",
-            "pkill -x easyeffects >/dev/null 2>&1 || "
-            + "flatpak kill com.github.wwmm.easyeffects >/dev/null 2>&1"]);
-        confirmTimer.restart();
+    function disable() {
+        root.active = false
+        Quickshell.execDetached(["bash", "-c", "pkill easyeffects || flatpak pkill com.github.wwmm.easyeffects"])
     }
 
-    function open(): void {
-        Launch.exec(["bash", "-c",
-            "easyeffects -q >/dev/null 2>&1; flatpak kill com.github.wwmm.easyeffects >/dev/null 2>&1; "
-            + "easyeffects >/dev/null 2>&1 || flatpak run com.github.wwmm.easyeffects >/dev/null 2>&1"]);
-        confirmTimer.restart();
+    function enable() {
+        root.active = true
+        Quickshell.execDetached(["bash", "-c", "easyeffects --hide-window --service-mode || flatpak run com.github.wwmm.easyeffects --hide-window --service-mode"])
     }
 
-    function toggle(): void {
-        if (root.active)
-            root.disable();
-        else
-            root.enable();
-    }
-
-    Process {
-        id: availableProc
-
-        command: ["bash", "-c",
-            "command -v easyeffects >/dev/null 2>&1 || flatpak info com.github.wwmm.easyeffects >/dev/null 2>&1"]
-        running: true
-        onExited: code => {
-            root.available = code === 0;
-            if (root.available)
-                root.refresh();
+    function toggle() {
+        if (root.active) {
+            root.disable()
+        } else {
+            root.enable()
         }
     }
+
     Process {
-        id: activeProc
-
-        command: ["bash", "-c",
-            "pidof -q easyeffects || flatpak ps --columns=application 2>/dev/null | grep -qx com.github.wwmm.easyeffects"]
-        onExited: code => root.active = code === 0
+        id: fetchAvailabilityProc
+        running: true
+        command: ["bash", "-c", "command -v easyeffects || flatpak info com.github.wwmm.easyeffects > /dev/null 2>&1"]
+        onExited: (exitCode, exitStatus) => {
+            root.available = exitCode === 0
+        }
     }
-    // Starting and stopping are fire-and-forget, so the state is read back
-    // rather than assumed: a launch that fails, or a stop that does not take,
-    // would otherwise leave the toggle showing something that is not true.
-    Timer {
-        id: confirmTimer
 
-        interval: 1200
-        onTriggered: root.refresh()
+    Process {
+        id: fetchActiveStateProc
+        running: true
+        command: ["bash", "-c", "pidof easyeffects || flatpak ps | grep com.github.wwmm.easyeffects > /dev/null 2>&1"]
+        onExited: (exitCode, exitStatus) => {
+            root.active = exitCode === 0
+        }
     }
 }
