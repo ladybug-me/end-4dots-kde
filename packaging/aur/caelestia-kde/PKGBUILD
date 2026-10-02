@@ -12,6 +12,7 @@ depends=(
     'quickshell'
     'matugen'
     'python'
+    'uv'
     'git'
     'plasma-workspace'
     'qt6-base'
@@ -63,7 +64,7 @@ source=("$_source_url"
         'caelestia-autostart'
         'caelestia-shell.service')
 sha256sums=("$_source_sum"
-            '378569eb38a781d827570afdd08a8452dfcf36caabd373642080482918c151c6'
+            '30fdff071e46c2a1a8c078db1f22ddbe32da1a69a6250fc09ef0288ea40247bb'
             'f219b72c98ad98418cbe9ef2648d0c2cd3664d36bd06f2870b8c8b253d6d17c8')
 
 prepare() {
@@ -114,6 +115,8 @@ package() {
     install -d "$pkgdir/usr/share/caelestia/scripts"
     install -m755 scripts/[0-9]*.sh "$pkgdir/usr/share/caelestia/scripts/"
     cp -r scripts/lib "$pkgdir/usr/share/caelestia/scripts/"
+    install -d "$pkgdir/usr/share/caelestia/installer"
+    cp -r installer/uv "$pkgdir/usr/share/caelestia/installer/"
     install -d "$pkgdir/usr/share/caelestia/src" "$pkgdir/usr/share/caelestia/assets" \
         "$pkgdir/usr/share/caelestia/shell/assets"
     cp -r src/dots src/dots-extra "$pkgdir/usr/share/caelestia/src/"
@@ -162,6 +165,7 @@ DROPIN
         usr/bin/caelestia
         usr/share/caelestia/scripts/03-deploy-configs.sh
         usr/share/caelestia/scripts/lib/install-kind.sh
+        usr/share/caelestia/installer/uv/requirements.txt
         usr/share/caelestia/src/dots
         usr/share/caelestia/src/dots-extra
         usr/share/caelestia/shell/assets/wallpaper.webp

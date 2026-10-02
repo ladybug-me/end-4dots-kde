@@ -56,7 +56,7 @@ shell tree, about 300 MiB in each.
 
 It no longer depends on `caelestia-cli`. The color pipeline belongs to this
 project now - `caelestia-color` generates the palette with matugen, applies it and
-fans it out - so what the package needs from outside is `matugen` and `python`,
+fans it out - so what the package needs from outside is `matugen`, `python` and `uv`,
 not another caelestia.
 
 

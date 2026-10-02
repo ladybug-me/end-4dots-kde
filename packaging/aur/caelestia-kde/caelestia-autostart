@@ -12,6 +12,7 @@ export QML2_IMPORT_PATH="/usr/lib/qt6/qml:/etc/xdg/quickshell/caelestia"
 export CAELESTIA_LIB_DIR="/usr/lib/caelestia"
 export CAELESTIA_SHELL_CONFIG="/etc/xdg/quickshell/caelestia/shell.qml"
 export CAELESTIA_BIN_DIR="/usr/bin"
+export ILLOGICAL_IMPULSE_VIRTUAL_ENV="\$HOME/.local/state/quickshell/.venv"
 export QS_NO_RELOAD_POPUP=1
 export QS_DROP_EXPENSIVE_FONTS=1
 export QS_DISABLE_CRASH_HANDLER=1

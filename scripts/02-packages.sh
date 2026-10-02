@@ -8,6 +8,8 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/packages.sh"
 # shellcheck source=scripts/lib/matugen.sh
 source "$(dirname "${BASH_SOURCE[0]}")/lib/matugen.sh"
+# shellcheck source=scripts/lib/uv_tool.sh
+source "$(dirname "${BASH_SOURCE[0]}")/lib/uv_tool.sh"
 
 BUNDLE_DIR="${BUNDLE_DIR:?BUNDLE_DIR not set}"
 
@@ -35,6 +37,14 @@ else
     info "  Arch:   sudo pacman -S matugen"
     info "  Fedora: sudo dnf copr enable avengemedia/danklinux && sudo dnf install matugen"
     info "  Debian: cargo install matugen (the installer builds it for you)"
+fi
+
+echo
+info "Ensuring uv and Python virtual environment"
+if ensure_uv_venv; then
+    ok "Python virtual environment ready."
+else
+    warn "Failed to set up uv or Python virtual environment."
 fi
 
 echo
