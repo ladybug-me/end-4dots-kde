@@ -51,7 +51,7 @@ if [[ ! -d "$DOTS_DIR" ]] || [[ -z "$(ls -A "$DOTS_DIR" 2>/dev/null)" ]]; then
     if install_is_packaged; then
         die "Missing dotfiles in $DOTS_DIR. The package should have installed them; reinstall it."
     fi
-    die "Missing src/dots content. Run: bash \"$BUNDLE_DIR/scripts/02a-submodules.sh\""
+    die "Missing dotfiles in $DOTS_DIR."
 fi
 
 info "Recording previous login shell..."
