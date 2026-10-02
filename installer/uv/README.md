@@ -119,21 +119,13 @@ Inside a bash script,
 **Example:**
 
 For running a python script,
-take `generate_colors_material.py` as example:
+take `thumbgen.py` as example:
 ```bash
 source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
-  > "$STATE_DIR"/user/generated/material_colors.scss
-"$SCRIPT_DIR"/applycolor.sh
-```
-
-For running a python script provided by python package,
-take `kde-material-you-colors` as example:
-```bash
-source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-kde-material-you-colors "$mode_flag" --color "$color" -sv "$sv_num"
+python3 "$SCRIPT_DIR/thumbgen.py" "$@"
 deactivate
 ```
+
 
 
 

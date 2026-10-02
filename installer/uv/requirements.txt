@@ -14,29 +14,15 @@ click==8.2.1
     # via -r requirements.in
 cryptography==46.0.0
     # via google-auth
-dbus-python==1.4.0
-    # via kde-material-you-colors
 google-auth==2.49.1
     # via -r requirements.in
 idna==3.11
     # via requests
-kde-material-you-colors==1.10.1
-    # via -r requirements.in
-libsass==0.23.0
-    # via -r requirements.in
 loguru==0.7.3
     # via -r requirements.in
-material-color-utilities==0.2.1
-    # via -r requirements.in
-materialyoucolor==2.0.10
-    # via
-    #   -r requirements.in
-    #   kde-material-you-colors
 numpy==2.2.2
     # via
     #   -r requirements.in
-    #   kde-material-you-colors
-    #   material-color-utilities
     #   opencv-contrib-python
 opencv-contrib-python==4.12.0.88
     # via -r requirements.in
@@ -45,10 +31,7 @@ packaging==24.2
     #   build
     #   setuptools-scm
 pillow==11.1.0
-    # via
-    #   -r requirements.in
-    #   kde-material-you-colors
-    #   material-color-utilities
+    # via -r requirements.in
 psutil==6.1.1
     # via -r requirements.in
 pyasn1==0.6.3

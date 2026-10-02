@@ -9,29 +9,36 @@ CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHELL_CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
-MATUGEN_DIR="$XDG_CONFIG_HOME/matugen"
-terminalscheme="$SCRIPT_DIR/terminal/scheme-base.json"
 
-handle_kde_material_you_colors() {
-    # Check if Qt app theming is enabled in config
-    if [ -f "$SHELL_CONFIG_FILE" ]; then
-        enable_qt_apps=$(jq -r '.appearance.wallpaperTheming.enableQtApps' "$SHELL_CONFIG_FILE")
-        if [ "$enable_qt_apps" == "false" ]; then
-            return
-        fi
+find_caelestia_color() {
+    if command -v caelestia-color &>/dev/null; then
+        command -v caelestia-color
+    elif [[ -x "$HOME/.local/bin/caelestia-color" ]]; then
+        echo "$HOME/.local/bin/caelestia-color"
+    elif [[ -x "/usr/bin/caelestia-color" ]]; then
+        echo "/usr/bin/caelestia-color"
+    elif [[ -x "$SCRIPT_DIR/../../../../src/bin/caelestia-color" ]]; then
+        echo "$SCRIPT_DIR/../../../../src/bin/caelestia-color"
+    else
+        echo "caelestia-color"
     fi
+}
+CAELESTIA_COLOR="$(find_caelestia_color)"
 
-    # Map $type_flag to allowed scheme variants for kde-material-you-colors-wrapper.sh
-    local kde_scheme_variant=""
-    case "$type_flag" in
-        scheme-content|scheme-expressive|scheme-fidelity|scheme-fruit-salad|scheme-monochrome|scheme-neutral|scheme-rainbow|scheme-tonal-spot)
-            kde_scheme_variant="$type_flag"
-            ;;
-        *)
-            kde_scheme_variant="scheme-tonal-spot" # default
-            ;;
+map_variant() {
+    case "$1" in
+        scheme-tonal-spot|tonalspot) printf 'tonalspot' ;;
+        scheme-vibrant|vibrant) printf 'vibrant' ;;
+        scheme-expressive|expressive) printf 'expressive' ;;
+        scheme-fidelity|fidelity) printf 'fidelity' ;;
+        scheme-fruit-salad|fruitsalad) printf 'fruitsalad' ;;
+        scheme-monochrome|monochrome) printf 'monochrome' ;;
+        scheme-neutral|neutral) printf 'neutral' ;;
+        scheme-rainbow|rainbow) printf 'rainbow' ;;
+        scheme-content|content) printf 'content' ;;
+        auto|"") printf 'auto' ;;
+        *) printf 'tonalspot' ;;
     esac
-    "$XDG_CONFIG_HOME"/matugen/templates/kde/kde-material-you-colors-wrapper.sh --scheme-variant "$kde_scheme_variant"
 }
 
 pre_process() {
@@ -48,15 +55,6 @@ pre_process() {
     if [ ! -d "$CACHE_DIR"/user/generated ]; then
         mkdir -p "$CACHE_DIR"/user/generated
     fi
-}
-
-post_process() {
-    local screen_width="$1"
-    local screen_height="$2"
-    local wallpaper_path="$3"
-
-    handle_kde_material_you_colors &
-    "$SCRIPT_DIR/code/material-code-set-color.sh" &
 }
 
 check_and_prompt_upscale() {
@@ -181,11 +179,15 @@ switch() {
     cursorposy=$(bc <<< "scale=0; ($cursorposy - $screeny) * $scale / 1")
     cursorposy_inverted=$((screensizey - cursorposy))
 
-    matugen_args=(--source-color-index 0)
+    local variant
+    variant="$(map_variant "$type_flag")"
 
     if [[ "$color_flag" == "1" ]]; then
-        matugen_args+=(color hex "$color")
-        generate_colors_material_args=(--color "$color")
+        pre_process "$mode_flag"
+        local scheme_cmd=("$CAELESTIA_COLOR" scheme set)
+        [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
+        [[ -n "$variant" && "$variant" != "auto" ]] && scheme_cmd+=(-v "$variant")
+        "${scheme_cmd[@]}"
     else
         if [[ -z "$imgpath" ]]; then
             echo 'Aborted'
@@ -228,7 +230,7 @@ switch() {
 
             # Set video wallpaper
             local video_path="$imgpath"
-            monitors=$(hyprctl monitors -j | jq -r '.[] | .name')
+            monitors=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | .name' 2>/dev/null || echo "")
             for monitor in $monitors; do
                 mpvpaper -o "$VIDEO_OPTS" "$monitor" "$video_path" &
                 sleep 0.1
@@ -242,78 +244,33 @@ switch() {
             set_thumbnail_path "$thumbnail"
 
             if [ -f "$thumbnail" ]; then
-                matugen_args+=(image "$thumbnail")
-                generate_colors_material_args=(--path "$thumbnail")
                 create_restore_script "$video_path"
+                imgpath="$thumbnail"
             else
                 echo "Cannot create image to colorgen"
                 remove_restore
                 exit 1
             fi
         else
-            matugen_args+=(image "$imgpath")
-            generate_colors_material_args=(--path "$imgpath")
             # Update wallpaper path in config
             set_wallpaper_path "$imgpath"
             remove_restore
         fi
-    fi
 
-    # Determine mode if not set
-    if [[ -z "$mode_flag" ]]; then
-        current_mode=$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | tr -d "'")
-        if [[ "$current_mode" == "prefer-dark" ]]; then
-            mode_flag="dark"
-        else
-            mode_flag="light"
+        pre_process "$mode_flag"
+
+        # Apply scheme/mode settings via caelestia-color
+        if [[ -n "$mode_flag" || ( -n "$variant" && "$variant" != "auto" ) ]]; then
+            local scheme_cmd=("$CAELESTIA_COLOR" scheme set)
+            [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
+            [[ -n "$variant" && "$variant" != "auto" ]] && scheme_cmd+=(-v "$variant")
+            "${scheme_cmd[@]}"
+        fi
+
+        if [[ "$noswitch_flag" != "1" ]]; then
+            "$CAELESTIA_COLOR" wallpaper -f "$imgpath"
         fi
     fi
-
-    # enforce dark mode for terminal
-    if [[ -n "$mode_flag" ]]; then
-        matugen_args+=(--mode "$mode_flag")
-        if [[ $(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode' "$SHELL_CONFIG_FILE") == "true" ]]; then
-            generate_colors_material_args+=(--mode "dark")
-        else
-            generate_colors_material_args+=(--mode "$mode_flag")
-        fi
-    fi
-    [[ -n "$type_flag" ]] && matugen_args+=(--type "$type_flag") && generate_colors_material_args+=(--scheme "$type_flag")
-    generate_colors_material_args+=(--termscheme "$terminalscheme" --blend_bg_fg)
-    generate_colors_material_args+=(--cache "$STATE_DIR/user/generated/color.txt")
-
-    pre_process "$mode_flag"
-
-    # Check if app and shell theming is enabled in config
-    if [ -f "$SHELL_CONFIG_FILE" ]; then
-        enable_apps_shell=$(jq -r '.appearance.wallpaperTheming.enableAppsAndShell' "$SHELL_CONFIG_FILE")
-        if [ "$enable_apps_shell" == "false" ]; then
-            echo "App and shell theming disabled, skipping matugen and color generation"
-            return
-        fi
-    fi
-
-    # Set harmony and related properties
-    if [ -f "$SHELL_CONFIG_FILE" ]; then
-        harmony=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.harmony' "$SHELL_CONFIG_FILE")
-        harmonize_threshold=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.harmonizeThreshold' "$SHELL_CONFIG_FILE")
-        term_fg_boost=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.termFgBoost' "$SHELL_CONFIG_FILE")
-        [[ "$harmony" != "null" && -n "$harmony" ]] && generate_colors_material_args+=(--harmony "$harmony")
-        [[ "$harmonize_threshold" != "null" && -n "$harmonize_threshold" ]] && generate_colors_material_args+=(--harmonize_threshold "$harmonize_threshold")
-        [[ "$term_fg_boost" != "null" && -n "$term_fg_boost" ]] && generate_colors_material_args+=(--term_fg_boost "$term_fg_boost")
-    fi
-
-    matugen "${matugen_args[@]}"
-    source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-    python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
-        > "$STATE_DIR"/user/generated/material_colors.scss
-    deactivate
-    "$SCRIPT_DIR"/applycolor.sh
-
-    # Pass screen width, height, and wallpaper path to post_process
-    max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"
-    max_height_desired="$(hyprctl monitors -j | jq '([.[].height] | min)' | xargs)"
-    post_process "$max_width_desired" "$max_height_desired" "$imgpath"
 }
 
 main() {
@@ -336,10 +293,7 @@ main() {
     }
 
     detect_scheme_type_from_image() {
-        local img="$1"
-        source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
-        "$SCRIPT_DIR"/scheme_for_image.py "$img" 2>/dev/null | tr -d '\n'
-        deactivate
+        echo "auto"
     }
 
     while [[ $# -gt 0 ]]; do
@@ -420,28 +374,9 @@ main() {
         color=""
     fi
 
-    # If type_flag is 'auto', detect scheme type from image (after imgpath is set)
-    if [[ "$type_flag" == "auto" ]]; then
-        if [[ -n "$imgpath" && -f "$imgpath" ]]; then
-            detected_type="$(detect_scheme_type_from_image "$imgpath")"
-            # Only use detected_type if it's valid
-            valid_detected=0
-            for t in "${allowed_types[@]}"; do
-                if [[ "$detected_type" == "$t" && "$detected_type" != "auto" ]]; then
-                    valid_detected=1
-                    break
-                fi
-            done
-            if [[ $valid_detected -eq 1 ]]; then
-                type_flag="$detected_type"
-            else
-                echo "[switchwall] Warning: Could not auto-detect a valid scheme, defaulting to 'scheme-tonal-spot'" >&2
-                type_flag="scheme-tonal-spot"
-            fi
-        else
-            echo "[switchwall] Warning: No image to auto-detect scheme from, defaulting to 'scheme-tonal-spot'" >&2
-            type_flag="scheme-tonal-spot"
-        fi
+    # If type_flag is 'auto' or empty, caelestia-color handles smart variant auto-detection natively
+    if [[ -z "$type_flag" ]]; then
+        type_flag="auto"
     fi
 
     # If mode_flag is dark or light, try to find a variant with that mode suffix
