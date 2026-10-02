@@ -1,64 +1,52 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import qs.modules.common
-import qs.modules.common.functions
 import QtQuick
 import Quickshell
-import Quickshell.Io
+import Caelestia.Services
+import qs.modules.common
+import qs.modules.common.functions
 
 /**
- * Emojis.
+ * Emojis service backed by Caelestia C++ EmojiDb.
  */
 Singleton {
     id: root
-    property string emojiScriptPath: `${Directories.config}/hypr/hyprland/scripts/fuzzel-emoji.sh`
-	property string lineBeforeData: "### DATA ###"
-    property list<var> list
-    readonly property var preparedEntries: list.map(a => ({
-        name: Fuzzy.prepare(`${a}`),
-        entry: a
-    }))
+
+    property list<var> list: []
+    readonly property bool loaded: EmojiDb.loaded
+    readonly property int count: EmojiDb.count
+
     function fuzzyQuery(search: string): var {
-        if (root.sloppySearch) {
-            const results = entries.slice(0, 100).map(str => ({
-                entry: str,
-                score: Levendist.computeTextMatchScore(str.toLowerCase(), search.toLowerCase())
-            })).filter(item => item.score > root.scoreThreshold)
-                .sort((a, b) => b.score - a.score)
-            return results
-                .map(item => item.entry)
+        if (!search || search.trim() === "")
+            return root.list;
+        return EmojiDb.search(search, 100).map(item => `${item.ch}  ${item.name}`);
+    }
+
+    function recordUsage(ch: string): void {
+        EmojiDb.recordUsage(ch);
+    }
+
+    function load(): void {
+        root.refresh();
+    }
+
+    function refresh(): void {
+        const items = EmojiDb.getSortedItems([], 500);
+        root.list = items.map(item => `${item.ch}  ${item.name}`);
+    }
+
+    Connections {
+        target: EmojiDb
+
+        function onLoadedChanged(): void {
+            root.refresh();
         }
-
-        return Fuzzy.go(search, preparedEntries, {
-            all: true,
-            key: "name"
-        }).map(r => {
-            return r.obj.entry
-        });
     }
 
-    function load() {
-        emojiFileView.reload()
-    }
-
-    function updateEmojis(fileContent) {
-        const lines = fileContent.split("\n")
-        const dataIndex = lines.indexOf(root.lineBeforeData)
-        if (dataIndex === -1) {
-            console.warn("No data section found in emoji script file.")
-            return
-        }
-        const emojis = lines.slice(dataIndex + 1).filter(line => line.trim() !== "")
-        root.list = emojis.map(line => line.trim())
-    }
-
-    FileView { 
-        id: emojiFileView
-        path: Qt.resolvedUrl(root.emojiScriptPath)
-        onLoadedChanged: {
-            const fileContent = emojiFileView.text()
-            root.updateEmojis(fileContent)
+    Component.onCompleted: {
+        if (EmojiDb.loaded) {
+            root.refresh();
         }
     }
 }

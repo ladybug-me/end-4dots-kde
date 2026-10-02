@@ -1,13 +1,15 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
-import qs.modules.common
-import qs.modules.common.models
-import qs.modules.common.functions
 import QtQuick
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Io
 import Quickshell.Hyprland
+import Caelestia
+import qs.modules.common
+import qs.modules.common.models
+import qs.modules.common.functions
 
 Singleton {
     id: root
@@ -139,28 +141,17 @@ Singleton {
 
     Timer {
         id: nonAppResultsTimer
-        interval: Config.options.search.nonAppResultDelay
+
+        interval: Config.options?.search?.nonAppResultDelay ?? 200
+
         onTriggered: {
             let expr = root.query;
-            if (expr.startsWith(Config.options.search.prefix.math)) {
+            if (expr.startsWith(Config.options?.search?.prefix?.math ?? "="))
                 expr = expr.slice(Config.options.search.prefix.math.length);
-            }
-            mathProc.calculateExpression(expr);
-        }
-    }
-
-    Process {
-        id: mathProc
-        property list<string> baseCommand: ["qalc", "-t"]
-        function calculateExpression(expression) {
-            mathProc.running = false;
-            mathProc.command = baseCommand.concat(expression);
-            mathProc.running = true;
-        }
-        stdout: SplitParser {
-            onRead: data => {
-                root.mathResult = data;
-            }
+            if (expr.trim().length > 0)
+                root.mathResult = Qalculator.eval(expr, false);
+            else
+                root.mathResult = "";
         }
     }
 
