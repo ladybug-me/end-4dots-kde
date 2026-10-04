@@ -260,14 +260,20 @@ switch() {
         pre_process "$mode_flag"
 
         # Apply scheme/mode settings via caelestia-color
-        if [[ -n "$mode_flag" || ( -n "$variant" && "$variant" != "auto" ) ]]; then
+        if [[ "$noswitch_flag" == "1" ]]; then
+            local scheme_cmd=("$CAELESTIA_COLOR" scheme set)
+            [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
+            if [[ -n "$variant" && "$variant" != "auto" ]]; then
+                scheme_cmd+=(-v "$variant")
+            fi
+            "${scheme_cmd[@]}"
+        elif [[ -n "$mode_flag" || ( -n "$variant" && "$variant" != "auto" ) ]]; then
             local scheme_cmd=("$CAELESTIA_COLOR" scheme set)
             [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
             [[ -n "$variant" && "$variant" != "auto" ]] && scheme_cmd+=(-v "$variant")
             "${scheme_cmd[@]}"
-        fi
-
-        if [[ "$noswitch_flag" != "1" ]]; then
+            "$CAELESTIA_COLOR" wallpaper -f "$imgpath"
+        else
             "$CAELESTIA_COLOR" wallpaper -f "$imgpath"
         fi
     fi
