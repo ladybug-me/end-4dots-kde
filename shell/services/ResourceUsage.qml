@@ -57,6 +57,14 @@ Singleton {
         swapUsageHistory = swpHist;
     }
 
+    ServiceRef {
+        service: Cpu
+    }
+
+    ServiceRef {
+        service: Memory
+    }
+
     Timer {
         interval: Config.options?.resources?.updateInterval ?? 3000
         running: true

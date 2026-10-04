@@ -1,12 +1,14 @@
-import qs.modules.common
-import qs.services
 import QtQuick
 import QtQuick.Layouts
+import qs.services
+import qs.modules.common
 
 MouseArea {
     id: root
+
     property bool borderless: Config.options.bar.borderless
     property bool alwaysShowAllResources: false
+
     implicitWidth: rowLayout.implicitWidth + rowLayout.anchors.leftMargin + rowLayout.anchors.rightMargin
     implicitHeight: Appearance.sizes.barHeight
     hoverEnabled: !Config.options.bar.tooltips.clickToShow
@@ -14,10 +16,10 @@ MouseArea {
     RowLayout {
         id: rowLayout
 
-        spacing: 0
         anchors.fill: parent
         anchors.leftMargin: 4
         anchors.rightMargin: 4
+        spacing: 0
 
         Resource {
             iconName: "memory"
@@ -44,7 +46,6 @@ MouseArea {
             Layout.leftMargin: shown ? 6 : 0
             warningThreshold: Config.options.bar.resources.cpuWarningThreshold
         }
-
     }
 
     ResourcesPopup {
