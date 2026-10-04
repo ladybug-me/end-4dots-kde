@@ -65,8 +65,12 @@ PanelWindow {
     readonly property var hyprlandMonitor: (screen && screen.name) ? Kwin.monitorFor(screen) : (Kwin.focusedMonitor ?? null)
     readonly property real monitorScale: hyprlandMonitor?.scale ?? 1
     readonly property real monitorOffsetX: hyprlandMonitor?.x ?? 0
-    readonly property real monitorOffsetY: hyprlandMonitor?.y ?? 0
-    property int activeWorkspaceId: hyprlandMonitor?.activeWorkspace?.id ?? 0
+    property int activeWorkspaceId: {
+        const activeWs = Kwin.activeWsId;
+        const activeByOut = Kwin.activeByOutput;
+        const perOutput = (hyprlandMonitor?.name && activeByOut) ? activeByOut[hyprlandMonitor.name] : 0;
+        return perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
+    }
     property string screenshotPath: `${root.screenshotDir}/image-${screen.name}`
     property real dragStartX: 0
     property real dragStartY: 0

@@ -30,7 +30,7 @@ ButtonMouseArea {
     property real workspaceIconSizeShrinked: workspaceButtonWidth * 0.55
     property real workspaceIconOpacityShrinked: 1
     property real workspaceIconMarginShrinked: -4
-    property int workspaceIndexInGroup: (monitor?.activeWorkspace?.id - 1) % wsModel.shownCount
+    property int workspaceIndexInGroup: ((wsModel.activeWorkspace - 1) % wsModel.shownCount + wsModel.shownCount) % wsModel.shownCount
     property real specialTextSize: workspaceButtonWidth * 0.5
 
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter

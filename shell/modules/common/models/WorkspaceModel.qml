@@ -9,7 +9,12 @@ NestableObject {
     required property var monitor
     readonly property var liveMonitorData: (monitor && monitor.id !== undefined) ? (Kwin.monitors.find(m => m.id === monitor.id) || monitor) : (Kwin.focusedMonitor ?? null)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
-    readonly property int activeWorkspace: Kwin.activeWorkspaceFor(monitor?.name) || monitor?.activeWorkspace?.id || Kwin.activeWsId || 1
+    readonly property int activeWorkspace: {
+        const activeWs = Kwin.activeWsId;
+        const activeByOut = Kwin.activeByOutput;
+        const perOutput = (monitor?.name && activeByOut) ? activeByOut[monitor.name] : 0;
+        return perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
+    }
     readonly property bool currentWorkspaceNotFake: activeWindow?.activated ?? false
     readonly property int fakeWorkspace: currentWorkspaceNotFake ? -9999 : activeWorkspace
     readonly property int shownCount: C.Config.options.bar.workspaces.shown

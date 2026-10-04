@@ -133,7 +133,13 @@ Variants {
                 cache: false
                 smooth: false
 
-                property int workspaceIndex: (bgRoot.monitor.activeWorkspace?.id ?? 1) - 1
+                property int workspaceIndex: {
+                    const activeWs = Kwin.activeWsId;
+                    const activeByOut = Kwin.activeByOutput;
+                    const perOutput = (bgRoot.monitor?.name && activeByOut) ? activeByOut[bgRoot.monitor.name] : 0;
+                    const ws = perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
+                    return ws - 1;
+                }
                 property real middleFraction: 0.5
                 property real fraction: {
                     // 0 - start of the picture

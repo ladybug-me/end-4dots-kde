@@ -16,7 +16,13 @@ Item {
     readonly property var monitor: (screen && screen.name) ? Kwin.monitorFor(screen) : (Kwin.focusedMonitor ?? null)
     readonly property var toplevels: ToplevelManager.toplevels
     // Clamp to avoid lock-screen temp workspace (2147483647 - N) leaking into UI
-    readonly property int effectiveActiveWorkspaceId: Math.max(1, Math.min(100, monitor?.activeWorkspace?.id ?? 1))
+    readonly property int effectiveActiveWorkspaceId: {
+        const activeWs = Kwin.activeWsId;
+        const activeByOut = Kwin.activeByOutput;
+        const perOutput = (monitor?.name && activeByOut) ? activeByOut[monitor.name] : 0;
+        const ws = perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
+        return Math.max(1, Math.min(100, ws));
+    }
     readonly property int workspacesShown: Config.options.overview.rows * Config.options.overview.columns
     readonly property int workspaceGroup: Math.floor((effectiveActiveWorkspaceId - 1) / workspacesShown)
     property bool monitorIsFocused: (Kwin.focusedMonitor?.name == monitor?.name)
