@@ -6,7 +6,6 @@ import qs.modules.common.functions
 import qs.modules.common.panels.lock
 import QtQuick
 import Quickshell
-import Quickshell.Hyprland
 
 LockScreen {
     id: root
@@ -47,7 +46,7 @@ LockScreen {
                 var batch = "keyword animation workspaces,1,7,menu_decel,slidevert; "
                 for (var i = 0; i < Quickshell.screens.length; ++i) {
                     var mon = Quickshell.screens[i].name
-                    var mData = HyprlandData.monitors.find(m => m.name === mon)
+                    var mData = Kwin.monitors.find(m => m.name === mon)
                     if (mData?.activeWorkspace == undefined) {
                         return;
                     }

@@ -1,20 +1,19 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
 
 Item {
     id: root
-    readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
-    readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
 
-    property string activeWindowAddress: `0x${activeWindow?.HyprlandToplevel?.address}`
-    property bool focusingThisMonitor: HyprlandData.activeWorkspace?.monitor == monitor?.name
-    property var biggestWindow: HyprlandData.biggestWindowForWorkspace(HyprlandData.monitors[root.monitor?.id]?.activeWorkspace.id)
+    readonly property var monitor: Kwin.monitorFor(root.QsWindow.window?.screen)
+    readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
+    property string activeWindowAddress: Kwin.activeWindow?.address ? String(Kwin.activeWindow.address) : ""
+    property bool focusingThisMonitor: Kwin.focusedMonitor?.name === monitor?.name
+    property var biggestWindow: Kwin.biggestWindowForWorkspace(monitor?.activeWorkspace?.id ?? Kwin.activeWsId)
 
     implicitWidth: colLayout.implicitWidth
 
@@ -33,8 +32,7 @@ Item {
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
                 root.activeWindow?.appId :
-                (root.biggestWindow?.class) ?? Translation.tr("Desktop")
-
+                (root.biggestWindow?.["class"]) ?? Translation.tr("Desktop")
         }
 
         StyledText {
@@ -44,9 +42,7 @@ Item {
             elide: Text.ElideRight
             text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
                 root.activeWindow?.title :
-                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${monitor?.activeWorkspace?.id ?? 1}`
+                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${monitor?.activeWorkspace?.id ?? Kwin.activeWsId}`
         }
-
     }
-
 }

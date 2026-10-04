@@ -1,55 +1,79 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import qs.modules.common
-import qs.modules.common.functions
 import QtQuick
 import Quickshell
-import Quickshell.Io
-import Quickshell.Hyprland
+import Caelestia.Services
 
-/**
- * A service that provides access to Hyprland keybinds.
- * Uses the `get_keybinds.py` script to parse comments in config files in a certain format and convert to JSON.
- */
 Singleton {
     id: root
-    property var keybinds: []
-    property var keybindCategories: []
+
+    property list<var> keybinds: []
+    property list<string> keybindCategories: []
+
+    function parseModMask(sequence: string): int {
+        let mask = 0;
+        const parts = sequence.split("+");
+        for (let i = 0; i < parts.length - 1; i++) {
+            const mod = parts[i].trim().toLowerCase();
+            if (mod === "ctrl" || mod === "control")
+                mask |= (1 << 2);
+            else if (mod === "super" || mod === "meta" || mod === "win")
+                mask |= (1 << 6);
+            else if (mod === "shift")
+                mask |= (1 << 0);
+            else if (mod === "alt")
+                mask |= (1 << 3);
+        }
+        return mask;
+    }
+
+    function parseKey(sequence: string): string {
+        const parts = sequence.split("+");
+        return parts.length > 0 ? parts[parts.length - 1].trim() : "";
+    }
+
+    function updateKeybinds(): void {
+        const raw = KeybindsModel.keybinds || [];
+        const parsed = [];
+        const categories = [];
+
+        for (let i = 0; i < raw.length; i++) {
+            const item = raw[i];
+            const bindStr = item.bind || "";
+            if (!bindStr)
+                continue;
+
+            const desc = item.description || item.name || item.action || "";
+            const modmask = root.parseModMask(bindStr);
+            const key = root.parseKey(bindStr);
+
+            parsed.push({
+                description: desc,
+                key: key,
+                modmask: modmask,
+                action: item.action || item.name || ""
+            });
+
+            const colonIdx = desc.indexOf(":");
+            if (colonIdx > 0) {
+                const group = desc.substring(0, colonIdx).trim();
+                if (group.length > 0 && !categories.includes(group))
+                    categories.push(group);
+            }
+        }
+
+        root.keybinds = parsed;
+        root.keybindCategories = categories;
+    }
+
+    Component.onCompleted: root.updateKeybinds()
 
     Connections {
-        target: Hyprland
-
-        function onRawEvent(event) {
-            if (event.name == "configreloaded") {
-                getKeybinds.running = true
-            }
+        function onKeybindsChanged(): void {
+            root.updateKeybinds();
         }
-    }
 
-    Process {
-        id: getKeybinds
-        running: true
-        command: ["hyprctl", "binds", "-j"]
-        
-        stdout: StdioCollector {
-            onStreamFinished: {
-                try {
-                    root.keybinds = JSON.parse(text)
-                    var groups = []
-                    for (var i = 0; i < root.keybinds.length; i++) {
-                        var bind = root.keybinds[i].description
-                        var group = bind.substring(0, bind.indexOf(":"))
-                        if (!groups.includes(group) && group.length > 0) {
-                            groups.push(group)
-                        }
-                    }
-                    root.keybindCategories = groups
-                } catch (e) {
-                    console.error("[CheatsheetKeybinds] Error parsing keybinds:", e)
-                }
-            }
-        }
+        target: KeybindsModel
     }
 }
-

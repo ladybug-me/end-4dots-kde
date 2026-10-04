@@ -2,7 +2,6 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -61,8 +60,8 @@ Rectangle {
     property real padding: 52
     property real spacing: 25
     readonly property list<var> toplevels: ToplevelManager.toplevels.values.filter(t => {
-        const client = HyprlandData.clientForToplevel(t);
-        return client && client.workspace.id === HyprlandData.activeWorkspace?.id;
+        const client = Kwin.clientForToplevel(t);
+        return client && (client.workspace?.id ?? client.workspace) === (Kwin.activeWorkspace?.id ?? Kwin.activeWsId);
     })
     readonly property list<var> arrangedToplevels: {
         const maxRowWidth = width - padding * 2;
@@ -77,7 +76,7 @@ Rectangle {
 
             while (j < count) {
                 const toplevel = toplevels[j];
-                const client = HyprlandData.clientForToplevel(toplevel);
+                const client = Kwin.clientForToplevel(toplevel);
                 const scaledSize = WindowLayout.scaleWindow(client, maxWindowWidth, maxWindowHeight);
 
                 if (rowWidth + scaledSize.width <= maxRowWidth || row.length === 0) {
@@ -186,7 +185,7 @@ Rectangle {
                                 } else {
                                     root.draggingWindow = false;
                                     if (root.hoveredWorkspace !== null && root.hoveredWorkspace.workspace !== windowItem.hyprlandClient.workspace.id) {
-                                        Hyprland.dispatch(`hl.dsp.window.move({ workspace = ${root.hoveredWorkspace.workspace}, follow = false, window = "address:${windowItem.hyprlandClient.address}" })`)
+                                        Kwin.setWindowDesktop(windowItem.hyprlandClient?.address, root.hoveredWorkspace.workspace)
                                     } else {
                                         windowItem.openedX = 0;
                                         windowItem.openedY = 0;
@@ -254,19 +253,19 @@ Rectangle {
                 spacing: 4
 
                 function reposition() {
-                    positionViewAtIndex(HyprlandData.activeWorkspace.id - 1, ListView.Contain);
+                    positionViewAtIndex((Kwin.activeWorkspace?.id ?? Kwin.activeWsId) - 1, ListView.Contain);
                 }
 
                 Connections {
-                    target: HyprlandData
-                    function onActiveWorkspaceChanged() {
+                    target: Kwin
+                    function onActiveWsIdChanged() {
                         workspaceListView.reposition();
                     }
                 }
                 model: IndexModel {
                     id: workspaceIndexModel
                     count: {
-                        const maxWorkspaceId = Math.max.apply(null, HyprlandData.workspaces.map(ws => ws.id));
+                        const maxWorkspaceId = Math.max.apply(null, [1, ...(Kwin.workspaces || []).map(ws => ws.id)]);
                         return Math.max(maxWorkspaceId, 1) + 1;
                     }
                 }
@@ -292,7 +291,7 @@ Rectangle {
                     onClicked: {
                         GlobalStates.overviewOpen = false;
                         root.closed(); // Close immediately to avoid weird animations
-                        Hyprland.dispatch(`hl.dsp.focus({workspace = ${workspaceItem.workspace}})`);
+                        Kwin.switchToWorkspace(workspaceItem.workspace);
                     }
                 }
             }

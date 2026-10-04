@@ -7,8 +7,9 @@ Singleton {
     id: root
 
     function closeAllWindows() {
-        HyprlandData.windowList.map(w => w.pid).forEach(pid => {
-            Quickshell.execDetached(["kill", pid]);
+        Kwin.windowList.map(w => w.pid).forEach(pid => {
+            if (pid)
+                Quickshell.execDetached(["kill", pid]);
         });
     }
 
@@ -26,7 +27,7 @@ Singleton {
 
     function logout() {
         closeAllWindows();
-        Quickshell.execDetached(["pkill", "-i", "Hyprland"]);
+        Quickshell.execDetached(["qdbus6", "org.kde.Shutdown", "/Shutdown", "logout"]);
     }
 
     function launchTaskManager() {

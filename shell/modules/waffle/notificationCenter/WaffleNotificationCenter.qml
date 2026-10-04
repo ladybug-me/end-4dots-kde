@@ -2,7 +2,6 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -38,11 +37,15 @@ Scope {
             implicitWidth: content.implicitWidth
             implicitHeight: content.implicitHeight
 
-            HyprlandFocusGrab {
+            QtObject {
                 id: focusGrab
-                active: true
-                windows: [panelWindow]
-                onCleared: content.close();
+
+                property bool active: true
+                property var windows: [panelWindow]
+
+                signal cleared
+
+                onCleared: content.close()
             }
 
             Connections {

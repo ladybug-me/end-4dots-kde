@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Services.SystemTray
 import qs.services
 import qs.modules.common
@@ -52,10 +51,14 @@ Item {
         }
     }
 
-    HyprlandFocusGrab {
+    QtObject {
         id: focusGrab
-        active: false
-        windows: [trayOverflowLayout.QsWindow?.window, root.activeMenu]
+
+        property bool active: false
+        property var windows: [trayOverflowLayout.QsWindow?.window, root.activeMenu]
+
+        signal cleared
+
         onCleared: {
             root.trayOverflowOpen = false;
             if (root.activeMenu) {

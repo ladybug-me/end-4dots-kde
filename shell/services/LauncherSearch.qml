@@ -4,9 +4,9 @@ pragma ComponentBehavior: Bound
 import QtQuick
 import Qt.labs.folderlistmodel
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Io
 import Caelestia
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.models
@@ -113,7 +113,7 @@ Singleton {
         {
             action: "wallpaper",
             execute: () => {
-                Hyprland.dispatch(`hl.dsp.global("quickshell:wallpaperSelectorToggle")`)
+                Kwin.dispatch(`hl.dsp.global("quickshell:wallpaperSelectorToggle")`)
             }
         },
         {

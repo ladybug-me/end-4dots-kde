@@ -6,7 +6,6 @@ import Qt.labs.synchronizer
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs.services
 import qs.modules.common
 import qs.modules.common.functions
@@ -58,9 +57,9 @@ PanelWindow {
     }
 
     // Hyprland stuff
-    readonly property HyprlandMonitor hyprlandMonitor: Hyprland.monitorFor(screen)
+    readonly property var hyprlandMonitor: Kwin.monitorFor(screen)
     readonly property real monitorScale: hyprlandMonitor.scale
-    readonly property var windows: [...HyprlandData.windowList].sort((a, b) => {
+    readonly property var windows: [...Kwin.windowList].sort((a, b) => {
         // Sort floating=true windows before others
         if (a.floating === b.floating)
             return 0;
@@ -144,7 +143,7 @@ PanelWindow {
 
             property bool isWindowSelection: root.selectionMode === WRegionSelectionPanel.SelectionMode.Window
             property var hoveredWindow: root.windows.find(w => {
-                const inCurrentWorkspace = w.workspace.id === HyprlandData.activeWorkspace.id;
+                const inCurrentWorkspace = (w.workspace?.id ?? w.workspace) === (Kwin.activeWorkspace?.id ?? Kwin.activeWsId);
                 const withinXRange = w.at[0] <= dragArea.mouseX && dragArea.mouseX <= w.at[0] + w.size[0];
                 const withinYRange = w.at[1] <= dragArea.mouseY && dragArea.mouseY <= w.at[1] + w.size[1];
                 return inCurrentWorkspace && withinXRange && withinYRange;

@@ -9,12 +9,11 @@ import QtQuick
 import QtQuick.Effects
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 
 ButtonMouseArea {
     id: root
 
-    readonly property HyprlandMonitor monitor: Hyprland.monitorFor(root.QsWindow.window?.screen)
+    readonly property var monitor: Kwin.monitorFor(root.QsWindow.window?.screen)
     WorkspaceModel {
         id: wsModel
         monitor: root.monitor
@@ -54,11 +53,11 @@ ButtonMouseArea {
     }
 
     function switchWorkspaceToHovered() {
-        Hyprland.dispatch(`hl.dsp.focus({workspace = ${wsModel.getWorkspaceIdAt(hoverIndex)}})`);
+        Kwin.switchToWorkspace(wsModel.getWorkspaceIdAt(hoverIndex), root.monitor?.name);
     }
 
     function toggleSpecial() {
-        Hyprland.dispatch(`hl.dsp.workspace.toggle_special("special")`);
+        Kwin.cycleSpecialWorkspace("next");
     }
 
     onPressed: mouse => {
@@ -71,9 +70,9 @@ ButtonMouseArea {
     }
     onWheel: event => {
         if (event.angleDelta.y < 0)
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r+1"})`);
+            Kwin.nextDesktop();
         else if (event.angleDelta.y > 0)
-            Hyprland.dispatch(`hl.dsp.focus({workspace = "r-1"})`);
+            Kwin.previousDesktop();
     }
 
     // Indications

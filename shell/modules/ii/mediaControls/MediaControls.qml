@@ -10,7 +10,6 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope {
     id: root

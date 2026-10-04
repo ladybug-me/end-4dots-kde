@@ -9,7 +9,6 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope {
     id: overviewScope
@@ -18,8 +17,8 @@ Scope {
     PanelWindow {
         id: panelWindow
         property string searchingText: ""
-        readonly property HyprlandMonitor monitor: Hyprland.monitorFor(panelWindow.screen)
-        property bool monitorIsFocused: (Hyprland.focusedMonitor?.id == monitor?.id)
+        readonly property var monitor: Kwin.monitorFor(panelWindow.screen)
+        property bool monitorIsFocused: (Kwin.focusedMonitor?.id == monitor?.id)
         visible: GlobalStates.overviewOpen
 
         WlrLayershell.namespace: "quickshell:overview"

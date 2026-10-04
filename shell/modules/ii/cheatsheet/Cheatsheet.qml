@@ -9,7 +9,6 @@ import Qt5Compat.GraphicalEffects
 import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope { // Scope
     id: root

@@ -5,7 +5,6 @@ import qs.modules.common
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import Quickshell.Hyprland
 
 /**
  * Automatically reloads generated material colors.

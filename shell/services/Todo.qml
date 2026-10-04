@@ -1,10 +1,10 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import QtQuick
+import Quickshell
+import Quickshell.Io
 import qs.modules.common
-import Quickshell;
-import Quickshell.Io;
-import QtQuick;
 
 /**
  * Simple to-do list manager.

@@ -4,7 +4,6 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -20,7 +19,7 @@ WMouseAreaButton {
     required property int maxHeight
     required property int maxWidth
 
-    property var hyprlandClient: HyprlandData.clientForToplevel(root.toplevel)
+    property var hyprlandClient: Kwin.clientForToplevel(root.toplevel)
     property string address: hyprlandClient?.address
 
     property string iconName: AppSearch.guessIcon(hyprlandClient?.class)
@@ -62,14 +61,14 @@ WMouseAreaButton {
     }
 
     function closeWindow() {
-        Hyprland.dispatch(`hl.dsp.window.close({window = "address:${root.hyprlandClient?.address}"})`)
+        Kwin.closeWindow(root.hyprlandClient?.address)
     }
 
     acceptedButtons: Qt.LeftButton | Qt.MiddleButton | Qt.RightButton
     onClicked: event => {
         if (event.button === Qt.LeftButton) {
             GlobalStates.overviewOpen = false;
-            Hyprland.dispatch(`hl.dsp.focus({window = "address:${root.hyprlandClient?.address}"})`)
+            Kwin.focusWindow(root.hyprlandClient?.address)
             GlobalStates.overviewOpen = false;
         } else if (event.button === Qt.MiddleButton) {
             root.closeWindow();
@@ -143,7 +142,7 @@ WMouseAreaButton {
             icon.name: isPinned ? "checkmark" : "empty"
             text: Translation.tr("Show this window on all desktops")
             onTriggered: {
-                Hyprland.dispatch(`hl.dsp.window.pin({window = "address:${root.hyprlandClient?.address}"})`);
+                Kwin.dispatch(`hl.dsp.window.pin({window = "address:${root.hyprlandClient?.address}"})`);
             }
         }
         Action {

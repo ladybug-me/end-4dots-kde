@@ -177,9 +177,11 @@ if("plugin" IN_LIST ENABLE_MODULES)
 endif()
 
 if("shell" IN_LIST ENABLE_MODULES)
-    foreach(dir assets components modules services utils)
-        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
-                DESTINATION ${INSTALL_QSCONFDIR})
+    foreach(dir assets components modules services utils panelFamilies defaults)
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
+            install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
+                    DESTINATION ${INSTALL_QSCONFDIR})
+        endif()
     endforeach()
 
     # scripts/ installs with the dev tooling stripped: the conventions
@@ -189,14 +191,18 @@ if("shell" IN_LIST ENABLE_MODULES)
             PATTERN "qml-lint-conventions.py" EXCLUDE
             PATTERN "menu_perf_stats.py" EXCLUDE)
 
-    install(PROGRAMS assets/wrap_term_launch.sh DESTINATION "${INSTALL_QSCONFDIR}/assets")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/wrap_term_launch.sh")
+        install(PROGRAMS assets/wrap_term_launch.sh DESTINATION "${INSTALL_QSCONFDIR}/assets")
+    endif()
 
     file(READ shell.qml SHELL_QML)
     string(REPLACE "settings.watchFiles: true" "settings.watchFiles: false" SHELL_QML "${SHELL_QML}")
     file(WRITE "${CMAKE_BINARY_DIR}/qml/shell.qml" "${SHELL_QML}")
     install(FILES "${CMAKE_BINARY_DIR}/qml/shell.qml" DESTINATION "${INSTALL_QSCONFDIR}")
 
-    install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+        install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
+    endif()
 
     # Translations: compile every translations/*.ts into a .qm next to the
     # installed shell, where the Translations singleton looks for them.

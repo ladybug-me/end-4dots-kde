@@ -1,10 +1,10 @@
 pragma Singleton
 pragma ComponentBehavior: Bound
 
-import qs.modules.common
+import QtQuick
+import Quickshell
 import qs.services
-import Quickshell;
-import QtQuick;
+import qs.modules.common
 
 /**
  * A service for interacting with various booru APIs.
