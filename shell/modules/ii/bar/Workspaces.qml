@@ -13,13 +13,14 @@ import Quickshell
 ButtonMouseArea {
     id: root
 
-    readonly property var monitor: Kwin.monitorFor(root.QsWindow.window?.screen)
+    readonly property var monitor: (root.QsWindow.window?.screen && root.QsWindow.window.screen.name) ? Kwin.monitorFor(root.QsWindow.window.screen) : (Kwin.focusedMonitor ?? null)
     WorkspaceModel {
         id: wsModel
         monitor: root.monitor
     }
 
     property bool vertical: Config.options.bar.vertical
+    property real widgetPadding: 0
     property bool superPressAndHeld: false // Relevant modifications at bottom of file
 
     property real workspaceButtonWidth: 26

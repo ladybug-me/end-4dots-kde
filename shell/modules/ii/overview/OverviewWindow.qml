@@ -4,6 +4,7 @@ import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
+import qs
 import qs.components.images
 import qs.services
 import qs.modules.common
@@ -19,27 +20,31 @@ Item {
     property var scale
     property bool restrictToWorkspace: true
     property real widthRatio: {
-        const widgetWidth = widgetMonitor.transform & 1 ? widgetMonitor.height : widgetMonitor.width;
-        const monitorWidth = monitorData.transform & 1 ? monitorData.height : monitorData.width;
-        return (widgetWidth * monitorData.scale) / (monitorWidth * widgetMonitor.scale);
+        const widgetWidth = ((widgetMonitor?.transform ?? 0) & 1) ? (widgetMonitor?.height ?? 1080) : (widgetMonitor?.width ?? 1920);
+        const monitorWidth = ((monitorData?.transform ?? 0) & 1) ? (monitorData?.height ?? 1080) : (monitorData?.width ?? 1920);
+        return ((widgetWidth || 1920) * (monitorData?.scale ?? 1)) / ((monitorWidth || 1920) * (widgetMonitor?.scale ?? 1));
     }
     property real heightRatio: {
-        const widgetHeight = widgetMonitor.transform & 1 ? widgetMonitor.width : widgetMonitor.height;
-        const monitorHeight = monitorData.transform & 1 ? monitorData.width : monitorData.height;
-        return (widgetHeight * monitorData.scale) / (monitorHeight * widgetMonitor.scale);
+        const widgetHeight = ((widgetMonitor?.transform ?? 0) & 1) ? (widgetMonitor?.width ?? 1920) : (widgetMonitor?.height ?? 1080);
+        const monitorHeight = ((monitorData?.transform ?? 0) & 1) ? (monitorData?.width ?? 1920) : (monitorData?.height ?? 1080);
+        return ((widgetHeight || 1080) * (monitorData?.scale ?? 1)) / ((monitorHeight || 1080) * (widgetMonitor?.scale ?? 1));
     }
     property real initX: {
-        return Math.max((windowData?.at[0] - (monitorData?.x ?? 0) - monitorData?.reserved[0]) * widthRatio * root.scale, 0) + xOffset;
+        const winX = windowData?.x ?? windowData?.at?.[0] ?? 0;
+        const res0 = monitorData?.reserved?.[0] ?? 0;
+        return Math.max((winX - (monitorData?.x ?? 0) - res0) * widthRatio * root.scale, 0) + xOffset;
     }
     property real initY: {
-        return Math.max((windowData?.at[1] - (monitorData?.y ?? 0) - monitorData?.reserved[1]) * heightRatio * root.scale, 0) + yOffset;
+        const winY = windowData?.y ?? windowData?.at?.[1] ?? 0;
+        const res1 = monitorData?.reserved?.[1] ?? 0;
+        return Math.max((winY - (monitorData?.y ?? 0) - res1) * heightRatio * root.scale, 0) + yOffset;
     }
     property real xOffset: 0
     property real yOffset: 0
     property var widgetMonitor
-    property int widgetMonitorId: widgetMonitor.id
-    property var targetWindowWidth: windowData?.size[0] * scale * widthRatio
-    property var targetWindowHeight: windowData?.size[1] * scale * heightRatio
+    property int widgetMonitorId: widgetMonitor?.id ?? 0
+    property var targetWindowWidth: (windowData?.width ?? windowData?.size?.[0] ?? 0) * scale * widthRatio
+    property var targetWindowHeight: (windowData?.height ?? windowData?.size?.[1] ?? 0) * scale * heightRatio
     property bool hovered: false
     property bool pressed: false
     property bool centerIcons: Config.options.overview.centerIcons
@@ -59,7 +64,7 @@ Item {
     y: initY
     width: targetWindowWidth
     height: targetWindowHeight
-    opacity: windowData.monitor == widgetMonitorId ? 1 : 0.4
+    opacity: (windowData?.monitor ?? 0) == widgetMonitorId ? 1 : 0.4
 
     Component.onCompleted: {
         if (windowData) {

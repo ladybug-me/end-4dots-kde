@@ -16,8 +16,9 @@ Scope {
 
     PanelWindow {
         id: panelWindow
+        screen: (Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name) ?? Quickshell.screens[0] ?? null)
         property string searchingText: ""
-        readonly property var monitor: Kwin.monitorFor(panelWindow.screen)
+        readonly property var monitor: (panelWindow.screen && panelWindow.screen.name) ? Kwin.monitorFor(panelWindow.screen) : (Kwin.focusedMonitor ?? null)
         property bool monitorIsFocused: (Kwin.focusedMonitor?.id == monitor?.id)
         visible: GlobalStates.overviewOpen
 

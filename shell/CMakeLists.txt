@@ -177,7 +177,7 @@ if("plugin" IN_LIST ENABLE_MODULES)
 endif()
 
 if("shell" IN_LIST ENABLE_MODULES)
-    foreach(dir assets components modules services utils panelFamilies defaults)
+    foreach(dir assets components modules services utils panelFamilies defaults translations)
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
             install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                     DESTINATION ${INSTALL_QSCONFDIR})

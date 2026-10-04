@@ -57,8 +57,8 @@ PanelWindow {
     }
 
     // Hyprland stuff
-    readonly property var hyprlandMonitor: Kwin.monitorFor(screen)
-    readonly property real monitorScale: hyprlandMonitor.scale
+    readonly property var hyprlandMonitor: (screen && screen.name) ? Kwin.monitorFor(screen) : (Kwin.focusedMonitor ?? null)
+    readonly property real monitorScale: hyprlandMonitor?.scale ?? 1
     readonly property var windows: [...Kwin.windowList].sort((a, b) => {
         // Sort floating=true windows before others
         if (a.floating === b.floating)

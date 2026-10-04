@@ -62,11 +62,11 @@ PanelWindow {
     readonly property real falsePositivePreventionRatio: 0.5
 
     // Screen & interaction vars
-    readonly property var hyprlandMonitor: Kwin.monitorFor(screen)
-    readonly property real monitorScale: hyprlandMonitor.scale
-    readonly property real monitorOffsetX: hyprlandMonitor.x
-    readonly property real monitorOffsetY: hyprlandMonitor.y
-    property int activeWorkspaceId: hyprlandMonitor.activeWorkspace?.id ?? 0
+    readonly property var hyprlandMonitor: (screen && screen.name) ? Kwin.monitorFor(screen) : (Kwin.focusedMonitor ?? null)
+    readonly property real monitorScale: hyprlandMonitor?.scale ?? 1
+    readonly property real monitorOffsetX: hyprlandMonitor?.x ?? 0
+    readonly property real monitorOffsetY: hyprlandMonitor?.y ?? 0
+    property int activeWorkspaceId: hyprlandMonitor?.activeWorkspace?.id ?? 0
     property string screenshotPath: `${root.screenshotDir}/image-${screen.name}`
     property real dragStartX: 0
     property real dragStartY: 0

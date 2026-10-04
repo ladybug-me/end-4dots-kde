@@ -9,7 +9,7 @@ import qs.modules.common.widgets
 Item {
     id: root
 
-    readonly property var monitor: Kwin.monitorFor(root.QsWindow.window?.screen)
+    readonly property var monitor: (root.QsWindow.window?.screen && root.QsWindow.window.screen.name) ? Kwin.monitorFor(root.QsWindow.window.screen) : (Kwin.focusedMonitor ?? null)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
     property string activeWindowAddress: Kwin.activeWindow?.address ? String(Kwin.activeWindow.address) : ""
     property bool focusingThisMonitor: Kwin.focusedMonitor?.name === monitor?.name

@@ -7,7 +7,7 @@ NestableObject {
     id: root
 
     required property var monitor
-    readonly property var liveMonitorData: Kwin.monitors.find(m => m.id === monitor.id) || monitor
+    readonly property var liveMonitorData: (monitor && monitor.id !== undefined) ? (Kwin.monitors.find(m => m.id === monitor.id) || monitor) : (Kwin.focusedMonitor ?? null)
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
     readonly property int activeWorkspace: Kwin.activeWorkspaceFor(monitor?.name) || monitor?.activeWorkspace?.id || Kwin.activeWsId || 1
     readonly property bool currentWorkspaceNotFake: activeWindow?.activated ?? false
