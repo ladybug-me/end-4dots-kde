@@ -33,10 +33,10 @@ Rectangle {
     Behavior on opacity {
         animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
     }
-    x: clientDimensions.at[0]
-    y: clientDimensions.at[1]
-    width: clientDimensions.size[0]
-    height: clientDimensions.size[1]
+    x: clientDimensions?.at ? clientDimensions.at[0] : (clientDimensions?.x ?? 0)
+    y: clientDimensions?.at ? clientDimensions.at[1] : (clientDimensions?.y ?? 0)
+    width: clientDimensions?.size ? clientDimensions.size[0] : (clientDimensions?.width ?? 0)
+    height: clientDimensions?.size ? clientDimensions.size[1] : (clientDimensions?.height ?? 0)
 
     Loader {
         anchors {

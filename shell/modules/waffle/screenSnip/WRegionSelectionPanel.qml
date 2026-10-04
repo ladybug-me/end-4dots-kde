@@ -144,15 +144,19 @@ PanelWindow {
             property bool isWindowSelection: root.selectionMode === WRegionSelectionPanel.SelectionMode.Window
             property var hoveredWindow: root.windows.find(w => {
                 const inCurrentWorkspace = (w.workspace?.id ?? w.workspace) === (Kwin.activeWorkspace?.id ?? Kwin.activeWsId);
-                const withinXRange = w.at[0] <= dragArea.mouseX && dragArea.mouseX <= w.at[0] + w.size[0];
-                const withinYRange = w.at[1] <= dragArea.mouseY && dragArea.mouseY <= w.at[1] + w.size[1];
+                const atX = w.at ? w.at[0] : (w.x ?? 0);
+                const atY = w.at ? w.at[1] : (w.y ?? 0);
+                const sizeW = w.size ? w.size[0] : (w.width ?? 0);
+                const sizeH = w.size ? w.size[1] : (w.height ?? 0);
+                const withinXRange = atX <= dragArea.mouseX && dragArea.mouseX <= atX + sizeW;
+                const withinYRange = atY <= dragArea.mouseY && dragArea.mouseY <= atY + sizeH;
                 return inCurrentWorkspace && withinXRange && withinYRange;
             })
             property int winPadding: 1
-            property int selectionX: isWindowSelection ? ((hoveredWindow?.at[0] ?? 0) - winPadding) : regionTopLeftX
-            property int selectionY: isWindowSelection ? ((hoveredWindow?.at[1] ?? 0) - winPadding) : regionTopLeftY
-            property int selectionWidth: isWindowSelection ? ((hoveredWindow?.size[0] ?? 0) + winPadding * 2) : regionWidth
-            property int selectionHeight: isWindowSelection ? ((hoveredWindow?.size[1] ?? 0) + winPadding * 2) : regionHeight
+            property int selectionX: isWindowSelection ? (((hoveredWindow?.at ? hoveredWindow.at[0] : (hoveredWindow?.x ?? 0))) - winPadding) : regionTopLeftX
+            property int selectionY: isWindowSelection ? (((hoveredWindow?.at ? hoveredWindow.at[1] : (hoveredWindow?.y ?? 0))) - winPadding) : regionTopLeftY
+            property int selectionWidth: isWindowSelection ? (((hoveredWindow?.size ? hoveredWindow.size[0] : (hoveredWindow?.width ?? 0))) + winPadding * 2) : regionWidth
+            property int selectionHeight: isWindowSelection ? (((hoveredWindow?.size ? hoveredWindow.size[1] : (hoveredWindow?.height ?? 0))) + winPadding * 2) : regionHeight
 
             onDragReleased: (diffX, diffY) => {
                 if (selectionWidth === 0 || selectionHeight === 0) {

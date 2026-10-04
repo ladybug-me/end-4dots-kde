@@ -71,7 +71,7 @@ PanelWindow {
         const perOutput = (hyprlandMonitor?.name && activeByOut) ? activeByOut[hyprlandMonitor.name] : 0;
         return perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
     }
-    property string screenshotPath: `${root.screenshotDir}/image-${screen.name}`
+    property string screenshotPath: `${root.screenshotDir}/image-${screen?.name ?? ""}`
     property real dragStartX: 0
     property real dragStartY: 0
     property real draggingX: 0
@@ -84,37 +84,38 @@ PanelWindow {
     property var mouseButton: null
     property var imageRegions: []
     readonly property list<var> windowRegions: RegionFunctions.filterWindowRegionsByLayers(
-        root.windows.filter(w => w.workspace.id === root.activeWorkspaceId),
+        root.windows.filter(w => (w?.workspace?.id ?? w?.workspace ?? 0) === root.activeWorkspaceId).map(window => {
+            const atX = (window.at ? window.at[0] : (window.x ?? 0)) - root.monitorOffsetX;
+            const atY = (window.at ? window.at[1] : (window.y ?? 0)) - root.monitorOffsetY;
+            const sizeW = window.size ? window.size[0] : (window.width ?? window.w ?? 0);
+            const sizeH = window.size ? window.size[1] : (window.height ?? window.h ?? 0);
+            return {
+                at: [atX, atY],
+                size: [sizeW, sizeH],
+                class: window.class ?? "",
+                title: window.title ?? "",
+            };
+        }),
         root.layerRegions
-    ).map(window => {
-        return {
-            at: [window.at[0] - root.monitorOffsetX, window.at[1] - root.monitorOffsetY],
-            size: [window.size[0], window.size[1]],
-            class: window.class,
-            title: window.title,
-        }
-    })
+    )
     readonly property list<var> layerRegions: {
-        const layersOfThisMonitor = root.layers[root.hyprlandMonitor.name]
-        const topLayers = layersOfThisMonitor?.levels["2"]
+        if (!root.hyprlandMonitor?.name || !root.layers) return [];
+        const layersOfThisMonitor = root.layers[root.hyprlandMonitor.name];
+        const topLayers = layersOfThisMonitor?.levels?.["2"];
         if (!topLayers) return [];
-        const nonBarTopLayers = topLayers
-            .filter(layer => !(layer.namespace.includes(":bar") || layer.namespace.includes(":verticalBar") || layer.namespace.includes(":dock")))
+        return topLayers
+            .filter(layer => layer?.namespace && !(layer.namespace.includes(":bar") || layer.namespace.includes(":verticalBar") || layer.namespace.includes(":dock")))
             .map(layer => {
-            return {
-                at: [layer.x, layer.y],
-                size: [layer.w, layer.h],
-                namespace: layer.namespace,
-            }
-        })
-        const offsetAdjustedLayers = nonBarTopLayers.map(layer => {
-            return {
-                at: [layer.at[0] - root.monitorOffsetX, layer.at[1] - root.monitorOffsetY],
-                size: layer.size,
-                namespace: layer.namespace,
-            }
-        });
-        return offsetAdjustedLayers;
+                const atX = (layer.at ? layer.at[0] : (layer.x ?? 0)) - root.monitorOffsetX;
+                const atY = (layer.at ? layer.at[1] : (layer.y ?? 0)) - root.monitorOffsetY;
+                const sizeW = layer.size ? layer.size[0] : (layer.w ?? layer.width ?? 0);
+                const sizeH = layer.size ? layer.size[1] : (layer.h ?? layer.height ?? 0);
+                return {
+                    at: [atX, atY],
+                    size: [sizeW, sizeH],
+                    namespace: layer.namespace ?? "",
+                };
+            });
     }
 
     // Config
@@ -142,7 +143,7 @@ PanelWindow {
     function updateTargetedRegion(x, y) {
         // Image regions
         const clickedRegion = root.imageRegions.find(region => {
-            return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
+            return region?.at && region?.size && region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
         });
         if (clickedRegion) {
             root.targetedRegionX = clickedRegion.at[0];
@@ -154,7 +155,7 @@ PanelWindow {
 
         // Layer regions
         const clickedLayer = root.layerRegions.find(region => {
-            return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
+            return region?.at && region?.size && region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
         });
         if (clickedLayer) {
             root.targetedRegionX = clickedLayer.at[0];
@@ -166,7 +167,7 @@ PanelWindow {
 
         // Window regions
         const clickedWindow = root.windowRegions.find(region => {
-            return region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
+            return region?.at && region?.size && region.at[0] <= x && x <= region.at[0] + region.size[0] && region.at[1] <= y && y <= region.at[1] + region.size[1];
         });
         if (clickedWindow) {
             root.targetedRegionX = clickedWindow.at[0];
@@ -226,15 +227,24 @@ PanelWindow {
         command: ["bash", "-c", `${Directories.scriptPath}/images/find-regions-venv.sh ` 
             + `--hyprctl ` 
             + `--image '${StringUtils.shellSingleQuoteEscape(root.screenshotPath)}' ` 
-            + `--max-width ${Math.round(root.screen.width * root.falsePositivePreventionRatio)} ` 
-            + `--max-height ${Math.round(root.screen.height * root.falsePositivePreventionRatio)} `]
+            + `--max-width ${Math.round((root.screen?.width ?? 0) * root.falsePositivePreventionRatio)} ` 
+            + `--max-height ${Math.round((root.screen?.height ?? 0) * root.falsePositivePreventionRatio)} `]
         stdout: StdioCollector {
             id: imageDimensionCollector
             onStreamFinished: {
-                imageRegions = RegionFunctions.filterImageRegions(
-                    JSON.parse(imageDimensionCollector.text),
-                    root.windowRegions
-                );
+                try {
+                    const raw = imageDimensionCollector.text.trim();
+                    if (raw.length > 0) {
+                        imageRegions = RegionFunctions.filterImageRegions(
+                            JSON.parse(raw),
+                            root.windowRegions
+                        );
+                    } else {
+                        imageRegions = [];
+                    }
+                } catch (e) {
+                    imageRegions = [];
+                }
             }
         }
     }
@@ -269,10 +279,12 @@ PanelWindow {
         }
 
         // Clamp region to screen bounds
-        root.regionX = Math.max(0, Math.min(root.regionX, root.screen.width - root.regionWidth));
-        root.regionY = Math.max(0, Math.min(root.regionY, root.screen.height - root.regionHeight));
-        root.regionWidth = Math.max(0, Math.min(root.regionWidth, root.screen.width - root.regionX));
-        root.regionHeight = Math.max(0, Math.min(root.regionHeight, root.screen.height - root.regionY));
+        const screenWidth = root.screen?.width ?? 1920;
+        const screenHeight = root.screen?.height ?? 1080;
+        root.regionX = Math.max(0, Math.min(root.regionX, screenWidth - root.regionWidth));
+        root.regionY = Math.max(0, Math.min(root.regionY, screenHeight - root.regionHeight));
+        root.regionWidth = Math.max(0, Math.min(root.regionWidth, screenWidth - root.regionX));
+        root.regionHeight = Math.max(0, Math.min(root.regionHeight, screenHeight - root.regionY));
 
         // Adjust action
         if (root.action === RegionSelection.SnipAction.Copy || root.action === RegionSelection.SnipAction.Edit) {
@@ -425,15 +437,15 @@ PanelWindow {
                 clientDimensions: modelData
                 showIcon: true
                 targeted: !root.draggedAway && //
-                    (root.targetedRegionX === modelData.at[0]  //
-                    && root.targetedRegionY === modelData.at[1] //
-                    && root.targetedRegionWidth === modelData.size[0] //
-                    && root.targetedRegionHeight === modelData.size[1])
+                    (root.targetedRegionX === (modelData?.at ? modelData.at[0] : (modelData?.x ?? 0)) //
+                    && root.targetedRegionY === (modelData?.at ? modelData.at[1] : (modelData?.y ?? 0)) //
+                    && root.targetedRegionWidth === (modelData?.size ? modelData.size[0] : (modelData?.width ?? 0)) //
+                    && root.targetedRegionHeight === (modelData?.size ? modelData.size[1] : (modelData?.height ?? 0)))
 
                 opacity: root.draggedAway ? 0 : root.targetRegionOpacity
                 borderColor: root.windowBorderColor
                 fillColor: targeted ? root.windowFillColor : "transparent"
-                text: `${modelData.class}`
+                text: `${modelData?.class ?? ""}`
                 radius: Appearance.rounding.windowRounding
             }
         }
@@ -454,15 +466,15 @@ PanelWindow {
                 required property var modelData
                 clientDimensions: modelData
                 targeted: !root.draggedAway &&
-                    (root.targetedRegionX === modelData.at[0] 
-                    && root.targetedRegionY === modelData.at[1]
-                    && root.targetedRegionWidth === modelData.size[0]
-                    && root.targetedRegionHeight === modelData.size[1])
+                    (root.targetedRegionX === (modelData?.at ? modelData.at[0] : (modelData?.x ?? 0))
+                    && root.targetedRegionY === (modelData?.at ? modelData.at[1] : (modelData?.y ?? 0))
+                    && root.targetedRegionWidth === (modelData?.size ? modelData.size[0] : (modelData?.width ?? 0))
+                    && root.targetedRegionHeight === (modelData?.size ? modelData.size[1] : (modelData?.height ?? 0)))
 
                 opacity: root.draggedAway ? 0 : root.targetRegionOpacity
                 borderColor: root.windowBorderColor
                 fillColor: targeted ? root.windowFillColor : "transparent"
-                text: `${modelData.namespace}`
+                text: `${modelData?.namespace ?? ""}`
                 radius: Appearance.rounding.windowRounding
             }
         }
@@ -483,10 +495,10 @@ PanelWindow {
                 required property var modelData
                 clientDimensions: modelData
                 targeted: !root.draggedAway &&
-                    (root.targetedRegionX === modelData.at[0] 
-                    && root.targetedRegionY === modelData.at[1]
-                    && root.targetedRegionWidth === modelData.size[0]
-                    && root.targetedRegionHeight === modelData.size[1])
+                    (root.targetedRegionX === (modelData?.at ? modelData.at[0] : (modelData?.x ?? 0))
+                    && root.targetedRegionY === (modelData?.at ? modelData.at[1] : (modelData?.y ?? 0))
+                    && root.targetedRegionWidth === (modelData?.size ? modelData.size[0] : (modelData?.width ?? 0))
+                    && root.targetedRegionHeight === (modelData?.size ? modelData.size[1] : (modelData?.height ?? 0)))
 
                 opacity: root.draggedAway ? 0 : root.contentRegionOpacity
                 borderColor: root.imageBorderColor
