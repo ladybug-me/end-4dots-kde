@@ -86,8 +86,8 @@ Singleton {
                         ? "signal_wifi_off"
                         : "signal_wifi_bad"
 
-    function enableWifi(enabled: bool = true): void {
-        NmQt.enableWifi(enabled);
+    function enableWifi(enabled: var): void {
+        NmQt.enableWifi(enabled === undefined ? true : enabled);
     }
 
     function toggleWifi(): void {
@@ -122,7 +122,7 @@ Singleton {
         Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"]);
     }
 
-    function changePassword(network: WifiAccessPoint, password: string, username: string = ""): void {
+    function changePassword(network: WifiAccessPoint, password: string, username: var): void {
         if (!network)
             return;
         network.askingPassword = false;

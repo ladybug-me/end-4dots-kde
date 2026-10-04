@@ -70,7 +70,7 @@ Singleton {
         Quickshell.execDetached(["bash", "-c", `printf '${StringUtils.shellSingleQuoteEscape(entry)}' | ${root.cliphistBinary} decode | wl-copy && wl-paste`]);
     }
 
-    function superpaste(count: int, isImage: bool = false): void {
+    function superpaste(count: int, isImage: var): void {
         const targetEntries = entries.filter(entry => {
             if (!isImage)
                 return true;

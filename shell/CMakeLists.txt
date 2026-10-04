@@ -200,6 +200,12 @@ if("shell" IN_LIST ENABLE_MODULES)
     file(WRITE "${CMAKE_BINARY_DIR}/qml/shell.qml" "${SHELL_QML}")
     install(FILES "${CMAKE_BINARY_DIR}/qml/shell.qml" DESTINATION "${INSTALL_QSCONFDIR}")
 
+    file(GLOB ROOT_QML_FILES "${CMAKE_CURRENT_SOURCE_DIR}/*.qml")
+    list(FILTER ROOT_QML_FILES EXCLUDE REGEX "shell\\.qml$")
+    if(ROOT_QML_FILES)
+        install(FILES ${ROOT_QML_FILES} DESTINATION "${INSTALL_QSCONFDIR}")
+    endif()
+
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
         install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
     endif()

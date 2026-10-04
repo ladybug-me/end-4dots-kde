@@ -27,7 +27,7 @@ Item {
             flow: Flow.TopToBottom
             spacing: 10
             Repeater {
-                model: [...HyprlandKeybinds.keybindCategories, ""]
+                model: [...Keybinds.keybindCategories, ""]
                 delegate: CheatsheetKeybindsCategory {
                     required property var modelData
                     categoryName: modelData

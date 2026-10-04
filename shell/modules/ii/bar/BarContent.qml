@@ -284,7 +284,7 @@ Item { // Bar content region
                             color: rightSidebarButton.colText
                         }
                     }
-                    HyprlandXkbIndicator {
+                    KbLayoutIndicator {
                         Layout.alignment: Qt.AlignVCenter
                         Layout.rightMargin: indicatorsRowLayout.realSpacing
                         color: rightSidebarButton.colText

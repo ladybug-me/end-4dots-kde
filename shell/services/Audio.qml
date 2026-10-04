@@ -116,11 +116,11 @@ Singleton {
         }
     }
 
-    function incrementSourceVolume(amount: real = 0.02): void {
+    function incrementSourceVolume(amount: var): void {
         setSourceVolume(sourceVolume + (amount || 0.02));
     }
 
-    function decrementSourceVolume(amount: real = 0.02): void {
+    function decrementSourceVolume(amount: var): void {
         setSourceVolume(sourceVolume - (amount || 0.02));
     }
 

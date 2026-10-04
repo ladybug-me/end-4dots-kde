@@ -19,7 +19,7 @@ Singleton {
     readonly property bool autoMode: NightColorBridge.autoMode
     readonly property real gammaLowerLimit: 25
 
-    property alias temperatureActive: NightColorBridge.active
+    property bool temperatureActive: NightColorBridge.active
     property int colorTemperature: NightColorBridge.nightTemperature
     property int defaultColorTemperature: 6500
     property int gamma: 100
@@ -55,7 +55,7 @@ Singleton {
         NightColorBridge.toggleNightLight();
     }
 
-    function toggleTemperature(active: var = undefined): void {
+    function toggleTemperature(active: var): void {
         if (active === undefined) {
             NightColorBridge.toggleNightLight();
         } else if (active !== NightColorBridge.active) {

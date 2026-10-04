@@ -269,7 +269,7 @@ MouseArea {
                 Loader {
                     anchors.verticalCenter: parent.verticalCenter
                     sourceComponent: StyledText {
-                        text: HyprlandXkb.currentLayoutCode
+                        text: KbLayout.activeShortLabel
                         color: Appearance.colors.colOnSurfaceVariant
                         animateChange: true
                     }

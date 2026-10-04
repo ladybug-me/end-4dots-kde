@@ -9,43 +9,40 @@
 import "modules/common"
 import "services"
 import "panelFamilies"
+import "modules"
 
 import QtQuick
 import QtQuick.Window
 import Quickshell
 import Quickshell.Io
+import Caelestia.Services
+import qs.components.misc
 
 ShellRoot {
     id: root
 
-    // Stuff for every panel family
-    ReloadPopup {}
+    property list<string> families: ["ii", "waffle"]
+
+    function cyclePanelFamily(): void {
+        const currentIndex = families.indexOf(Config.options.panelFamily);
+        const nextIndex = (currentIndex + 1) % families.length;
+        Config.options.panelFamily = families[nextIndex];
+    }
 
     Component.onCompleted: {
-        MaterialThemeLoader.reapplyTheme()
-        Hyprsunset.load()
-        FirstRunExperience.load()
-        ConflictKiller.load()
-        Cliphist.refresh()
-        Wallpapers.load()
-        Updates.load()
+        MaterialThemeLoader.reapplyTheme();
+        Hyprsunset.load();
+        FirstRunExperience.load();
+        ConflictKiller.load();
+        Cliphist.refresh();
+        Wallpapers.load();
+        Updates.load();
     }
 
+    ReloadPopup {}
 
-    // Panel families
-    property list<string> families: ["ii", "waffle"]
-    function cyclePanelFamily() {
-        const currentIndex = families.indexOf(Config.options.panelFamily)
-        const nextIndex = (currentIndex + 1) % families.length
-        Config.options.panelFamily = families[nextIndex]
-    }
+    Shortcuts {}
 
-    component PanelFamilyLoader: LazyLoader {
-        required property string identifier
-        property bool extraCondition: true
-        active: Config.ready && Config.options.panelFamily === identifier && extraCondition
-    }
-    
     PanelFamilyLoader {
         identifier: "ii"
         component: IllogicalImpulseFamily {}
@@ -56,21 +53,27 @@ ShellRoot {
         component: WaffleFamily {}
     }
 
-
-    // Shortcuts
     IpcHandler {
-        target: "panelFamily"
-
         function cycle(): void {
-            root.cyclePanelFamily()
+            root.cyclePanelFamily();
         }
+
+        target: "panelFamily"
     }
 
-    GlobalShortcut {
+    CustomShortcut {
         name: "panelFamilyCycle"
         description: "Cycles panel family"
 
         onPressed: root.cyclePanelFamily()
     }
+
+    component PanelFamilyLoader: LazyLoader {
+        required property string identifier
+        property bool extraCondition: true
+
+        active: Config.ready && Config.options.panelFamily === identifier && extraCondition
+    }
 }
+
 

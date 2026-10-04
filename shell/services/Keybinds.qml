@@ -8,8 +8,22 @@ import Caelestia.Services
 Singleton {
     id: root
 
+    readonly property var keybindsRaw: KeybindsModel.keybinds
+    readonly property bool initialized: KeybindsModel.initialized
     property list<var> keybinds: []
     property list<string> keybindCategories: []
+
+    signal loaded()
+
+    function loadKeybinds(): void {
+        if (KeybindsModel.initialized && KeybindsModel.keybinds.length > 0)
+            return;
+        KeybindsModel.load();
+    }
+
+    function query(searchText: string): var {
+        return KeybindsModel.query(searchText);
+    }
 
     function parseModMask(sequence: string): int {
         let mask = 0;
@@ -49,10 +63,13 @@ Singleton {
             const key = root.parseKey(bindStr);
 
             parsed.push({
+                bind: bindStr,
                 description: desc,
                 key: key,
                 modmask: modmask,
-                action: item.action || item.name || ""
+                action: item.action || item.name || "",
+                name: item.name || "",
+                isOverridden: item.isOverridden || false
             });
 
             const colonIdx = desc.indexOf(":");
@@ -67,10 +84,18 @@ Singleton {
         root.keybindCategories = categories;
     }
 
-    Component.onCompleted: root.updateKeybinds()
+    Component.onCompleted: {
+        root.loadKeybinds();
+        root.updateKeybinds();
+    }
 
     Connections {
         function onKeybindsChanged(): void {
+            root.updateKeybinds();
+        }
+
+        function onLoaded(): void {
+            root.loaded();
             root.updateKeybinds();
         }
 

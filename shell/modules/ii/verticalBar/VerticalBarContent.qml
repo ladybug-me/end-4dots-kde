@@ -252,7 +252,7 @@ Item { // Bar content region
                             color: rightSidebarButton.colText
                         }
                     }
-                    Bar.HyprlandXkbIndicator {
+                    Bar.KbLayoutIndicator {
                         vertical: true
                         Layout.alignment: Qt.AlignHCenter
                         Layout.bottomMargin: indicatorsColumnLayout.realSpacing
