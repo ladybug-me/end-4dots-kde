@@ -1,15 +1,16 @@
 pragma ComponentBehavior: Bound
-import Qt5Compat.GraphicalEffects
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Widgets
-import Quickshell.Wayland
+import qs.components.images
 import qs.services
 import qs.modules.common
-import qs.modules.common.widgets
 import qs.modules.common.functions
+import qs.modules.common.widgets
 
 Item {
     id: root
@@ -165,8 +166,8 @@ Item {
                                 windowButton.modelData?.activate();
                             }
                             contentItem: ColumnLayout {
-                                implicitWidth: screencopyView.implicitWidth
-                                implicitHeight: screencopyView.implicitHeight
+                                implicitWidth: previewView.width
+                                implicitHeight: previewView.height
 
                                 ButtonGroup {
                                     contentWidth: parent.width - anchors.margins * 2
@@ -199,20 +200,23 @@ Item {
                                 Item {
                                     Layout.fillWidth: true
                                     Layout.fillHeight: true
-                                    implicitHeight: screencopyView.height
-                                    implicitWidth: screencopyView.width
-                                    ScreencopyView {
-                                        id: screencopyView
+                                    implicitHeight: previewView.height
+                                    implicitWidth: previewView.width
+
+                                    WindowPreview {
+                                        id: previewView
+
                                         anchors.centerIn: parent
-                                        captureSource: windowButton.modelData
-                                        live: true
-                                        paintCursor: true
-                                        constraintSize: Qt.size(root.maxWindowPreviewWidth, root.maxWindowPreviewHeight)
+                                        width: root.maxWindowPreviewWidth
+                                        height: root.maxWindowPreviewHeight
+                                        address: windowButton.modelData?.address ? String(windowButton.modelData.address) : ""
+                                        active: previewPopup.show
+                                        fallbackIcon: WinIcons.sourceFor(null, previewPopup.appTopLevel?.appId, "", 0)
                                         layer.enabled: true
                                         layer.effect: OpacityMask {
                                             maskSource: Rectangle {
-                                                width: screencopyView.width
-                                                height: screencopyView.height
+                                                width: previewView.width
+                                                height: previewView.height
                                                 radius: Appearance.rounding.small
                                             }
                                         }

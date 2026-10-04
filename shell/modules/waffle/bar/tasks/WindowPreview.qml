@@ -2,13 +2,13 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
+import Quickshell
+import qs.components.images
 import qs.services
 import qs.modules.common
 import qs.modules.common.functions
-import qs.modules.waffle.looks
 import qs.modules.waffle.bar
-import Quickshell
-import Quickshell.Wayland
+import qs.modules.waffle.looks
 
 Button {
     id: root
@@ -47,7 +47,7 @@ Button {
                 id: appIcon
                 Layout.leftMargin: Looks.radius.large - root.padding + 2
                 Layout.alignment: Qt.AlignVCenter
-                iconName: AppSearch.guessIcon(root.toplevel.appId)
+                iconName: WinIcons.sourceFor(null, root.toplevel.appId, "", root.toplevel.pid ?? 0)
                 implicitSize: 16
             }
 
@@ -77,16 +77,17 @@ Button {
             Layout.fillHeight: true
             Layout.margins: Looks.radius.large - root.padding
             Layout.topMargin: 0
-            implicitWidth: Math.max(screencopyView.implicitWidth, 80)
-            implicitHeight: screencopyView.implicitHeight
+            implicitWidth: root.previewWidthConstraint
+            implicitHeight: root.previewHeightConstraint
 
-            ScreencopyView {
-                id: screencopyView
+            WindowPreview {
+                id: previewItem
                 anchors.centerIn: parent
-                captureSource: root.toplevel
-                live: true
-                paintCursor: true
-                constraintSize: Qt.size(root.previewWidthConstraint, root.previewHeightConstraint)
+                width: root.previewWidthConstraint
+                height: root.previewHeightConstraint
+                address: root.toplevel.address ? String(root.toplevel.address) : ""
+                fallbackIcon: WinIcons.sourceFor(null, root.toplevel.appId, "", root.toplevel.pid ?? 0)
+                sourceAspect: root.previewWidthConstraint / root.previewHeightConstraint
             }
         }
     }

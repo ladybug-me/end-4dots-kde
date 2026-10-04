@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
-import Quickshell.Wayland
+import qs.components.images
 import qs
 import qs.services
 import qs.modules.common
@@ -91,11 +91,12 @@ WMouseAreaButton {
                         model: ScriptModel {
                             values: Kwin.toplevelsForWorkspace(root.workspace)
                         }
-                        delegate: ScreencopyView {
+                        delegate: WindowPreview {
                             required property var modelData
                             readonly property var hyprlandWindowData: Kwin.clientForToplevel(modelData)
-                            captureSource: modelData
-                            live: true
+                            address: hyprlandWindowData?.address ? String(hyprlandWindowData.address) : ""
+                            fallbackIcon: WinIcons.sourceForClient(hyprlandWindowData)
+                            sourceAspect: (width > 0 && height > 0) ? (width / height) : (16 / 9)
                             width: (hyprlandWindowData?.width ?? hyprlandWindowData?.size?.[0] ?? 0) * root.windowScale
                             height: (hyprlandWindowData?.height ?? hyprlandWindowData?.size?.[1] ?? 0) * root.windowScale
                             x: (hyprlandWindowData?.x ?? hyprlandWindowData?.at?.[0] ?? 0) * root.windowScale

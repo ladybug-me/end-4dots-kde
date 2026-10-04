@@ -92,7 +92,7 @@ DockButton {
                 }
                 active: !root.isSeparator
                 sourceComponent: IconImage {
-                    source: Quickshell.iconPath(AppSearch.guessIcon(appToplevel.appId), "image-missing")
+                    source: WinIcons.sourceFor(root.desktopEntry, appToplevel.appId, appToplevel.appId, 0)
                     implicitSize: root.iconSize
                 }
             }

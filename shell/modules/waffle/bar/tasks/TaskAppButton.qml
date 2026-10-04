@@ -1,11 +1,11 @@
 import QtQuick
 import QtQuick.Layouts
+import Quickshell
 import qs.services
 import qs.modules.common
 import qs.modules.common.functions
-import qs.modules.waffle.looks
 import qs.modules.waffle.bar
-import Quickshell
+import qs.modules.waffle.looks
 
 AppButton {
     id: root
@@ -34,7 +34,7 @@ AppButton {
 
     multiple: appEntry.toplevels.length > 1
     checked: active
-    iconName: AppSearch.guessIcon(appEntry.appId)
+    iconName: WinIcons.sourceFor(root.desktopEntry, appEntry.appId, appEntry.appId, 0)
     tryCustomIcon: false
     
     onHoverTimedOut: {

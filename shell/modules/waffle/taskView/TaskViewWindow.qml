@@ -3,7 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
-import Quickshell.Wayland
+import qs.components.images
 import qs
 import qs.services
 import qs.modules.common
@@ -22,7 +22,7 @@ WMouseAreaButton {
     property var hyprlandClient: Kwin.clientForToplevel(root.toplevel)
     property string address: hyprlandClient?.address
 
-    property string iconName: AppSearch.guessIcon(hyprlandClient?.class)
+    property string iconName: WinIcons.sourceForClient(hyprlandClient)
 
     color: drag.active ? ColorUtils.transparentize(Looks.colors.bg1Base) : (containsMouse ? Looks.colors.bg1Base : Looks.colors.bgPanelFooterBackground)
     borderColor: ColorUtils.transparentize(Looks.colors.bg2Border, drag.active ? 1 : 0)
@@ -113,12 +113,16 @@ WMouseAreaButton {
             }
         }
 
-        ScreencopyView {
+        WindowPreview {
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignHCenter
             implicitWidth: Math.round(root.size.width)
             implicitHeight: Math.round(root.size.height)
-            constraintSize: Qt.size(Math.round(root.size.width), Math.round(root.size.height))
+            width: Math.round(root.size.width)
+            height: Math.round(root.size.height)
+            address: root.address ? String(root.address) : ""
+            fallbackIcon: root.iconName
+            sourceAspect: (root.size.width > 0 && root.size.height > 0) ? (root.size.width / root.size.height) : (16 / 9)
 
             Behavior on implicitWidth {
                 animation: Looks.transition.enter.createObject(this)
@@ -126,9 +130,6 @@ WMouseAreaButton {
             Behavior on implicitHeight {
                 animation: Looks.transition.enter.createObject(this)
             }
-
-            captureSource: root.toplevel ?? null
-            live: true
         }
     }
 
