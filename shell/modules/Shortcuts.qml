@@ -4,13 +4,16 @@ import QtQuick
 import Quickshell
 import Caelestia.Config
 import Caelestia.Services
+import qs
 import qs.components.misc
 import qs.services
 import qs.utils
+import qs.modules.common
 
 Scope {
     id: root
 
+    property bool launcherInterrupted: false
     readonly property bool hasFullscreen: Kwin.hasFullscreen()
 
     // `action` ids are the krohnkite
@@ -57,8 +60,168 @@ Scope {
         { name: "krohnkiteToggleDock", description: qsTr("Toggle dock support"), action: "KrohnkitetoggleDock", key: "" }
     ]
 
+    function toggleLauncher(): void {
+        if (Config.options?.panelFamily === "waffle") {
+            GlobalStates.searchOpen = !GlobalStates.searchOpen;
+        } else {
+            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+        }
+    }
+
     Component.onCompleted: {
         let _ = KeybindsModel;
+    }
+
+    CustomShortcut {
+        name: "launcher"
+        description: qsTr("Toggle launcher")
+
+        onPressed: root.launcherInterrupted = false
+        onReleased: {
+            if (!root.launcherInterrupted) {
+                root.toggleLauncher();
+            }
+            root.launcherInterrupted = false;
+        }
+    }
+
+    CustomShortcut {
+        name: "launcherInterrupt"
+        description: qsTr("Interrupt launcher keybind")
+
+        onPressed: root.launcherInterrupted = true
+    }
+
+    CustomShortcut {
+        name: "overview"
+        description: qsTr("Toggle overview")
+
+        onPressed: {
+            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
+        }
+    }
+
+    CustomShortcut {
+        name: "session"
+        description: qsTr("Toggle session menu")
+
+        onPressed: {
+            GlobalStates.sessionOpen = !GlobalStates.sessionOpen;
+        }
+    }
+
+    CustomShortcut {
+        name: "lock"
+        description: qsTr("Lock session")
+
+        onPressed: {
+            Quickshell.execDetached(["loginctl", "lock-session"]);
+        }
+    }
+
+    CustomShortcut {
+        name: "sidebar"
+        description: qsTr("Toggle sidebar")
+
+        onPressed: {
+            GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
+        }
+    }
+
+    CustomShortcut {
+        name: "screenshot"
+        description: qsTr("Toggle screenshot overlay")
+
+        onPressed: {
+            GlobalStates.regionSelectorOpen = true;
+        }
+    }
+
+    CustomShortcut {
+        name: "googleLens"
+        description: qsTr("Toggle Google Lens search")
+
+        onPressed: {
+            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "search"]);
+        }
+    }
+
+    CustomShortcut {
+        name: "ocr"
+        description: qsTr("Recognize text on screen")
+
+        onPressed: {
+            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "ocr"]);
+        }
+    }
+
+    CustomShortcut {
+        name: "screenRecording"
+        description: qsTr("Toggle screen recording")
+
+        onPressed: {
+            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "record"]);
+        }
+    }
+
+    CustomShortcut {
+        name: "wallpaper"
+        description: qsTr("Open wallpaper picker")
+
+        onPressed: {
+            GlobalStates.wallpaperSelectorOpen = !GlobalStates.wallpaperSelectorOpen;
+        }
+    }
+
+    CustomShortcut {
+        name: "keybinds"
+        description: qsTr("Open keybinds list")
+
+        onPressed: {
+            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "cheatsheet", "toggle"]);
+        }
+    }
+
+    CustomShortcut {
+        name: "foot"
+        description: qsTr("Launch Terminal")
+
+        onPressed: Launch.exec([...GlobalConfig.general.apps.terminal])
+    }
+
+    CustomShortcut {
+        name: "firefox"
+        description: qsTr("Launch Browser")
+
+        onPressed: Launch.exec(["firefox"])
+    }
+
+    CustomShortcut {
+        name: "code"
+        description: qsTr("Launch Editor")
+
+        onPressed: Launch.exec(["code"])
+    }
+
+    CustomShortcut {
+        name: "github-desktop"
+        description: qsTr("Launch GitHub Desktop")
+
+        onPressed: Launch.exec(["github-desktop"])
+    }
+
+    CustomShortcut {
+        name: "nemo"
+        description: qsTr("Launch File Manager")
+
+        onPressed: Launch.exec(["nemo"])
+    }
+
+    CustomShortcut {
+        name: "kcolorpicker"
+        description: qsTr("Color Picker")
+
+        onPressed: ColorPicker.pickColor()
     }
 
     Instantiator {
@@ -146,47 +309,5 @@ Scope {
         description: qsTr("Switch to workspace 10")
 
         onPressed: Kwin.setDesktop(10)
-    }
-
-    CustomShortcut {
-        name: "foot"
-        description: qsTr("Launch Terminal")
-
-        onPressed: Launch.exec([...GlobalConfig.general.apps.terminal])
-    }
-
-    CustomShortcut {
-        name: "firefox"
-        description: qsTr("Launch Browser")
-
-        onPressed: Launch.exec(["firefox"])
-    }
-
-    CustomShortcut {
-        name: "code"
-        description: qsTr("Launch Editor")
-
-        onPressed: Launch.exec(["code"])
-    }
-
-    CustomShortcut {
-        name: "github-desktop"
-        description: qsTr("Launch GitHub Desktop")
-
-        onPressed: Launch.exec(["github-desktop"])
-    }
-
-    CustomShortcut {
-        name: "nemo"
-        description: qsTr("Launch File Manager")
-
-        onPressed: Launch.exec(["nemo"])
-    }
-
-    CustomShortcut {
-        name: "kcolorpicker"
-        description: qsTr("Color Picker")
-
-        onPressed: ColorPicker.pickColor()
     }
 }
