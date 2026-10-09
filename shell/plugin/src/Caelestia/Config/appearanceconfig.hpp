@@ -196,27 +196,29 @@ struct FontConfig {
     };
 
 // clang-format off
-FONT_STYLE(Headline, u"GoogleSansFlex"_s,
+// An empty family leaves the QFont without one, so the shell follows the system font until
+// the user picks a font in Appearance.
+FONT_STYLE(Headline, u""_s,
     FONT({ .size = 32, .weight = QFont::Medium }),
     FONT({ .size = 28, .weight = QFont::Medium }),
     FONT({ .size = 24, .weight = QFont::Medium })
 )
-FONT_STYLE(Title, u"GoogleSansFlex"_s,
+FONT_STYLE(Title, u""_s,
     FONT({ .size = 22, .weight = QFont::Medium }),
     FONT({ .size = 16, .weight = QFont::Medium }),
     FONT({ .size = 14, .weight = QFont::Medium })
 )
-FONT_STYLE(Body, u"GoogleSansFlex"_s,
+FONT_STYLE(Body, u""_s,
     FONT({ .size = 16 }),
     FONT({ .size = 14 }),
     FONT({ .size = 12 })
 )
-FONT_STYLE(Label, u"GoogleSansFlex"_s,
+FONT_STYLE(Label, u""_s,
     FONT({ .size = 14, .weight = QFont::Medium }),
     FONT({ .size = 12, .weight = QFont::Medium }),
     FONT({ .size = 11 })
 )
-FONT_STYLE(Mono, u"CaskaydiaCove NF"_s,
+FONT_STYLE(Mono, u""_s,
     FONT({ .size = 16, .vaxes = {} }),
     FONT({ .size = 14, .vaxes = {} }),
     FONT({ .size = 12, .vaxes = {} })

@@ -2,6 +2,7 @@
 #include "Draw.hpp"
 #include "Globals.hpp"
 #include "Input.hpp"
+#include "StepPolicy.hpp"
 #include "Sudo.hpp"
 #include "Term.hpp"
 #include "UI.hpp"
@@ -29,13 +30,6 @@ extern volatile sig_atomic_t g_sigterm_received;
 
 namespace {
 static size_t g_spin_frame = 0;
-
-std::string env_val(const char *name) {
-  const char *v = getenv(name);
-  return v ? std::string(v) : std::string();
-}
-
-bool env_is_true(const char *name) { return env_val(name) == "true"; }
 
 bool log_tail_since(const std::string &log_path, long start_offset,
                     std::string &out) {
@@ -75,13 +69,6 @@ pid_t spawn_step(const string &script_path, int log_fd) {
   }
   return child;
 }
-bool answer_is_true(const char *name) {
-  auto it = g_answers.find(name);
-  if (it != g_answers.end())
-    return it->second == "true";
-  return env_is_true(name);
-}
-
 bool read_log_tail(const std::string &log_path, size_t max_lines,
                    std::vector<std::string> &out) {
   out.clear();
@@ -129,7 +116,6 @@ const vector<Phase> phases = {
 };
 
 vector<Step> steps = {
-    {"Refresh mirrors", "scripts/00-refresh-mirrors.sh", "PENDING", "prepare"},
     {"Update system", "scripts/00a-system-update.sh", "PENDING", "prepare"},
     {"Ensure prerequisites", "scripts/01-ensure-prereqs.sh", "PENDING",
      "prepare"},
@@ -161,23 +147,7 @@ vector<Step> steps = {
 };
 
 bool step_is_skipped(const Step &step) {
-  if (step.name == "Update system") {
-    return answer_is_true("SKIP_SYSTEM_UPDATE");
-  }
-  if (step.name == "Install SDDM theme") {
-    return !answer_is_true("INSTALL_SDDM");
-  }
-  if (step.name == "Install optional components") {
-    static const char *opt[] = {"INSTALL_VSCODE",    "INSTALL_ZED",
-                                "INSTALL_SPICETIFY", "INSTALL_DISCORD",
-                                "INSTALL_TODOIST",   "INSTALL_FIREFOX_THEME"};
-    for (const char *name : opt) {
-      if (answer_is_true(name))
-        return false;
-    }
-    return true;
-  }
-  return false;
+  return StepPolicy::is_skipped(step.name, g_answers);
 }
 
 string show_error_dialog(const string &step_name, const string &script_path,
@@ -294,7 +264,6 @@ void draw_progress_ui(size_t current_index) {
 
   Draw::box(x, y, w, h, "", "container", "primary");
 
-  // Progress bar
   string progress_text =
       to_string(current_index) + "/" + to_string(steps.size());
   int bar_w = w - 8 - (int)progress_text.length();
@@ -308,7 +277,6 @@ void draw_progress_ui(size_t current_index) {
                Draw::repeat(" ", bar_w - (int)done - (arrow ? 1 : 0));
   Draw::text(x + 2, y + 1, "[" + bar + "] " + progress_text, "primary");
 
-  // Aggregate status per phase, then build display lines grouped by phase.
   auto phase_status = [&](const string &pid) -> string {
     bool any_failed = false, any_running = false, any_pending = false,
          any_warn = false, any_ignored = false;
@@ -451,7 +419,6 @@ void execute() {
   }
   std::filesystem::remove(cache_dir + "/failed_steps.txt", fs_error);
   std::filesystem::remove(cache_dir + "/failed_packages.txt", fs_error);
-  std::filesystem::remove(cache_dir + "/failed_patches.txt", fs_error);
 
   setenv("BASE_DISTRO", g_base_distro.c_str(), 1);
   setenv("BUNDLE_DIR", g_bundle_dir.c_str(), 1);
@@ -484,7 +451,6 @@ void execute() {
   bool log_open = false;
   UI::LogViewState log_state;
 
-  // Draws the progress screen only when the live log view is not covering it.
   auto show_progress = [&](size_t idx) {
     if (!log_open)
       draw_progress_ui(idx);
@@ -535,9 +501,6 @@ void execute() {
       exit(1);
     }
 
-    // Polls the child, redraws on resize, and lets the user toggle the log
-    // view. waitpid keeps running beneath it, so the step finishes and the next
-    // starts with the full log open.
     int child_status = 0;
     while (true) {
       pid_t r = waitpid(child, &child_status, WNOHANG);
@@ -567,8 +530,7 @@ void execute() {
       bool closed_log = false;
       if (key == "l" || key == "L" || key == "KEY_shift_tab" ||
           (log_open && key == "escape")) {
-        // Toggles the full-screen log; opening resets scroll so the view
-        // follows the newest output.
+        // Opening resets scroll so the view follows the newest output.
         log_open = !log_open;
         if (log_open) {
           log_state = UI::LogViewState();
@@ -576,7 +538,6 @@ void execute() {
           closed_log = true;
         }
       } else if (log_open) {
-        // Scroll/pause/next-issue keys; the view is redrawn below.
         UI::log_view_key(key, log_state);
       }
 
@@ -624,6 +585,20 @@ void execute() {
       } else {
         Term::restore();
         exit(1);
+      }
+    }
+  }
+
+  // Record the steps that failed and were ignored, so the completion screen's
+  // "completed with warnings" summary (and TROUBLESHOOTING's `cat` advice) is
+  // real. The file is cleared at the start of this run, so a stale failure
+  // cannot leak in.
+  {
+    ofstream failed_steps(cache_dir + "/failed_steps.txt", ios::app);
+    if (failed_steps) {
+      for (const auto &st : steps) {
+        if (st.status == "IGNORED")
+          failed_steps << st.name << '\n';
       }
     }
   }

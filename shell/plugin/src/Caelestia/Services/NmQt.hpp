@@ -168,6 +168,8 @@ private slots:
     void onAccessPointAppeared(const QString& apPath);
     void onAccessPointDisappeared(const QString& apPath);
 
+    void onEthernetDeviceStateChanged();
+
     void onNetworkManagerReady();
 
 private:

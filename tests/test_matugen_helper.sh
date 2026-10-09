@@ -11,17 +11,40 @@ source "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/scripts/lib/matugen.sh"
 test_matugen_present_checks_path() {
     local tmp
     tmp="$(new_tmpdir)"
-    mkdir -p "$tmp/bin"
+    mkdir -p "$tmp/bin" "$tmp/tools"
+    local tool p
+    for tool in grep head sort sed cat; do
+        p="$(command -v "$tool" 2>/dev/null || true)"
+        [[ -n "$p" ]] && ln -s "$p" "$tmp/tools/$tool"
+    done
 
-    if (HOME="$tmp" PATH="$tmp/bin" matugen_present); then
+    if (HOME="$tmp" PATH="$tmp/bin:$tmp/tools" matugen_present); then
         fail "matugen_present should return false when matugen is not on PATH"
     fi
 
-    touch "$tmp/bin/matugen"
+    printf '#!/bin/sh\necho "matugen 4.2.0"\n' > "$tmp/bin/matugen"
     chmod +x "$tmp/bin/matugen"
 
-    if ! (HOME="$tmp" PATH="$tmp/bin" matugen_present); then
+    if ! (HOME="$tmp" PATH="$tmp/bin:$tmp/tools" matugen_present); then
         fail "matugen_present should return true when matugen is on PATH"
+    fi
+}
+
+test_matugen_present_rejects_outdated_version() {
+    local tmp
+    tmp="$(new_tmpdir)"
+    mkdir -p "$tmp/bin" "$tmp/tools"
+    local tool p
+    for tool in grep head sort sed cat; do
+        p="$(command -v "$tool" 2>/dev/null || true)"
+        [[ -n "$p" ]] && ln -s "$p" "$tmp/tools/$tool"
+    done
+
+    printf '#!/bin/sh\necho "matugen 3.1.0"\n' > "$tmp/bin/matugen"
+    chmod +x "$tmp/bin/matugen"
+
+    if (HOME="$tmp" PATH="$tmp/bin:$tmp/tools" matugen_present); then
+        fail "matugen_present should return false when matugen version is < 4.2"
     fi
 }
 
@@ -30,10 +53,12 @@ test_cleanup_legacy_cargo_matugen_removes_binaries() {
     tmp="$(new_tmpdir)"
     mkdir -p "$tmp/.cargo/bin"
 
-    touch "$tmp/.cargo/bin/matugen"
+    printf '#!/bin/sh\necho "matugen 3.1.0"\n' > "$tmp/.cargo/bin/matugen"
+    chmod +x "$tmp/.cargo/bin/matugen"
 
     (
         HOME="$tmp"
+        PATH="/usr/bin:/bin"
         caelestia_sudo() { "$@"; }
         export -f caelestia_sudo
         cleanup_legacy_cargo_matugen
@@ -46,13 +71,13 @@ test_ensure_matugen_reports_success_when_present() {
     local tmp
     tmp="$(new_tmpdir)"
     mkdir -p "$tmp/bin"
-    touch "$tmp/bin/matugen"
+    printf '#!/bin/sh\necho "matugen 4.2.0"\n' > "$tmp/bin/matugen"
     chmod +x "$tmp/bin/matugen"
 
     (
         HOME="$tmp"
         BASE_DISTRO=arch
-        PATH="$tmp/bin"
+        PATH="$tmp/bin:/usr/bin:/bin"
         if ! ensure_matugen; then
             exit 1
         fi

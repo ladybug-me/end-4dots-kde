@@ -10,8 +10,9 @@ CURRENT_FILE="${STATE_DIR}/current_recording_path"
 MODE_FILE="${STATE_DIR}/current_recording_mode"
 IPC_SOCK="${XDG_RUNTIME_DIR:-/tmp}/caelestia-gsr.sock"
 
-# Where finished recordings live; must match Paths.qml's recsdir so the shell finds them.
-RECS_DIR="${CAELESTIA_RECORDINGS_DIR:-${XDG_VIDEOS_DIR:-$HOME/Videos}/Recordings}"
+# Where finished recordings live; must match the shell's recordingsDir so the shell finds them.
+# Resolved via user-dirs (not $XDG_VIDEOS_DIR, which is empty in the shell session).
+RECS_DIR="${CAELESTIA_RECORDINGS_DIR:-$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")/Recordings}"
 
 mkdir -p "$STATE_DIR" "$RECS_DIR"
 

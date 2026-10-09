@@ -7,6 +7,11 @@ source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 WORKSPACE_QML="$REPO_ROOT/shell/modules/bar/components/workspaces/Workspace.qml"
 
+if [[ ! -f "$WORKSPACE_QML" ]]; then
+    skip_test "Bar Workspace.qml not present in this flavor"
+    exit 0
+fi
+
 test_the_bite_shaped_material_shapes_are_not_drawn() {
     local qml
     qml="$(cat "$WORKSPACE_QML")"

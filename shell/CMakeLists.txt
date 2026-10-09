@@ -103,17 +103,34 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
 set(DISTRIBUTOR "Unset" CACHE STRING "Distributor")
 set(ENABLE_MODULES "extras;plugin;shell;m3shapes" CACHE STRING "Modules to build/install")
+set(INSTALL_BINDIR "usr/bin" CACHE STRING "Executable install dir")
 set(INSTALL_LIBDIR "usr/lib/caelestia" CACHE STRING "Library install dir")
+set(INSTALL_DATADIR "usr/share/caelestia" CACHE STRING "Shared Caelestia data install dir")
 set(INSTALL_QMLDIR "usr/lib/qt6/qml" CACHE STRING "QML install dir")
 set(INSTALL_QSCONFDIR "etc/xdg/quickshell/caelestia" CACHE STRING "Quickshell config install dir")
+option(CAELESTIA_OFFLINE "Disallow downloading build dependencies" OFF)
+option(CAELESTIA_PACKAGE "Install package-owned repository assets" OFF)
+option(CAELESTIA_ENABLE_SANITIZERS "Enable AddressSanitizer and UndefinedBehaviorSanitizer" OFF)
+if(CAELESTIA_ENABLE_SANITIZERS)
+    add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+    add_link_options(-fsanitize=address,undefined)
+endif()
 
 # The M3Shapes checkout is external and builds its strings from raw literals, so it
 # is configured before the strict casts below apply: directory definitions are
 # inherited when a subdirectory is created, and the fetch creates one.
+set(CAELESTIA_M3SHAPES_SOURCE_DIR "" CACHE PATH
+    "Pre-fetched M3Shapes source directory")
+set(M3SHAPES_REV "unknown")
+
 if("m3shapes" IN_LIST ENABLE_MODULES)
-    message(STATUS "Fetching M3Shapes module")
     include(FetchContent)
-    set(M3SHAPES_REV bdc327b29f95394a732baf3c9b19658ba23755b6)
+    set(_M3SHAPES_REVISION_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../scripts/m3shapes-revision")
+    if(EXISTS "${_M3SHAPES_REVISION_FILE}")
+        file(STRINGS "${_M3SHAPES_REVISION_FILE}" M3SHAPES_REV LIMIT_COUNT 1)
+    else()
+        set(M3SHAPES_REV bdc327b29f95394a732baf3c9b19658ba23755b6)
+    endif()
 
     # Opt-in persistent checkout. When enabled, the source is cloned into the
     # user cache so wiping the build dir doesn't force a re-clone (the
@@ -122,8 +139,12 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
     # _deps location.
     option(CAELESTIA_CACHE_DEPS "Keep FetchContent sources outside the build tree" OFF)
 
-    if(CAELESTIA_CACHE_DEPS)
-        if(DEFINED ENV{XDG_CACHE_HOME} AND NOT "$ENV{XDG_CACHE_HOME}" STREQUAL "")
+    if(CAELESTIA_M3SHAPES_SOURCE_DIR)
+        set(_M3SHAPES_SOURCE_DIR "${CAELESTIA_M3SHAPES_SOURCE_DIR}")
+    elseif(CAELESTIA_CACHE_DEPS)
+        if(DEFINED ENV{CAELESTIA_DEPS_DIR} AND NOT "$ENV{CAELESTIA_DEPS_DIR}" STREQUAL "")
+            set(_CAELESTIA_CACHE "$ENV{CAELESTIA_DEPS_DIR}")
+        elseif(DEFINED ENV{XDG_CACHE_HOME} AND NOT "$ENV{XDG_CACHE_HOME}" STREQUAL "")
             set(_CAELESTIA_CACHE "$ENV{XDG_CACHE_HOME}/caelestia-kde")
         else()
             set(_CAELESTIA_CACHE "$ENV{HOME}/.cache/caelestia-kde")
@@ -133,14 +154,23 @@ if("m3shapes" IN_LIST ENABLE_MODULES)
         set(_M3SHAPES_SOURCE_DIR "${CMAKE_BINARY_DIR}/_deps/m3shapes-${M3SHAPES_REV}")
     endif()
 
+    if(CAELESTIA_OFFLINE AND NOT EXISTS "${_M3SHAPES_SOURCE_DIR}/CMakeLists.txt")
+        message(FATAL_ERROR
+            "Offline build requested, but M3Shapes was not found at ${_M3SHAPES_SOURCE_DIR}. "
+            "Run 'make fetch-dependencies' first or set CAELESTIA_M3SHAPES_SOURCE_DIR.")
+    endif()
+
     FetchContent_Declare(
         m3shapes_external
         GIT_REPOSITORY https://github.com/soramanew/m3shapes.git
         GIT_TAG        ${M3SHAPES_REV}
         SOURCE_DIR     "${_M3SHAPES_SOURCE_DIR}"
     )
+    if(EXISTS "${_M3SHAPES_SOURCE_DIR}/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_M3SHAPES_EXTERNAL "${_M3SHAPES_SOURCE_DIR}")
+    endif()
+    message(STATUS "Using M3Shapes source: ${_M3SHAPES_SOURCE_DIR}")
     FetchContent_MakeAvailable(m3shapes_external)
-    message(STATUS "Done fetching M3Shapes module")
 
     # Fix m3shapes wrong rpath
     if(TARGET m3shapesplugin)
@@ -177,16 +207,57 @@ if("plugin" IN_LIST ENABLE_MODULES)
 endif()
 
 if("shell" IN_LIST ENABLE_MODULES)
+    set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
+
+    function(caelestia_install_directory)
+        install(DIRECTORY ${ARGV} PATTERN ".git*" EXCLUDE)
+    endfunction()
+
+    file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
+    if(NOT CAELESTIA_BIN_FILES)
+        message(FATAL_ERROR "No CLI wrappers found in ${CAELESTIA_ROOT_DIR}/src/bin")
+    endif()
+    install(PROGRAMS ${CAELESTIA_BIN_FILES} DESTINATION "${INSTALL_BINDIR}")
+
+    caelestia_install_directory(
+        "${CAELESTIA_ROOT_DIR}/src/matugen"
+        "${CAELESTIA_ROOT_DIR}/src/schemes"
+        DESTINATION "${INSTALL_DATADIR}"
+        PATTERN ".git*" EXCLUDE)
+
+    file(GLOB CAELESTIA_STEP_SCRIPTS CONFIGURE_DEPENDS
+        "${CAELESTIA_ROOT_DIR}/scripts/[0-9]*.sh")
+    if(NOT CAELESTIA_STEP_SCRIPTS)
+        message(FATAL_ERROR "No installer step scripts found in ${CAELESTIA_ROOT_DIR}/scripts")
+    endif()
+    install(PROGRAMS ${CAELESTIA_STEP_SCRIPTS}
+        DESTINATION "${INSTALL_DATADIR}/scripts")
+    caelestia_install_directory("${CAELESTIA_ROOT_DIR}/scripts/lib"
+        DESTINATION "${INSTALL_DATADIR}/scripts"
+        PATTERN ".git*" EXCLUDE)
+    caelestia_install_directory(
+        "${CAELESTIA_ROOT_DIR}/src/dots"
+        "${CAELESTIA_ROOT_DIR}/src/dots-extra"
+        DESTINATION "${INSTALL_DATADIR}/src"
+        PATTERN ".git*" EXCLUDE)
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/shell/assets/wallpaper.webp"
+        DESTINATION "${INSTALL_DATADIR}/shell/assets")
+    install(FILES
+        "${CAELESTIA_ROOT_DIR}/assets/org.quickshell.desktop"
+        DESTINATION "${INSTALL_DATADIR}/assets")
+
     foreach(dir assets components modules services utils panelFamilies defaults translations)
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
-            install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${dir}
-                    DESTINATION ${INSTALL_QSCONFDIR})
+            caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/${dir}
+                    DESTINATION ${INSTALL_QSCONFDIR}
+                    PATTERN ".git*" EXCLUDE)
         endif()
     endforeach()
 
     # scripts/ installs with the dev tooling stripped: the conventions
     # linter runs in CI and the perf profiler is not runtime code.
-    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/scripts/
+    caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/scripts/
             DESTINATION ${INSTALL_QSCONFDIR}/scripts
             PATTERN "qml-lint-conventions.py" EXCLUDE
             PATTERN "menu_perf_stats.py" EXCLUDE)
@@ -210,17 +281,50 @@ if("shell" IN_LIST ENABLE_MODULES)
         install(FILES LICENSE DESTINATION "${INSTALL_QSCONFDIR}")
     endif()
 
+    if(CAELESTIA_PACKAGE)
+        set(_SDDM_THEME_DIR "usr/share/sddm/themes/caelestia")
+        if(EXISTS "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/")
+            caelestia_install_directory(
+                "${CAELESTIA_ROOT_DIR}/src/sddm/themes/full/"
+                DESTINATION "${_SDDM_THEME_DIR}"
+                )
+        endif()
+        if(EXISTS "${CAELESTIA_ROOT_DIR}/src/sddm/sync.sh")
+            install(PROGRAMS
+                "${CAELESTIA_ROOT_DIR}/src/sddm/sync.sh"
+                DESTINATION "${_SDDM_THEME_DIR}/scripts")
+        endif()
+        if(EXISTS "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf")
+            install(FILES
+                "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop/contents/fonts/GoogleSansFlex.ttf"
+                DESTINATION "${_SDDM_THEME_DIR}/assets/google-sans-flex")
+        endif()
+        if(EXISTS "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop")
+            caelestia_install_directory(
+                "${CAELESTIA_ROOT_DIR}/src/kde/shells/caelestia.desktop"
+                DESTINATION "usr/share/plasma/shells"
+                )
+        endif()
+    endif()
+
+    find_package(Qt6 QUIET COMPONENTS LinguistTools)
+    if(DEFINED Qt6_VERSION)
+        set(CAELESTIA_QT_VERSION "${Qt6_VERSION}")
+    else()
+        set(CAELESTIA_QT_VERSION "unknown")
+    endif()
+    set(CAELESTIA_ARTIFACT_ROOT_HASH "pending-install")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/build-provenance.json.in")
+        configure_file(
+            "${CMAKE_CURRENT_SOURCE_DIR}/build-provenance.json.in"
+            "${CMAKE_BINARY_DIR}/build-provenance.json"
+            @ONLY)
+        install(FILES "${CMAKE_BINARY_DIR}/build-provenance.json"
+            DESTINATION "${INSTALL_DATADIR}")
+    endif()
+
     # Translations: compile every translations/*.ts into a .qm next to the
     # installed shell, where the Translations singleton looks for them.
-    #
-    # Compiled catalogues are committed alongside their sources, so a build
-    # without Qt's Linguist tools installs those instead of quietly dropping
-    # every language but English -- a missing build tool is not something a
-    # user can be expected to connect to a language having disappeared from
-    # the picker. When lrelease is present the .ts files are recompiled and
-    # win, so an edited translation never has to wait for someone to refresh
-    # the committed artefact.
-    find_package(Qt6 QUIET COMPONENTS LinguistTools)
     file(GLOB TS_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.ts")
     file(GLOB PREBUILT_QM_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/translations/*.qm")
 

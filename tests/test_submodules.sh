@@ -198,7 +198,12 @@ test_fetch_submodule_by_clone_needs_an_explicit_opt_in() {
     mkdir -p "$repo/src/dots"
 
     # A pin that the source cannot deliver: only the explicit opt-in may fetch it.
-    fake="$(git -C "$source" rev-parse HEAD | sed 's/.$/0/')"
+    pinned="$(git -C "$source" rev-parse HEAD)"
+    case "$pinned" in
+        *0) fake="${pinned%?}1" ;;
+        *)  fake="${pinned%?}0" ;;
+    esac
+    assert_ne "$pinned" "$fake" "the fake pin must name a different commit"
     git -C "$repo" update-index --add --cacheinfo 160000,"$fake",src/dots
     git -C "$repo" -c user.email=t@t -c user.name=t commit -qm pin
 

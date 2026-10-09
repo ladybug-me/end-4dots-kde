@@ -18,6 +18,8 @@ import sys
 import unittest
 from pathlib import Path
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -601,6 +603,79 @@ class ShellSurfaceTests(unittest.TestCase):
             "the CLI needs the wallpaper before it can derive dynamic colors",
         )
 
+    def test_dock_badges_are_read_through_the_service(self) -> None:
+        dock = (
+            ROOT / "shell" / "modules" / "bar" / "components" / "Dock.qml"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "LauncherEntry.forApp(modelData.id)",
+            dock,
+            "a tile has to ask the service for the badge published for its app",
+        )
+        self.assertIn(
+            "LauncherEntry.revision",
+            dock,
+            "the binding has to read the revision counter, or a badge never updates",
+        )
+
+        for read in (
+            "badge?.count ?? 0",
+            "badge?.countVisible ?? false",
+            "badge?.progress ?? 0",
+            "badge?.progressVisible ?? false",
+            "badge?.urgent ?? false",
+        ):
+            self.assertIn(read, dock, f"a tile must read {read} from the entry")
+
+        for wire in ("count-visible", "progress-visible"):
+            self.assertNotIn(
+                wire,
+                dock,
+                "the wire property names belong to the service, which renames them once; "
+                "a second reader of the raw protocol is a second thing to get wrong",
+            )
+
+    def test_the_launcher_entry_service_owns_the_unity_name(self) -> None:
+        service = (
+            ROOT / "shell" / "plugin" / "src" / "Caelestia" / "Services" / "launcherentry.cpp"
+        ).read_text(encoding="utf-8")
+
+        self.assertIn(
+            "com.canonical.Unity.LauncherEntry",
+            service,
+            "the service has to watch the interface apps emit on",
+        )
+        self.assertIn(
+            "registerService",
+            service,
+            "the service has to own com.canonical.Unity, which is what apps watch",
+        )
+        self.assertIn(
+            'bus.connect(QString(), QString(),',
+            service,
+            "apps emit from a connection and a path of their own, so both have to be wildcards",
+        )
+        self.assertIn(
+            'QStringLiteral("://")',
+            service,
+            "a published app id arrives as an application:// URI and has to be reduced to an id",
+        )
+        self.assertIn(
+            'QStringLiteral(".desktop")',
+            service,
+            "the desktop suffix is optional on the wire, so both forms have to land on one key",
+        )
+
+        module = (
+            ROOT / "shell" / "plugin" / "src" / "Caelestia" / "Services" / "CMakeLists.txt"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "launcherentry.cpp",
+            module,
+            "a service left out of the module's sources is never compiled or registered",
+        )
+
 
 class WhatsNewEntryTests(unittest.TestCase):
     """The release notes are data, and nothing validates them at runtime.
@@ -792,16 +867,58 @@ class SubmoduleTests(unittest.TestCase):
                 f"Submodule path '{sub_path}' does not exist - run git submodule update --init"
             )
 
+    @unittest.skipUnless(shutil.which("git"), "git is required for submodule checks")
+    def test_gitlinks_and_gitmodules_agree(self) -> None:
+        """Every gitlink in the tree is declared in .gitmodules, and the other way round.
+
+        An undeclared gitlink cannot be resolved: `git submodule update` stops with
+        "No url found for submodule path ...", which is how v2.4.3's source tarball
+        was never built. A declared path with no gitlink is the same drift seen from
+        the other side. The check reads the index, so it holds in a checkout that has
+        no submodules initialized.
+        """
+        result = subprocess.run(
+            ["git", "ls-files", "--stage"],
+            capture_output=True, text=True, cwd=ROOT,
+        )
+        if result.returncode != 0:
+            self.skipTest("git ls-files failed - not a git checkout")
+
+        gitlinks = {
+            path.strip()
+            for meta, _, path in (line.partition("\t") for line in result.stdout.splitlines())
+            if meta.startswith("160000 ")
+        }
+
+        gitmodules = ROOT / ".gitmodules"
+        declared = set()
+        if gitmodules.is_file():
+            declared = {
+                path.strip()
+                for path in re.findall(
+                    r"^\s*path\s*=\s*(.+)$", gitmodules.read_text(encoding="utf-8"), re.MULTILINE
+                )
+            }
+
+        undeclared = sorted(gitlinks - declared)
+        self.assertEqual(
+            undeclared, [],
+            "gitlink(s) with no .gitmodules entry: "
+            f"{', '.join(undeclared)} - remove them (git rm --cached <path>) or declare them",
+        )
+
+        unbacked = sorted(declared - gitlinks)
+        self.assertEqual(
+            unbacked, [],
+            "path(s) declared in .gitmodules without a gitlink in the tree: "
+            f"{', '.join(unbacked)}",
+        )
+
 
 class WorkflowYamlTests(unittest.TestCase):
     @unittest.skipUnless(shutil.which("python3"), "python3 required for YAML parse")
     def test_workflow_files_parse(self) -> None:
         """All .yml files in .github/workflows/ should be valid YAML."""
-        try:
-            import yaml  # type: ignore[import-untyped]
-        except ImportError:
-            return
-
         workflows_dir = ROOT / ".github" / "workflows"
         if not workflows_dir.is_dir():
             return

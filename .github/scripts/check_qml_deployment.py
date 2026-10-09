@@ -15,6 +15,7 @@ EXPECTED_MODULES = (
     "Caelestia/Settings",
     "Caelestia/Models",
     "Caelestia/Services",
+    "Caelestia/Services/QuickShare",
     "Caelestia/Blobs",
     "Caelestia/Images",
     "Caelestia/Layouts",

@@ -36,6 +36,7 @@ public:
     Q_INVOKABLE static bool deleteFile(const QUrl& path);
     Q_INVOKABLE static QString toLocalFile(const QUrl& url);
     Q_INVOKABLE static QString sha256(const QString& path);
+    Q_INVOKABLE static bool setDesktopEntryKey(const QString& path, const QString& key, const QString& value);
 
     Q_INVOKABLE static void enableBlurBehind(QQuickWindow* window, bool enable = true);
 

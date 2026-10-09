@@ -12,20 +12,34 @@ source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/scrip
 source "${BUNDLE_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}/scripts/lib/packages.sh" 2>/dev/null || true
 
 matugen_present() {
-    command -v matugen >/dev/null 2>&1
+    if ! command -v matugen >/dev/null 2>&1; then
+        return 1
+    fi
+    local ver
+    ver="$(matugen --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1 || true)"
+    [[ -n "$ver" ]] || return 1
+    [[ "$(printf '%s\n%s\n' "4.2" "$ver" | sort -V | head -n1)" == "4.2" ]]
 }
 
 cleanup_legacy_cargo_matugen() {
     if [[ -f "/usr/local/bin/matugen" && ! -L "/usr/local/bin/matugen" ]]; then
-        info "Removing legacy /usr/local/bin/matugen binary..."
-        caelestia_sudo rm -f "/usr/local/bin/matugen"
+        local local_ver
+        local_ver="$(/usr/local/bin/matugen --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1 || true)"
+        if [[ -z "$local_ver" || "$(printf '%s\n%s\n' "4.2" "$local_ver" | sort -V | head -n1)" != "4.2" ]] || package_present matugen; then
+            info "Removing legacy /usr/local/bin/matugen binary..."
+            caelestia_sudo rm -f "/usr/local/bin/matugen"
+        fi
     fi
     if [[ -f "$HOME/.cargo/bin/matugen" ]]; then
-        info "Removing legacy Cargo matugen binary..."
-        if command -v cargo >/dev/null 2>&1; then
-            cargo uninstall matugen >/dev/null 2>&1 || true
+        local cargo_ver
+        cargo_ver="$("$HOME/.cargo/bin/matugen" --version 2>/dev/null | grep -oE '[0-9]+(\.[0-9]+)+' | head -n1 || true)"
+        if [[ -z "$cargo_ver" || "$(printf '%s\n%s\n' "4.2" "$cargo_ver" | sort -V | head -n1)" != "4.2" ]] || package_present matugen; then
+            info "Removing legacy Cargo matugen binary..."
+            if command -v cargo >/dev/null 2>&1; then
+                cargo uninstall matugen >/dev/null 2>&1 || true
+            fi
+            rm -f "$HOME/.cargo/bin/matugen"
         fi
-        rm -f "$HOME/.cargo/bin/matugen"
     fi
     return 0
 }
@@ -51,10 +65,17 @@ install_matugen_github() {
         tmpdir="$(mktemp -d)"
         if curl -fsSL "$dl_url" | tar -xz -C "$tmpdir" 2>/dev/null; then
             if [[ -f "$tmpdir/matugen" ]]; then
-                caelestia_sudo install -m 755 "$tmpdir/matugen" /usr/local/bin/matugen
-                rm -rf "$tmpdir"
-                ok "matugen installed successfully to /usr/local/bin from GitHub release."
-                return 0
+                if caelestia_sudo install -m 755 "$tmpdir/matugen" /usr/local/bin/matugen 2>/dev/null; then
+                    rm -rf "$tmpdir"
+                    ok "matugen installed successfully to /usr/local/bin from GitHub release."
+                    return 0
+                else
+                    mkdir -p "$HOME/.local/bin"
+                    install -m 755 "$tmpdir/matugen" "$HOME/.local/bin/matugen"
+                    rm -rf "$tmpdir"
+                    ok "matugen installed successfully to $HOME/.local/bin from GitHub release."
+                    return 0
+                fi
             fi
         fi
         rm -rf "$tmpdir"
@@ -137,10 +158,10 @@ install_matugen_debian() {
 }
 
 ensure_matugen() {
+    cleanup_legacy_cargo_matugen
     case "${BASE_DISTRO:-unknown}" in
         fedora)
-            if package_present matugen; then
-                cleanup_legacy_cargo_matugen
+            if package_present matugen && matugen_present; then
                 ok "matugen is installed."
                 return 0
             fi
@@ -159,7 +180,11 @@ ensure_matugen() {
                 ok "matugen is installed via pacman."
                 return 0
             fi
-            warn "Arch package managers failed; attempting Cargo fallback for Arch..."
+            warn "Arch package managers failed; attempting GitHub release fallback for Arch..."
+            if install_matugen_github; then
+                return 0
+            fi
+            warn "GitHub release download failed or unavailable; attempting Cargo fallback for Arch..."
             install_matugen_cargo
             ;;
         debian)

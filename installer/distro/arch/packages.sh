@@ -47,6 +47,8 @@ CORE_PACKAGES=(
     kcoreaddons kconfig networkmanager-qt kpipewire kwin
 
     ffmpeg libqalculate libsecret ksshaskpass libx11 vulkan-headers
+
+    protobuf openssl avahi
 )
 
 SHELL_PACKAGES=(
@@ -63,7 +65,7 @@ THEME_PACKAGES=(
 UTILITY_PACKAGES=(
     fuzzel swappy ddcutil networkmanager imagemagick tesseract tesseract-data-eng
     satty spectacle gpu-screen-recorder slurp grim brightnessctl power-profiles-daemon
-    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs songrec translate-shell
+    xdg-utils sassc bat ripgrep lazygit xdg-user-dirs
 )
 
 PACKAGES=()

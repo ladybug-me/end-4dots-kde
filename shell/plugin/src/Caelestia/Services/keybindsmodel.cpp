@@ -147,10 +147,30 @@ void KeybindsModel::setKey(const QString& name, const QString& newKey) {
 
 void KeybindsModel::resetKey(const QString& name) {
     QJsonObject defaults = caelestia::config::defaultKeybinds();
+    QString defaultKey;
     if (defaults.contains(name)) {
-        setKey(name, defaults.value(name).toString());
-    } else {
-        setKey(name, QStringLiteral(""));
+        defaultKey = defaults.value(name).toString();
+    }
+    setKey(name, defaultKey);
+    if (defaultKey.isEmpty()) {
+        return;
+    }
+    // Like Replace: take the default back, clearing it from whoever holds it.
+    for (GlobalShortcut* sc : GlobalShortcut::allShortcuts()) {
+        if (sc->name() == name) {
+            continue;
+        }
+        QStringList parts = sc->key().split(QStringLiteral(";"));
+        bool changed = false;
+        for (int i = parts.size() - 1; i >= 0; --i) {
+            if (parts[i].trimmed() == defaultKey) {
+                parts.removeAt(i);
+                changed = true;
+            }
+        }
+        if (changed) {
+            setKey(sc->name(), parts.join(QStringLiteral("; ")));
+        }
     }
 }
 
@@ -170,10 +190,6 @@ QVariantList KeybindsModel::query(const QString& searchText) const {
     const auto lower = searchText.toLower();
 
     for (GlobalShortcut* sc : m_rows) {
-        if (sc->key().isEmpty()) {
-            continue;
-        }
-
         if (searchText.isEmpty()) {
             matches.append(sc);
         } else {

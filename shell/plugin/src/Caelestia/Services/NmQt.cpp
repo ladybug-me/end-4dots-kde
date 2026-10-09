@@ -1283,6 +1283,16 @@ void NmQt::refreshNetworks() {
     }
 }
 
+void NmQt::onEthernetDeviceStateChanged() {
+    QMetaObject::invokeMethod(
+        this,
+        [this] {
+            refreshEthernetDevices();
+            emit isConnectedChanged();
+        },
+        Qt::QueuedConnection);
+}
+
 void NmQt::refreshDevices() {
     refreshEthernetDevices();
     refreshNetworks();
@@ -1301,6 +1311,9 @@ void NmQt::refreshEthernetDevices() {
 
         if (!isPhysicalInterface(dev->interfaceName()))
             continue;
+
+        connect(dev.data(), &NetworkManager::Device::stateChanged, this, &NmQt::onEthernetDeviceStateChanged,
+            Qt::UniqueConnection);
 
         QVariantMap info;
         info[QStringLiteral("interface")] = dev->interfaceName();

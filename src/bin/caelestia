@@ -41,14 +41,13 @@ case "${CAELESTIA_INSTALL_KIND:-$( [[ "$BIN_DIR" == /usr/bin ]] && printf 'packa
         ;;
     *)
         KIND=source
-        [[ -n "$CHECKOUT" ]] || CHECKOUT="$HOME/caelestia-kde"
-        DATA_DIR="${CAELESTIA_DATA_DIR:-$CHECKOUT}"
+        DATA_DIR="${CAELESTIA_DATA_DIR:-${CHECKOUT:-$HOME/caelestia-kde}}"
         QML_IMPORT_DEFAULT="$HOME/.local/lib/qt6/qml:$HOME/.config/quickshell/caelestia"
         LIB_DIR_DEFAULT="$HOME/.local/lib/caelestia"
         SHELL_CONFIG_DEFAULT="$HOME/.config/quickshell/caelestia/shell.qml"
         # The tree this copy runs from, else the checkout `install` would use.
         VERSION_FILE="$SELF_DIR/../../.github/version.env"
-        [[ -f "$VERSION_FILE" ]] || VERSION_FILE="$CHECKOUT/.github/version.env"
+        [[ -f "$VERSION_FILE" ]] || VERSION_FILE="${CHECKOUT:-$HOME/caelestia-kde}/.github/version.env"
         ;;
 esac
 SCRIPTS_DIR="$DATA_DIR/scripts"

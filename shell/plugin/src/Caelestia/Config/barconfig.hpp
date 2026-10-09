@@ -68,7 +68,6 @@ class BarWorkspaces : public settings::ObjectNode {
 class BarGreeter : public settings::ObjectNode {
     CONFIG_NODE(BarGreeter, settings::ObjectNode)
 
-    CONFIG_PROPERTY(bool, compact, false)
     CONFIG_PROPERTY(bool, inverted, false)
     CONFIG_PROPERTY(bool, showOnHover, true)
 
@@ -162,6 +161,17 @@ class BarGithub : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, background, false)
 };
 
+class BarMedia : public settings::ObjectNode {
+    CONFIG_NODE(BarMedia, settings::ObjectNode)
+
+    CONFIG_PROPERTY(bool, background, false)
+    CONFIG_PROPERTY(bool, showVisualiser, true)
+    CONFIG_PROPERTY(int, maxTitleLength, 25)
+    CONFIG_PROPERTY(bool, inverted, false)
+    CONFIG_PROPERTY(bool, showTitle, true)
+    CONFIG_PROPERTY(bool, autoHide, false)
+};
+
 class BarPerformance : public settings::ObjectNode {
     CONFIG_NODE(BarPerformance, settings::ObjectNode)
 
@@ -178,6 +188,7 @@ class BarPreviewScales : public settings::ObjectNode {
     CONFIG_PROPERTY(qreal, clock, 0.0)
     CONFIG_PROPERTY(qreal, dock, 0.0)
     CONFIG_PROPERTY(qreal, github, 0.0)
+    CONFIG_PROPERTY(qreal, media, 0.0)
     CONFIG_PROPERTY(qreal, kblayout, 0.0)
     CONFIG_PROPERTY(qreal, lockStatus, 0.0)
     CONFIG_PROPERTY(qreal, network, 0.0)
@@ -197,6 +208,7 @@ class BarPreviewFontScales : public settings::ObjectNode {
     CONFIG_PROPERTY(qreal, clock, 0.0)
     CONFIG_PROPERTY(qreal, dock, 0.0)
     CONFIG_PROPERTY(qreal, github, 0.0)
+    CONFIG_PROPERTY(qreal, media, 0.0)
     CONFIG_PROPERTY(qreal, kblayout, 0.0)
     CONFIG_PROPERTY(qreal, lockStatus, 0.0)
     CONFIG_PROPERTY(qreal, network, 0.0)
@@ -250,6 +262,7 @@ class BarConfig : public settings::ObjectNode {
     CONFIG_SUBOBJECT(BarClock, clock)
     CONFIG_SUBOBJECT(BarDock, dock)
     CONFIG_SUBOBJECT(BarGithub, github)
+    CONFIG_SUBOBJECT(BarMedia, media)
     CONFIG_SUBOBJECT(BarPerformance, performance)
     CONFIG_PROPERTY(QVariantList, entries,
         DEFAULT_ARG({
@@ -260,6 +273,7 @@ class BarConfig : public settings::ObjectNode {
             vmap({ { u"id"_s, u"tray"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"updateIndicator"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"github"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
+            vmap({ { u"id"_s, u"media"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"clock"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"statusIcons"_s }, { u"enabled"_s, true }, { u"zone"_s, u"right"_s } }),
             vmap({ { u"id"_s, u"kbLayoutIndicator"_s }, { u"enabled"_s, false }, { u"zone"_s, u"right"_s } }),

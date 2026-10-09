@@ -28,6 +28,43 @@ patch_breeze_login_wallpaper() {
     fi
 }
 
+write_cliphist_service() {
+    mkdir -p "$HOME/.local/bin" "$HOME/.config/systemd/user"
+
+    cat > "$HOME/.local/bin/caelestia-cliphist" << 'RUNNER'
+#!/bin/bash
+set -uo pipefail
+
+private_mime_types='application/x-krita-|image/x-inkscape-svg'
+
+for helper in wl-paste cliphist wl-clip-persist; do
+    command -v "$helper" >/dev/null 2>&1 || { echo "missing: $helper" >&2; exit 1; }
+done
+
+wl-paste --type text --watch cliphist store &
+wl-paste --type image --watch cliphist store &
+wl-clip-persist --clipboard regular \
+    --all-mime-type-regex "(?i)^(?!(?:${private_mime_types})).+" &
+wait -n
+RUNNER
+    chmod +x "$HOME/.local/bin/caelestia-cliphist"
+
+    cat > "$HOME/.config/systemd/user/cliphist.service" << 'UNIT'
+[Unit]
+Description=Clipboard history service
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/caelestia-cliphist
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target
+UNIT
+}
+
 echo
 echo ""
 info "Applying KDE settings"
@@ -80,21 +117,7 @@ else
 fi
 
 info "Setting up cliphist background service..."
-mkdir -p "$HOME/.config/systemd/user"
-cat > "$HOME/.config/systemd/user/cliphist.service" << 'EOF'
-[Unit]
-Description=Clipboard history service
-After=graphical-session.target
-
-[Service]
-Type=simple
-ExecStart=/bin/bash -c 'command -v wl-paste >/dev/null 2>&1 || { echo "missing: wl-paste" >&2; exit 1; }; command -v cliphist >/dev/null 2>&1 || { echo "missing: cliphist" >&2; exit 1; }; command -v wl-clip-persist >/dev/null 2>&1 || { echo "missing: wl-clip-persist" >&2; exit 1; }; wl-paste --type text --watch cliphist store & wl-paste --type image --watch cliphist store & wl-clip-persist --clipboard regular & wait -n'
-Restart=always
-RestartSec=3
-
-[Install]
-WantedBy=default.target
-EOF
+write_cliphist_service
 systemctl --user daemon-reload
 systemctl --user enable --now cliphist.service 2>/dev/null || true
 ok "Cliphist background service enabled."

@@ -1,13 +1,19 @@
 #!/usr/bin/env bash
 
-# Test Shortcuts.qml model and table integration with C++ keybinds defaults
-set -euo pipefail
+set -uo pipefail
 
 source "$(dirname "${BASH_SOURCE[0]}")/helpers.sh"
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 QML="$REPO_ROOT/shell/modules/Shortcuts.qml"
 DEFAULTS="$REPO_ROOT/shell/plugin/src/Caelestia/Config/keybindsdefaults.hpp"
+
+# Repeater cannot be used here: Scope is not an Item, so the delegate objects
+# (Loaders registering Caelestia.GlobalShortcut) must be parented by an
+# Instantiator to stay alive. The two ids whose casing looks like a typo stay
+# exactly as the krohnkite kwinscript registers them — krohnkite 0.9.9.2's
+# contents/ui/shortcuts.qml registers "KrohnkitegrowWidth" and "KrohnkitetoggleDock"
+# verbatim, so re-casing them to the repo catalogue's style would silently no-op.
 
 model_entries() {
     grep '^[[:space:]]*{ name: "krohnkite' "$QML"

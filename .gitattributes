@@ -1,0 +1,3 @@
+# Handle line endings automatically for all files detected as text and force LF
+* text=auto eol=lf
+

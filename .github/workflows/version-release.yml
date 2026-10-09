@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Create GitHub App Token
         id: app-token
-        uses: actions/create-github-app-token@v3
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           client-id: ${{ vars.APP_CLIENT_ID }}
           private-key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -27,7 +27,7 @@ jobs:
           permission-pull-requests: write
 
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           token: ${{ steps.app-token.outputs.token }}
           persist-credentials: true
@@ -167,11 +167,15 @@ jobs:
     needs: version-release
     runs-on: ubuntu-latest
     container: archlinux:base-devel
+    env:
+      http_proxy: http://127.0.0.1:9
+      https_proxy: http://127.0.0.1:9
+      all_proxy: http://127.0.0.1:9
     permissions:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install Shell Build Dependencies
         run: |
@@ -180,13 +184,21 @@ jobs:
             qt6-base qt6-declarative qt6-shadertools qt6-wayland qt6-tools \
             kwindowsystem kguiaddons kglobalaccel kconfig networkmanager-qt pulseaudio-qt \
             libqalculate pipewire libpipewire aubio lm_sensors extra-cmake-modules \
-            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse
+            fftw ncurses alsa-lib iniparser libglvnd sdl2 portaudio sndio libpulse \
+            protobuf openssl avahi
 
       - name: Install Prebuilt CAVA SDK (Arch)
         run: |
           set -euo pipefail
           source scripts/lib/toolchain.sh
           install_cava_sdk arch
+
+      - name: Prepare Pinned Build Dependencies
+        run: |
+          set -euo pipefail
+          rm -rf shell/build
+          rm -rf "${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde"
+          bash scripts/fetch-dependencies.sh
 
       - name: Load Release Tag
         run: |
@@ -198,10 +210,14 @@ jobs:
         run: |
           set -euo pipefail
           cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
-            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCAELESTIA_CACHE_DEPS=ON \
+            -DCAELESTIA_OFFLINE=ON \
+            -DCMAKE_INSTALL_PREFIX=/ \
+            -DINSTALL_BINDIR=usr/bin \
+            -DINSTALL_DATADIR=usr/lib/caelestia \
             -DINSTALL_QSCONFDIR=etc/xdg/quickshell/caelestia \
-            -DINSTALL_LIBDIR=lib/caelestia \
-            -DINSTALL_QMLDIR=lib/qt6/qml
+            -DINSTALL_LIBDIR=usr/lib/caelestia \
+            -DINSTALL_QMLDIR=usr/lib/qt6/qml
 
       - name: Build Shell
         run: |
@@ -213,12 +229,14 @@ jobs:
           set -euo pipefail
           QT_ABI="$(pkg-config --modversion Qt6Core | grep -oE '^[0-9]+\.[0-9]+')"
           DESTDIR="$PWD/stage" cmake --install shell/build
-          mkdir -p dist/root/lib/qt6/qml dist/root/lib/caelestia dist/root/quickshell
+          mkdir -p dist/root/bin dist/root/lib/qt6/qml dist/root/lib/caelestia dist/root/quickshell
+          cp -a stage/usr/bin/. dist/root/bin/
           cp -a stage/usr/lib/qt6/qml/Caelestia stage/usr/lib/qt6/qml/M3Shapes dist/root/lib/qt6/qml/
-          cp -a stage/usr/lib/caelestia/version dist/root/lib/caelestia/
+          cp -a stage/usr/lib/caelestia/. dist/root/lib/caelestia/
           cp -a stage/usr/etc/xdg/quickshell/caelestia dist/root/quickshell/
           ARTIFACT="dist/caelestia-kde-x86_64-qt${QT_ABI}.tar.gz"
-          tar -C dist/root -czf "$ARTIFACT" lib quickshell
+          tar -C dist/root -czf "$ARTIFACT" bin lib quickshell
+          python3 .github/scripts/check_release_archive.py "$ARTIFACT" dist/root
           echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
           CHECKSUM="${ARTIFACT}.sha256"
           sha256sum "$ARTIFACT" | sed "s|$(dirname "$ARTIFACT")/||" > "$CHECKSUM"
@@ -240,9 +258,49 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          submodules: recursive
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Materialize the Submodules the Tarball Inlines
+        run: |
+          set -euo pipefail
+          if [ ! -f .gitmodules ]; then
+            echo "::error::no .gitmodules; the submodules the tarball inlines cannot be resolved"
+            exit 1
+          fi
+
+          mapfile -t submodules < <(
+            git config -f .gitmodules --get-regexp '^submodule\..*\.path$' | cut -d' ' -f2-
+          )
+          if [ "${#submodules[@]}" -eq 0 ]; then
+            echo "::error::.gitmodules declares no submodules; the tarball would carry none"
+            exit 1
+          fi
+
+          for path in "${submodules[@]}"; do
+            echo "::group::submodule $path"
+            # A .gitmodules entry with no gitlink in this tree has nothing to inline:
+            # the path is either a real directory the tarball already carries or it is
+            # absent, which the PKGBUILD's prepare() reports by name.
+            if ! git ls-files --stage -- "$path" | grep -q '^160000'; then
+              echo "::warning::$path is declared in .gitmodules but is not a submodule in this tree"
+              echo "::endgroup::"
+              continue
+            fi
+            # scripts/lib/submodules.sh is not reused here on purpose: the installer
+            # helper it exposes ends in a plain clone of the submodule's default
+            # branch, and a release tarball has to carry the commits the tag pins.
+            if ! git submodule update --init --recursive --depth 1 --force "$path"; then
+              # A stale gitlink inside a submodule is not this repository's to fix, and
+              # the tarball only needs the submodule's own contents at its pinned commit.
+              echo "::warning::$path does not check out recursively, retrying without it"
+              git submodule update --init --depth 1 --force "$path"
+            fi
+            if [ -z "$(ls -A "$path")" ]; then
+              echo "::error::submodule $path is empty; the PKGBUILD refuses a tarball without it"
+              exit 1
+            fi
+            echo "::endgroup::"
+          done
 
       - name: Load Release Tag
         run: |
@@ -256,8 +314,9 @@ jobs:
           set -euo pipefail
           ROOT="caelestia-kde-$PKGVER"
           mkdir -p "dist/$ROOT"
-          rsync -a --exclude '.git' --exclude '.gitmodules' \
-            --exclude 'shell/assets/fonts' ./ "dist/$ROOT/"
+          # /dist is anchored: the staging directory lives inside the tree being
+          # staged, and without this rsync copies it into itself.
+          rsync -a --exclude '/dist' --exclude '.git' --exclude '.gitmodules' ./ "dist/$ROOT/"
           git rev-parse HEAD > "dist/$ROOT/REVISION"
 
       - name: Build the Tarball
@@ -267,6 +326,13 @@ jobs:
           tar -C dist -czf "$ARTIFACT" "caelestia-kde-$PKGVER"
           sha256sum "$ARTIFACT" | tee "$ARTIFACT.sha256"
           du -h "$ARTIFACT"
+          {
+            echo "### $ARTIFACT"
+            echo "```"
+            cat "$ARTIFACT.sha256"
+            echo "```"
+            echo "First entry of the PKGBUILD's \`sha256sums\` array."
+          } >> "$GITHUB_STEP_SUMMARY"
           echo "ARTIFACT=$ARTIFACT" >> "$GITHUB_ENV"
 
       - name: Attach to Release
@@ -293,7 +359,7 @@ jobs:
       contents: write
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install Build Dependencies
         run: |
@@ -319,5 +385,7 @@ jobs:
         run: |
           set -euo pipefail
           TUI_VERSION="$(tr -d '[:space:]' < installer/data/tui.version)"
-          cp installer/build/caelestia-install "caelestia-install-${{ matrix.arch }}-v${TUI_VERSION}"
-          gh release upload "$TAG" "caelestia-install-${{ matrix.arch }}-v${TUI_VERSION}" --repo "$GITHUB_REPOSITORY" --clobber
+          BINARY="caelestia-install-${{ matrix.arch }}-v${TUI_VERSION}"
+          cp installer/build/caelestia-install "$BINARY"
+          sha256sum "$BINARY" > "$BINARY.sha256"
+          gh release upload "$TAG" "$BINARY" "$BINARY.sha256" --repo "$GITHUB_REPOSITORY" --clobber

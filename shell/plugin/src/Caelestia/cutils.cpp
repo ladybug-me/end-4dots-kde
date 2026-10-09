@@ -11,6 +11,8 @@
 #include <qloggingcategory.h>
 #include <qqmlengine.h>
 #include <qregularexpression.h>
+#include <qsavefile.h>
+#include <qtextstream.h>
 
 #include <KModifierKeyInfo>
 #include <KWindowEffects>
@@ -199,6 +201,63 @@ QString CUtils::sha256(const QString& path) {
     file.close();
 
     return QString::fromLatin1(hash.result().toHex());
+}
+
+bool CUtils::setDesktopEntryKey(const QString& path, const QString& key, const QString& value) {
+    if (path.isEmpty() || key.isEmpty()) {
+        return false;
+    }
+
+    QFile file(path);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream in(&file);
+    QStringList lines;
+    int headerIndex = -1;
+    QString currentGroup;
+    bool found = false;
+
+    while (!in.atEnd()) {
+        QString line = in.readLine();
+        const QString trimmed = line.trimmed();
+        if (trimmed.startsWith(QLatin1Char('['))) {
+            currentGroup = trimmed;
+            if (currentGroup == QLatin1String("[Desktop Entry]") && headerIndex == -1) {
+                headerIndex = lines.size();
+            }
+        } else if (currentGroup == QLatin1String("[Desktop Entry]")) {
+            const int eq = trimmed.indexOf(QLatin1Char('='));
+            if (eq > 0 && trimmed.left(eq).trimmed() == key) {
+                line = key + QLatin1Char('=') + value;
+                found = true;
+            }
+        }
+        lines.append(line);
+    }
+    file.close();
+
+    if (!found) {
+        if (headerIndex == -1) {
+            lines.append(QStringLiteral("[Desktop Entry]"));
+            lines.append(key + QLatin1Char('=') + value);
+        } else {
+            lines.insert(headerIndex + 1, key + QLatin1Char('=') + value);
+        }
+    }
+
+    QSaveFile outFile(path);
+    if (!outFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    QTextStream out(&outFile);
+    for (int i = 0; i < lines.size(); ++i) {
+        out << lines.at(i) << "\n";
+    }
+
+    return outFile.commit();
 }
 
 void CUtils::enableBlurBehind(QQuickWindow* window, bool enable) {

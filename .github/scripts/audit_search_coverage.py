@@ -55,7 +55,7 @@ CONTEXT_DEPENDENT = {
     (3, 3): "network details, needs the chosen network",
     (3, 4): "add VPN, opened as an action from the network list",
     (4, 1): "device info, needs the chosen device",
-    (11, 2): "app info, needs the chosen app",
+    (10, 2): "app info, needs the chosen app",
 }
 
 REPORT_LIMIT = 25
