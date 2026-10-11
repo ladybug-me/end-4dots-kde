@@ -34,6 +34,10 @@ test_the_transfer_port_has_one_definition() {
 }
 
 test_the_setup_helper_is_told_the_port_the_service_owns() {
+    if [[ ! -f "$QS_SETUP_QML" ]]; then
+        skip_test "QuickShareSetup.qml not present in this flavor"
+        return 0
+    fi
     assert_contains "$(cat "$QS_SETUP_QML")" 'String(QuickShareService.listenPort)' \
         "the helper takes the port as an argument rather than keeping a copy of it"
 }

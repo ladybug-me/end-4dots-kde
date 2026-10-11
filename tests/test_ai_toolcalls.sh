@@ -9,6 +9,10 @@ AI="$REPO_ROOT/shell/modules/sidebar/AiAssistant.qml"
 AI_SRC=""
 [[ -f "$AI" ]] && AI_SRC="$(cat "$AI")"
 SVC="$REPO_ROOT/shell/services/AiToolCalls.qml"
+if [[ ! -f "$SVC" ]]; then
+    skip_test "AiToolCalls.qml not present in this flavor"
+    exit 0
+fi
 SVC_SRC="$(cat "$SVC")"
 
 # The protocol tags are assembled from pieces everywhere in this test, never

@@ -78,17 +78,11 @@ PROTECTED_PATTERNS = (
     "shell/scripts/videos",
     "shell/scripts/images/*",
     "shell/scripts/images",
+    "shell/services/*",
+    "shell/services",
     "upstreams/*",
     "upstreams",
 )
-
-# New/shared services from upstream that are allowed to sync
-SHARED_ALLOWED_SERVICES = {
-    "shell/services/AiToolCalls.qml",
-    "shell/services/DesktopLayout.qml",
-    "shell/services/QuickShare.qml",
-    "shell/services/QuickShareSetup.qml",
-}
 
 # Paths that are based on upstream but contain intentional adaptations
 ADAPTED_FILES = {
@@ -151,10 +145,6 @@ def git_blob_hash(data: bytes) -> str:
 
 def is_protected(path: str) -> bool:
     if path.startswith("shell/services/"):
-        if path.startswith("shell/services/startuptasks/"):
-            return False
-        if path in SHARED_ALLOWED_SERVICES:
-            return False
         return True
 
     for pat in PROTECTED_PATTERNS:
