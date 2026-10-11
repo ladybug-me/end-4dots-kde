@@ -133,7 +133,7 @@ Scope {
         description: qsTr("Toggle screenshot overlay")
 
         onPressed: {
-            GlobalStates.regionSelectorOpen = true;
+            GlobalStates.requestScreenshot();
         }
     }
 
@@ -142,7 +142,7 @@ Scope {
         description: qsTr("Toggle Google Lens search")
 
         onPressed: {
-            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "search"]);
+            GlobalStates.requestSearch();
         }
     }
 
@@ -151,7 +151,7 @@ Scope {
         description: qsTr("Recognize text on screen")
 
         onPressed: {
-            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "ocr"]);
+            GlobalStates.requestOcr();
         }
     }
 
@@ -160,7 +160,7 @@ Scope {
         description: qsTr("Toggle screen recording")
 
         onPressed: {
-            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "regionSelector", "record"]);
+            GlobalStates.requestRecord();
         }
     }
 
@@ -178,7 +178,7 @@ Scope {
         description: qsTr("Open keybinds list")
 
         onPressed: {
-            Quickshell.execDetached(["qs-msg", "-c", "caelestia", "cheatsheet", "toggle"]);
+            GlobalStates.requestCheatsheetToggle();
         }
     }
 

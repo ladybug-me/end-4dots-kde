@@ -244,8 +244,6 @@ PanelWindow {
 
     property bool preparationDone: false
 
-    property bool regionConfirmPending: false
-
     property string frozenImageSource: ""
 
     onPreparationDoneChanged: {
@@ -285,7 +283,7 @@ PanelWindow {
             root.action = root.mouseButton === Qt.RightButton ? ScreenshotAction.SnipAction.Edit : ScreenshotAction.SnipAction.Copy;
         }
 
-        const defaultDir = `${Directories.pictures}/Screenshots`;
+        const defaultDir = Directories.screenshotPictures;
         const screenshotDir = defaultDir;
         root.screenshotConsumed = true;
         const command = ScreenshotAction.getCommand(
@@ -309,7 +307,7 @@ PanelWindow {
     function snipWindow(windowAddress) {
         root.screenshotConsumed = true;
 
-        const saveDir = `${Directories.pictures}/Screenshots`;
+        const saveDir = Directories.screenshotPictures;
         let spectacleFlags = "-b -a -n";
         if (root.mouseButton === Qt.RightButton || root.action === ScreenshotAction.SnipAction.Edit) {
             spectacleFlags = "-b -a -n -e";
@@ -356,35 +354,20 @@ PanelWindow {
         id: mouseArea
 
         anchors.fill: parent
+        focus: true
         hoverEnabled: true
         cursorShape: Qt.CrossCursor
         acceptedButtons: Qt.LeftButton | Qt.RightButton
 
-        GlobalShortcut {
-            name: "escape"
-            description: "Dismiss region selector"
-            onActivated: {
-                if (root.regionConfirmPending) {
-                    root.regionConfirmPending = false;
-                    root.regionWidth = 0;
-                    root.regionHeight = 0;
-                } else {
-                    root.dismiss();
-                }
-            }
-        }
-
-        GlobalShortcut {
-            name: "enter"
-            description: "Confirm region selection"
-            onActivated: {
-                if (root.regionConfirmPending) {
-                    root.snip();
-                }
+        Keys.onPressed: (event) => {
+            if (event.key === Qt.Key_Escape) {
+                root.dismiss();
+                event.accepted = true;
             }
         }
 
         onPressed: (mouse) => {
+            mouseArea.forceActiveFocus();
             root.mouseButton = mouse.button;
             if (root.targetedRegionValid() && root.enableWindowRegions) {
                 root.setRegionToTargeted();
@@ -428,7 +411,7 @@ PanelWindow {
             }
 
             if (root.regionWidth > 10 && root.regionHeight > 10) {
-                root.regionConfirmPending = true;
+                root.snip();
             } else {
                 cursorGuide.active = true;
             }
@@ -565,30 +548,11 @@ PanelWindow {
 
             ToolbarPairedFab {
                 anchors.verticalCenter: parent.verticalCenter
-                visible: root.regionConfirmPending
-                iconText: "check"
-                onClicked: root.snip();
-
-                StyledToolTip {
-                    text: Translation.tr("Snip selected region (Enter)")
-                }
-            }
-
-            ToolbarPairedFab {
-                anchors.verticalCenter: parent.verticalCenter
                 iconText: "close"
-                onClicked: {
-                    if (root.regionConfirmPending) {
-                        root.regionConfirmPending = false;
-                        root.regionWidth = 0;
-                        root.regionHeight = 0;
-                    } else {
-                        root.dismiss();
-                    }
-                }
+                onClicked: root.dismiss()
 
                 StyledToolTip {
-                    text: root.regionConfirmPending ? Translation.tr("Clear selection") : Translation.tr("Close")
+                    text: Translation.tr("Close")
                 }
             }
         }

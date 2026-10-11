@@ -57,6 +57,30 @@ Scope {
         regionSelectorLoader.item.imageAction = WRegionSelectionPanel.ImageAction.Search;
     }
 
+    Connections {
+        function onRequestScreenshot() {
+            root.screenshot();
+        }
+
+        function onRequestSearch() {
+            root.search();
+        }
+
+        function onRequestOcr() {
+            root.ocr();
+        }
+
+        function onRequestRecord() {
+            root.record();
+        }
+
+        function onRequestRecordWithSound() {
+            root.recordWithSound();
+        }
+
+        target: GlobalStates
+    }
+
     IpcHandler {
         target: "region"
 

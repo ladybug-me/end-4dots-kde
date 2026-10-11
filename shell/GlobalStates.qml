@@ -1,13 +1,15 @@
-import qs.modules.common
-import qs.services
-import QtQuick
-import Quickshell
-import Quickshell.Io
 pragma Singleton
 pragma ComponentBehavior: Bound
 
+import QtQuick
+import Quickshell
+import Quickshell.Io
+import qs.services
+import qs.modules.common
+
 Singleton {
     id: root
+
     property bool barOpen: true
     property bool crosshairOpen: false
     property bool sidebarLeftOpen: false
@@ -29,6 +31,13 @@ Singleton {
     property bool superReleaseMightTrigger: true
     property bool wallpaperSelectorOpen: false
     property bool workspaceShowNumbers: false
+
+    signal requestScreenshot()
+    signal requestSearch()
+    signal requestOcr()
+    signal requestRecord()
+    signal requestRecordWithSound()
+    signal requestCheatsheetToggle()
 
     onSidebarRightOpenChanged: {
         if (GlobalStates.sidebarRightOpen) {

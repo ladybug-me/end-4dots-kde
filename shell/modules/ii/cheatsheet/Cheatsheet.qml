@@ -1,14 +1,15 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.synchronizer
 import Qt5Compat.GraphicalEffects
-import Quickshell.Io
+import Qt.labs.synchronizer
 import Quickshell
+import Quickshell.Io
 import Quickshell.Wayland
+import qs
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
 
 Scope { // Scope
     id: root
@@ -175,6 +176,14 @@ Scope { // Scope
                 }
             }
         }
+    }
+
+    Connections {
+        function onRequestCheatsheetToggle(): void {
+            cheatsheetLoader.active = !cheatsheetLoader.active;
+        }
+
+        target: GlobalStates
     }
 
     IpcHandler {

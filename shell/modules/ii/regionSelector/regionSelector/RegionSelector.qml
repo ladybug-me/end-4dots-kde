@@ -14,20 +14,101 @@ Scope {
     id: root
 
     property bool screenshotActive: false
-
-    onScreenshotActiveChanged: {
-        GlobalStates.regionSelectorOpen = root.screenshotActive;
-    }
+    property var action: ScreenshotAction.SnipAction.Copy
+    property var selectionMode: RegionSelection.SelectionMode.RectCorners
+    property bool showWindowOutlines: false
 
     function dismiss(): void {
         root.screenshotActive = false;
     }
 
-    property var action: ScreenshotAction.SnipAction.Copy
+    function screenshot(): void {
+        if (root.screenshotActive && root.action === ScreenshotAction.SnipAction.Copy) {
+            root.dismiss();
+            return;
+        }
+        root.action = ScreenshotAction.SnipAction.Copy;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.screenshotActive = true;
+    }
 
-    property var selectionMode: RegionSelection.SelectionMode.RectCorners
+    function search(): void {
+        if (root.screenshotActive && root.action === ScreenshotAction.SnipAction.Search) {
+            root.dismiss();
+            return;
+        }
+        root.action = ScreenshotAction.SnipAction.Search;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.screenshotActive = true;
+    }
 
-    property bool showWindowOutlines: false
+    function ocr(): void {
+        if (root.screenshotActive && root.action === ScreenshotAction.SnipAction.CharRecognition) {
+            root.dismiss();
+            return;
+        }
+        root.action = ScreenshotAction.SnipAction.CharRecognition;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.screenshotActive = true;
+    }
+
+    function record(): void {
+        if (root.screenshotActive && root.action === ScreenshotAction.SnipAction.Record) {
+            root.dismiss();
+            return;
+        }
+        root.action = ScreenshotAction.SnipAction.Record;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.screenshotActive = true;
+    }
+
+    function recordWithSound(): void {
+        if (root.screenshotActive && root.action === ScreenshotAction.SnipAction.RecordWithSound) {
+            root.dismiss();
+            return;
+        }
+        root.action = ScreenshotAction.SnipAction.RecordWithSound;
+        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
+        root.screenshotActive = true;
+    }
+
+    onScreenshotActiveChanged: {
+        if (GlobalStates.regionSelectorOpen !== root.screenshotActive) {
+            GlobalStates.regionSelectorOpen = root.screenshotActive;
+        }
+    }
+
+    Connections {
+        function onRegionSelectorOpenChanged(): void {
+            if (GlobalStates.regionSelectorOpen && !root.screenshotActive) {
+                root.screenshot();
+            } else if (!GlobalStates.regionSelectorOpen && root.screenshotActive) {
+                root.dismiss();
+            }
+        }
+
+        function onRequestScreenshot(): void {
+            root.screenshot();
+        }
+
+        function onRequestSearch(): void {
+            root.search();
+        }
+
+        function onRequestOcr(): void {
+            root.ocr();
+        }
+
+        function onRequestRecord(): void {
+            root.record();
+        }
+
+        function onRequestRecordWithSound(): void {
+            root.recordWithSound();
+        }
+
+        target: GlobalStates
+    }
 
     Settings {
         property alias showWindowOutlines: root.showWindowOutlines
@@ -56,65 +137,31 @@ Scope {
         }
     }
 
-    function screenshot(): void {
-        root.action = ScreenshotAction.SnipAction.Copy;
-        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
-        root.screenshotActive = true;
-    }
-
-    function search(): void {
-        root.action = ScreenshotAction.SnipAction.Search;
-        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
-        root.screenshotActive = true;
-    }
-
-    function ocr(): void {
-        root.action = ScreenshotAction.SnipAction.CharRecognition;
-        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
-        root.screenshotActive = true;
-    }
-
-    function record(): void {
-        root.action = ScreenshotAction.SnipAction.Record;
-        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
-        if (root.screenshotActive) root.screenshotActive = false;
-        root.screenshotActive = true;
-    }
-
-    function recordWithSound(): void {
-        root.action = ScreenshotAction.SnipAction.RecordWithSound;
-        root.selectionMode = RegionSelection.SelectionMode.RectCorners;
-        if (root.screenshotActive) root.screenshotActive = false;
-        root.screenshotActive = true;
-    }
-
     IpcHandler {
+        function screenshot(): void {
+            root.screenshot();
+        }
+
+        function search(): void {
+            root.search();
+        }
+
+        function ocr(): void {
+            root.ocr();
+        }
+
+        function record(): void {
+            root.record();
+        }
+
+        function recordWithSound(): void {
+            root.recordWithSound();
+        }
+
         target: "region"
-
-        function screenshot(): void {
-            root.screenshot();
-        }
-
-        function search(): void {
-            root.search();
-        }
-
-        function ocr(): void {
-            root.ocr();
-        }
-
-        function record(): void {
-            root.record();
-        }
-
-        function recordWithSound(): void {
-            root.recordWithSound();
-        }
     }
 
     IpcHandler {
-        target: "regionSelector"
-
         function screenshot(): void {
             root.screenshot();
         }
@@ -134,6 +181,8 @@ Scope {
         function recordWithSound(): void {
             root.recordWithSound();
         }
+
+        target: "regionSelector"
     }
 
     CustomShortcut {

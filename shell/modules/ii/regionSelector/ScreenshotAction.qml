@@ -7,6 +7,7 @@ import Qt.labs.synchronizer
 import Quickshell
 import Caelestia.Config
 import qs.modules.common
+import qs.modules.common.functions
 
 Singleton {
     id: root
@@ -47,8 +48,8 @@ Singleton {
 
         switch (action) {
             case ScreenshotAction.SnipAction.Copy: {
-                let defaultDir = `${Directories.pictures}/Screenshots`;
-                let saveDir = rawSaveDir === "" ? defaultDir : rawSaveDir;
+                let defaultDir = Directories.screenshotPictures;
+                let saveDir = rawSaveDir === "" ? defaultDir : FileUtils.trimFileProtocol(rawSaveDir);
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
@@ -62,8 +63,8 @@ Singleton {
             }
 
             case ScreenshotAction.SnipAction.Edit: {
-                let defaultDir = `${Directories.pictures}/Screenshots`;
-                let saveDir = rawSaveDir === "" ? defaultDir : rawSaveDir;
+                let defaultDir = Directories.screenshotPictures;
+                let saveDir = rawSaveDir === "" ? defaultDir : FileUtils.trimFileProtocol(rawSaveDir);
                 return `set -euo pipefail; ` +
                     `SAVE_DIR='${escapeShellStr(saveDir)}'; ` +
                     `SAVE_DIR="\${SAVE_DIR/#\\~/$HOME}"; ` +
