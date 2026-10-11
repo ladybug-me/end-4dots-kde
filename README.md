@@ -1,7 +1,17 @@
 > [!NOTE]
 > Work in progress 
 
-This is a KDE port of [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland).
+<div align="center">
+
+# dots-kde
+
+![alt text](assets/logo.svg)
+
+</div>
+
+---
+
+This is the KDE port of [end-4/dots-hyprland](https://github.com/end-4/dots-hyprland).
 
 The repo structure is based on [caelestia-kde](https://github.com/ladybug-me/caelestia-kde).
 
