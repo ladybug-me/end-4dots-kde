@@ -14,6 +14,7 @@ Loader {
 
     signal pressed()
     signal released()
+    signal activated()
 
     active: root.enabled
     sourceComponent: kdeShortcut
@@ -27,6 +28,7 @@ Loader {
             description: root.description
 
             onActivated: {
+                root.activated();
                 root.pressed();
                 root.released();
             }

@@ -1,9 +1,12 @@
-import qs.modules.common
-import qs.modules.common.widgets
+pragma ComponentBehavior: Bound
+
+import ".."
 import QtQuick
+import qs.modules.common.widgets
 
 Item {
     id: root
+
     required property real regionX
     required property real regionY
     required property real regionWidth
@@ -12,14 +15,14 @@ Item {
     required property real mouseY
     required property color color
     required property color overlayColor
-    property bool showAimLines: Config.options.regionSelector.rect.showAimLines
-
+    property bool showAimLines: true
     property bool breathingBorderOnly: false
 
     // Overlay to darken screen
     // Base dark overlay around region
     Rectangle {
         id: darkenOverlay
+
         z: 1
         visible: !root.breathingBorderOnly
         anchors {
@@ -35,8 +38,9 @@ Item {
         border.width: Math.max(root.width, root.height)
     }
 
-    DashedBorder {
+    Rectangle {
         id: selectionBorder
+
         z: 9
         anchors {
             left: parent.left
@@ -47,16 +51,17 @@ Item {
         width: Math.round(root.regionWidth) + borderWidth * 2
         height: Math.round(root.regionHeight) + borderWidth * 2
 
-        color: root.color
-        dashLength: 8
-        gapLength: 4
-        borderWidth: 1
+        border.color: root.color
+        color: "transparent"
 
-        // Breathing
+        property int borderWidth: 1
+
         opacity: 0.9
+
         SequentialAnimation on opacity {
             running: root.breathingBorderOnly
             loops: Animation.Infinite
+
             NumberAnimation { from: 0.9; to: 0.3; duration: 1200; easing.type: Easing.InOutQuad }
             NumberAnimation { from: 0.3; to: 0.9; duration: 1200; easing.type: Easing.InOutQuad }
         }
@@ -74,8 +79,7 @@ Item {
         text: `${Math.round(root.regionWidth)} x ${Math.round(root.regionHeight)}`
     }
 
-    // Coord lines
-    Rectangle { // Vertical
+    Rectangle {
         visible: root.showAimLines && !root.breathingBorderOnly
         opacity: 0.2
         z: 2
@@ -87,7 +91,8 @@ Item {
         width: 1
         color: root.color
     }
-    Rectangle { // Horizontal
+
+    Rectangle {
         visible: root.showAimLines && !root.breathingBorderOnly
         opacity: 0.2
         z: 2
