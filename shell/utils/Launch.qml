@@ -46,12 +46,19 @@ Singleton {
     }
 
     function launchEntry(entry: var): void {
+        if (!entry)
+            return;
+        if (!entry.command || entry.command.length === 0) {
+            if (typeof entry.execute === "function")
+                entry.execute();
+            return;
+        }
         if (entry.runInTerminal)
-            root.launchInTerminal(entry.command, entry.workingDirectory);
+            root.launchInTerminal(entry.command, entry.workingDirectory ?? "");
         else
             Quickshell.execDetached({
                 command: root.wrap(entry.command),
-                workingDirectory: entry.workingDirectory
+                workingDirectory: entry.workingDirectory ?? ""
             });
     }
 

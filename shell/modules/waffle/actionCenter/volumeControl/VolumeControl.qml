@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs
 import qs.services
+import qs.utils
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -63,7 +64,7 @@ Item {
 
                 onClicked: {
                     Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "sidebarLeft", "toggle"]);
-                    Quickshell.execDetached(["bash", "-c", Config.options.apps.volumeMixer]);
+                    Launch.exec(["bash", "-c", Config.options.apps.volumeMixer]);
                 }
 
                 contentItem: Item {

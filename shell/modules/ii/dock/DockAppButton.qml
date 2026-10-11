@@ -1,11 +1,12 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.functions
-import Qt5Compat.GraphicalEffects
 import QtQuick
 import QtQuick.Layouts
+import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Widgets
+import qs.services
+import qs.utils
+import qs.modules.common
+import qs.modules.common.functions
 
 DockButton {
     id: root
@@ -63,7 +64,7 @@ DockButton {
 
     onClicked: {
         if (appToplevel.toplevels.length === 0) {
-            root.desktopEntry?.execute();
+            Launch.launchEntry(root.desktopEntry);
             return;
         }
         lastFocused = (lastFocused + 1) % appToplevel.toplevels.length
@@ -71,7 +72,7 @@ DockButton {
     }
 
     middleClickAction: () => {
-        root.desktopEntry?.execute();
+        Launch.launchEntry(root.desktopEntry);
     }
 
     altAction: () => {

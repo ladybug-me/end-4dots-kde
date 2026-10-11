@@ -1,19 +1,20 @@
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
-import qs.modules.common.functions
-import qs.modules.ii.sidebarRight.quickToggles
-import qs
 import QtQuick
 import Quickshell
 import Quickshell.Io
+import qs
+import qs.services
+import qs.utils
+import qs.modules.common
+import qs.modules.common.functions
+import qs.modules.common.widgets
+import qs.modules.ii.sidebarRight.quickToggles
 
 QuickToggleButton {
     toggled: Network.wifiStatus !== "disabled"
     buttonIcon: Network.materialSymbol
     onClicked: Network.toggleWifi()
     altAction: () => {
-        Quickshell.execDetached(["bash", "-c", `${Network.ethernet ? Config.options.apps.networkEthernet : Config.options.apps.network}`])
+        Launch.exec(["bash", "-c", `${Network.ethernet ? Config.options.apps.networkEthernet : Config.options.apps.network}`])
         GlobalStates.sidebarRightOpen = false
     }
     StyledToolTip {

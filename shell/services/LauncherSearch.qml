@@ -7,6 +7,7 @@ import Quickshell
 import Quickshell.Io
 import Caelestia
 import qs.services
+import qs.utils
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.models
@@ -48,7 +49,7 @@ Singleton {
                 actions.push({
                     action: actionName,
                     execute: ((path) => (args) => {
-                        Quickshell.execDetached([path, ...(args ? args.split(" ") : [])]);
+                        Launch.exec([path, ...(args ? args.split(" ") : [])]);
                     })(FileUtils.trimFileProtocol(filePath.toString()))
                 });
             }
@@ -242,12 +243,7 @@ Singleton {
                 iconType: LauncherSearchResult.IconType.System,
                 verb: Translation.tr("Open"),
                 execute: () => {
-                    if (!entry.runInTerminal)
-                        entry.execute();
-                    else {
-                        // Probably needs more proper escaping, but this will do for now
-                        Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(entry.command.join(' '))}'`]);
-                    }
+                    Launch.launchEntry(entry);
                 },
                 comment: entry.comment,
                 runInTerminal: entry.runInTerminal,
@@ -259,11 +255,7 @@ Singleton {
                         iconName: action.icon,
                         iconType: LauncherSearchResult.IconType.System,
                         execute: () => {
-                            if (!action.runInTerminal)
-                                action.execute();
-                            else {
-                                Quickshell.execDetached(["bash", '-c', `${Config.options.apps.terminal} -e '${StringUtils.shellSingleQuoteEscape(action.command.join(' '))}'`]);
-                            }
+                            Launch.launchEntry(action);
                         }
                     });
                 })
@@ -282,7 +274,7 @@ Singleton {
                 if (cleanedCommand.startsWith(Config.options.search.prefix.shellCommand)) {
                     cleanedCommand = cleanedCommand.slice(Config.options.search.prefix.shellCommand.length);
                 }
-                Quickshell.execDetached(["bash", "-c", root.query.startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
+                Launch.exec(["bash", "-c", root.query.startsWith('sudo') ? `${Config.options.apps.terminal} fish -C '${cleanedCommand}'` : cleanedCommand]);
             }
         });
         const webSearchResultObject = resultComp.createObject(null, {

@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import Quickshell
 import qs
 import qs.services
+import qs.utils
 import qs.modules.common
 import qs.modules.waffle.looks
 
@@ -36,13 +37,13 @@ AppButton {
             {
                 text: Translation.tr("Terminal"),
                 action: () => {
-                    Quickshell.execDetached(["bash", "-c", Config.options.apps.terminal]);
+                    Launch.exec(["bash", "-c", Config.options.apps.terminal]);
                 }
             },
             {
                 text: Translation.tr("Task Manager"),
                 action: () => {
-                    Quickshell.execDetached(["bash", "-c", Config.options.apps.taskManager]);
+                    Launch.exec(["bash", "-c", Config.options.apps.taskManager]);
                 }
             },
             {

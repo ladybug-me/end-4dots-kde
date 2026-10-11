@@ -1,12 +1,13 @@
-import qs
-import qs.services
-import qs.modules.common
-import qs.modules.common.widgets
-import qs.modules.common.functions
 import QtQuick
 import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Io
+import qs
+import qs.services
+import qs.utils
+import qs.modules.common
+import qs.modules.common.functions
+import qs.modules.common.widgets
 
 QuickToggleButton {
     id: root
@@ -17,7 +18,7 @@ QuickToggleButton {
         Bluetooth.defaultAdapter.enabled = !Bluetooth.defaultAdapter?.enabled
     }
     altAction: () => {
-        Quickshell.execDetached(["bash", "-c", `${Config.options.apps.bluetooth}`])
+        Launch.exec(["bash", "-c", `${Config.options.apps.bluetooth}`])
         GlobalStates.sidebarRightOpen = false
     }
     StyledToolTip {

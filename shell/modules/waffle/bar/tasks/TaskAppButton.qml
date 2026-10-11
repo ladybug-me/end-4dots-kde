@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import qs.services
+import qs.utils
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.waffle.bar
@@ -48,13 +49,13 @@ AppButton {
         } else if (root.appEntry.toplevels.length === 1) {
             root.appEntry.toplevels[0].activate()
         } else {
-            root.desktopEntry.execute()
+            Launch.launchEntry(root.desktopEntry)
         }
     }
 
     middleClickAction: () => {
         if (root.desktopEntry) {
-            desktopEntry.execute()
+            Launch.launchEntry(root.desktopEntry)
         }
     }
 
@@ -105,7 +106,7 @@ AppButton {
                 iconName: action.icon,
                 text: action.name,
                 action: () => {
-                    action.execute()
+                    Launch.launchEntry(action)
                 }
             })).concat({ type: "separator" }) : []),
             {
@@ -114,7 +115,7 @@ AppButton {
                 monochromeIcon: false,
                 action: () => {
                     if (root.desktopEntry) {
-                        root.desktopEntry.execute()
+                        Launch.launchEntry(root.desktopEntry)
                     }
                 }
             },

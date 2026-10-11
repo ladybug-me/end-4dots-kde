@@ -7,6 +7,7 @@ import Quickshell.Bluetooth
 import qs
 import qs.services
 import qs.services.network
+import qs.utils
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.common.widgets
@@ -107,7 +108,7 @@ Item {
                 text: Translation.tr("More Bluetooth settings")
                 onClicked: {
                     Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "sidebarLeft", "toggle"]);
-                    Quickshell.execDetached(["bash", "-c", Config.options.apps.bluetooth]);
+                    Launch.exec(["bash", "-c", Config.options.apps.bluetooth]);
                 }
             }
             WBorderlessButton {

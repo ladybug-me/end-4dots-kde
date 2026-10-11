@@ -119,7 +119,7 @@ Singleton {
     }
 
     function openPublicWifiPortal(): void {
-        Quickshell.execDetached(["xdg-open", "https://nmcheck.gnome.org/"]);
+        Qt.openUrlExternally("https://nmcheck.gnome.org/");
     }
 
     function changePassword(network: WifiAccessPoint, password: string, username: var): void {

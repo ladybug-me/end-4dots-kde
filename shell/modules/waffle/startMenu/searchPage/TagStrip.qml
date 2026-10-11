@@ -1,10 +1,12 @@
 pragma ComponentBehavior: Bound
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import qs
 import qs.services
+import qs.utils
 import qs.modules.common
 import qs.modules.common.functions
 import qs.modules.waffle.looks
@@ -73,7 +75,7 @@ RowLayout {
                 icon.name: "people-settings"
                 text: Translation.tr("Manage accounts")
                 onTriggered: {
-                    Quickshell.execDetached(["bash", "-c", Config.options.apps.manageUser])
+                    Launch.exec(["bash", "-c", Config.options.apps.manageUser])
                     GlobalStates.searchOpen = false;
                 }
             }
