@@ -485,6 +485,7 @@ else
         err "Installation failed. Full log: $BUILD_LOG"
         exit 1
     fi
+    chmod -R +x "$HOME/.config/quickshell/caelestia/scripts" 2>/dev/null || true
 fi
 
 WS_STAMP="${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/workspace-tracker.installed"

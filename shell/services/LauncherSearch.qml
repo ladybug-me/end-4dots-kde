@@ -113,7 +113,7 @@ Singleton {
         {
             action: "wallpaper",
             execute: () => {
-                Kwin.dispatch(`hl.dsp.global("quickshell:wallpaperSelectorToggle")`)
+                GlobalStates.wallpaperSelectorOpen = !GlobalStates.wallpaperSelectorOpen;
             }
         },
         {

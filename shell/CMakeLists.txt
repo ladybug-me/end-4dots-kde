@@ -210,7 +210,7 @@ if("shell" IN_LIST ENABLE_MODULES)
     set(CAELESTIA_ROOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/..")
 
     function(caelestia_install_directory)
-        install(DIRECTORY ${ARGV} PATTERN ".git*" EXCLUDE)
+        install(DIRECTORY ${ARGV})
     endfunction()
 
     file(GLOB CAELESTIA_BIN_FILES CONFIGURE_DEPENDS "${CAELESTIA_ROOT_DIR}/src/bin/*")
@@ -234,6 +234,7 @@ if("shell" IN_LIST ENABLE_MODULES)
         DESTINATION "${INSTALL_DATADIR}/scripts")
     caelestia_install_directory("${CAELESTIA_ROOT_DIR}/scripts/lib"
         DESTINATION "${INSTALL_DATADIR}/scripts"
+        USE_SOURCE_PERMISSIONS
         PATTERN ".git*" EXCLUDE)
     caelestia_install_directory(
         "${CAELESTIA_ROOT_DIR}/src/dots"
@@ -251,6 +252,7 @@ if("shell" IN_LIST ENABLE_MODULES)
         if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${dir})
             caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/${dir}
                     DESTINATION ${INSTALL_QSCONFDIR}
+                    USE_SOURCE_PERMISSIONS
                     PATTERN ".git*" EXCLUDE)
         endif()
     endforeach()
@@ -259,8 +261,10 @@ if("shell" IN_LIST ENABLE_MODULES)
     # linter runs in CI and the perf profiler is not runtime code.
     caelestia_install_directory(${CMAKE_CURRENT_SOURCE_DIR}/scripts/
             DESTINATION ${INSTALL_QSCONFDIR}/scripts
+            USE_SOURCE_PERMISSIONS
             PATTERN "qml-lint-conventions.py" EXCLUDE
-            PATTERN "menu_perf_stats.py" EXCLUDE)
+            PATTERN "menu_perf_stats.py" EXCLUDE
+            PATTERN ".git*" EXCLUDE)
 
     if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/assets/wrap_term_launch.sh")
         install(PROGRAMS assets/wrap_term_launch.sh DESTINATION "${INSTALL_QSCONFDIR}/assets")

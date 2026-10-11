@@ -36,7 +36,8 @@ Singleton {
                         ? normalizedKey
                         : ("m3" + normalizedKey)
 
-                    Appearance.m3colors[propKey] = hex
+                    if (propKey in Appearance.m3colors)
+                        Appearance.m3colors[propKey] = hex
                 }
             }
 
@@ -94,7 +95,7 @@ Singleton {
             this.reload()
             delayedFileRead.start()
         }
-        onLoadedChanged: {
+        onLoaded: {
             const fileContent = themeFileView.text()
             root.applyColors(fileContent)
         }
