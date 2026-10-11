@@ -17,47 +17,73 @@ NestableObject {
     }
     readonly property bool currentWorkspaceNotFake: activeWindow?.activated ?? false
     readonly property int fakeWorkspace: currentWorkspaceNotFake ? -9999 : activeWorkspace
-    readonly property int shownCount: C.Config.options.bar.workspaces.shown
-    readonly property int group: Math.floor((activeWorkspace - 1) / shownCount)
     readonly property var specialWorkspace: liveMonitorData?.specialWorkspace
     readonly property string specialWorkspaceName: specialWorkspace?.name ? specialWorkspace.name.replace("special:", "") : ""
     readonly property bool specialWorkspaceActive: specialWorkspaceName !== ""
-    property list<bool> occupied: []
-    property list<var> biggestWindow: occupied.map((_, index) => {
-        const wsId = getWorkspaceIdAt(index);
-        return Kwin.biggestWindowForWorkspace(wsId);
-    })
+    readonly property int desktopCount: Math.max(1, (Kwin.workspaces || []).length)
+    readonly property int shown: Math.max(1, C.Config.options.bar.workspaces.shown)
+    readonly property bool showUnoccupied: C.Config.options.bar.workspaces.showUnoccupied ?? true
+    readonly property var occupiedMap: {
+        const occ = {};
+        for (let i = 1; i <= root.desktopCount; ++i) {
+            occ[i] = false;
+        }
+        const kwinList = Kwin.windowList;
+        if (kwinList) {
+            for (let i = 0; i < kwinList.length; ++i) {
+                const w = kwinList[i];
+                if (C.Config.options.bar.workspaces.perMonitor && root.monitor?.name && w.output && w.output !== root.monitor.name)
+                    continue;
+                const wsId = w.workspace?.id ?? w.desktop;
+                if (typeof wsId === "number") {
+                    occ[wsId] = true;
+                }
+            }
+        }
+        return occ;
+    }
+    readonly property var wsIds: {
+        if (root.showUnoccupied) {
+            const ids = [];
+            const start = Math.floor((root.activeWorkspace - 1) / root.shown) * root.shown;
+            for (let i = 0; i < root.shown; ++i) {
+                const id = start + i + 1;
+                if (id <= root.desktopCount)
+                    ids.push(id);
+            }
+            return ids;
+        }
+        const ids = [];
+        for (let id = 1; id <= root.desktopCount; ++id) {
+            if (root.occupiedMap[id] || id === root.activeWorkspace)
+                ids.push(id);
+        }
+        const currentIdx = ids.indexOf(root.activeWorkspace);
+        if (currentIdx < 0)
+            return [];
+        const end = Math.max(currentIdx + 1, Math.min(root.shown, ids.length));
+        return ids.slice(Math.max(0, end - root.shown), end);
+    }
+    readonly property int count: root.wsIds.length
+    readonly property int shownCount: root.count
+    readonly property int workspaceIndexInGroup: {
+        const idx = root.wsIds.indexOf(root.activeWorkspace);
+        return idx >= 0 ? idx : 0;
+    }
+    readonly property list<bool> occupied: root.wsIds.map(id => !!root.occupiedMap[id])
+    readonly property list<var> biggestWindow: root.wsIds.map(id => Kwin.biggestWindowForWorkspace(id))
 
     function getWorkspaceId(group, index) {
-        return group * root.shownCount + index + 1;
+        return root.getWorkspaceIdAt(index);
     }
 
     function getWorkspaceIdAt(index) {
-        return root.getWorkspaceId(root.group, index);
+        return root.wsIds[index] ?? (index + 1);
     }
-
-    function updateWorkspaceOccupied() {
-        root.occupied = Array.from({
-            length: root.shownCount
-        }, (_, i) => {
-            const thisWorkspaceId = getWorkspaceId(root.group, i);
-            return (Kwin.workspaces || []).some(ws => ws.id === thisWorkspaceId);
-        });
-    }
-
-    onGroupChanged: {
-        updateWorkspaceOccupied();
-    }
-
-    Component.onCompleted: updateWorkspaceOccupied()
 
     Connections {
         function onWorkspacesChanged() {
-            root.updateWorkspaceOccupied();
-        }
-
-        function onActiveWsIdChanged() {
-            root.updateWorkspaceOccupied();
+            Kwin.refreshWindows();
         }
 
         target: Kwin

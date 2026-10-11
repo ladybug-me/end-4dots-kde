@@ -23,7 +23,12 @@ Item {
         const ws = perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
         return Math.max(1, Math.min(100, ws));
     }
-    readonly property int workspacesShown: Config.options.overview.rows * Config.options.overview.columns
+    readonly property int desktopCount: Math.max(1, (Kwin.workspaces || []).length)
+    readonly property int maxColumns: Math.max(1, Config.options.overview.columns)
+    readonly property int maxRows: Math.max(1, Config.options.overview.rows)
+    readonly property int effectiveColumns: Math.max(1, Math.min(root.desktopCount, root.maxColumns))
+    readonly property int effectiveRows: Math.max(1, Math.min(root.maxRows, Math.ceil(root.desktopCount / root.effectiveColumns)))
+    readonly property int workspacesShown: root.effectiveRows * root.effectiveColumns
     readonly property int workspaceGroup: Math.floor((effectiveActiveWorkspaceId - 1) / workspacesShown)
     property bool monitorIsFocused: (Kwin.focusedMonitor?.name == monitor?.name)
     property var windows: Kwin.windowList
@@ -60,17 +65,17 @@ Item {
     
     function getWsRow(ws) {
         // 1-indexed workspace, 0-indexed row
-        var normalRow = Math.floor((ws - 1) / Config.options.overview.columns) % Config.options.overview.rows;
-        return (Config.options.overview.orderBottomUp ? Config.options.overview.rows - normalRow - 1 : normalRow);
+        var normalRow = Math.floor((ws - 1) / root.effectiveColumns) % root.effectiveRows;
+        return (Config.options.overview.orderBottomUp ? root.effectiveRows - normalRow - 1 : normalRow);
     }
     function getWsColumn(ws) {
         // 1-indexed workspace, 0-indexed column
-        var normalCol = (ws - 1) % Config.options.overview.columns;
-        return (Config.options.overview.orderRightLeft ? Config.options.overview.columns - normalCol - 1 : normalCol);
+        var normalCol = (ws - 1) % root.effectiveColumns;
+        return (Config.options.overview.orderRightLeft ? root.effectiveColumns - normalCol - 1 : normalCol);
     }
     function getWsInCell(ri, ci) {
         // 1-indexed workspace, 0-indexed row and column index
-        return (Config.options.overview.orderBottomUp ? Config.options.overview.rows - ri - 1 : ri) * Config.options.overview.columns + (Config.options.overview.orderRightLeft ? Config.options.overview.columns - ci - 1 : ci) + 1
+        return (Config.options.overview.orderBottomUp ? root.effectiveRows - ri - 1 : ri) * root.effectiveColumns + (Config.options.overview.orderRightLeft ? root.effectiveColumns - ci - 1 : ci) + 1
     }
 
     StyledRectangularShadow {
@@ -95,14 +100,14 @@ Item {
             spacing: workspaceSpacing
             
             Repeater {
-                model: Config.options.overview.rows
+                model: root.effectiveRows
                 delegate: Row {
                     id: row
                     required property int index
                     spacing: workspaceSpacing
 
                     Repeater { // Workspace repeater
-                        model: Config.options.overview.columns
+                        model: root.effectiveColumns
                         Rectangle { // Workspace
                             id: workspace
                             required property int index
@@ -113,13 +118,14 @@ Item {
                             property color hoveredBorderColor: Appearance.colors.colLayer2Hover
                             property bool hoveredWhileDragging: false
 
+                            visible: workspaceValue <= root.desktopCount
                             implicitWidth: root.workspaceImplicitWidth
                             implicitHeight: root.workspaceImplicitHeight
                             color: hoveredWhileDragging ? hoveredWorkspaceColor : defaultWorkspaceColor
                             property bool workspaceAtLeft: colIndex === 0
-                            property bool workspaceAtRight: colIndex === Config.options.overview.columns - 1
+                            property bool workspaceAtRight: colIndex === root.effectiveColumns - 1
                             property bool workspaceAtTop: row.index === 0
-                            property bool workspaceAtBottom: row.index === Config.options.overview.rows - 1
+                            property bool workspaceAtBottom: row.index === root.effectiveRows - 1
                             topLeftRadius: (workspaceAtLeft && workspaceAtTop) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                             topRightRadius: (workspaceAtRight && workspaceAtTop) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                             bottomLeftRadius: (workspaceAtLeft && workspaceAtBottom) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
@@ -182,7 +188,7 @@ Item {
                     values: {
                         return (Kwin.windowList || []).filter(win => {
                             const wsId = win?.workspace?.id ?? win?.desktop ?? 0;
-                            const inWorkspaceGroup = (root.workspaceGroup * root.workspacesShown < wsId && wsId <= (root.workspaceGroup + 1) * root.workspacesShown);
+                            const inWorkspaceGroup = (root.workspaceGroup * root.workspacesShown < wsId && wsId <= Math.min((root.workspaceGroup + 1) * root.workspacesShown, root.desktopCount));
                             return inWorkspaceGroup;
                         });
                     }
@@ -201,9 +207,9 @@ Item {
                     property real yWithinWorkspaceWidget: Math.max(((windowData?.y ?? windowData?.at?.[1] ?? 0) - (monitor?.y ?? 0) - (monitorData?.reserved?.[1] ?? 0)) * root.scale, 0)
                     property real minRadius: Appearance.rounding.small
                     property bool workspaceAtLeft: workspaceColIndex === 0
-                    property bool workspaceAtRight: workspaceColIndex === Config.options.overview.columns - 1
+                    property bool workspaceAtRight: workspaceColIndex === root.effectiveColumns - 1
                     property bool workspaceAtTop: workspaceRowIndex === 0
-                    property bool workspaceAtBottom: workspaceRowIndex === Config.options.overview.rows - 1
+                    property bool workspaceAtBottom: workspaceRowIndex === root.effectiveRows - 1
                     property bool workspaceAtTopLeft: (workspaceAtLeft && workspaceAtTop) 
                     property bool workspaceAtTopRight: (workspaceAtRight && workspaceAtTop) 
                     property bool workspaceAtBottomLeft: (workspaceAtLeft && workspaceAtBottom) 
@@ -306,9 +312,9 @@ Item {
                 height: root.workspaceImplicitHeight
                 color: "transparent"
                 property bool workspaceAtLeft: colIndex === 0
-                property bool workspaceAtRight: colIndex === Config.options.overview.columns - 1
+                property bool workspaceAtRight: colIndex === root.effectiveColumns - 1
                 property bool workspaceAtTop: rowIndex === 0
-                property bool workspaceAtBottom: rowIndex === Config.options.overview.rows - 1
+                property bool workspaceAtBottom: rowIndex === root.effectiveRows - 1
                 topLeftRadius: (workspaceAtLeft && workspaceAtTop) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                 topRightRadius: (workspaceAtRight && workspaceAtTop) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
                 bottomLeftRadius: (workspaceAtLeft && workspaceAtBottom) ? root.largeWorkspaceRadius : root.smallWorkspaceRadius
@@ -335,5 +341,13 @@ Item {
                 }
             }
         }
+    }
+
+    Connections {
+        function onWorkspacesChanged() {
+            Kwin.refreshWindows();
+        }
+
+        target: Kwin
     }
 }

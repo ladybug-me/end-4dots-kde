@@ -30,7 +30,7 @@ ButtonMouseArea {
     property real workspaceIconSizeShrinked: workspaceButtonWidth * 0.55
     property real workspaceIconOpacityShrinked: 1
     property real workspaceIconMarginShrinked: -4
-    property int workspaceIndexInGroup: ((wsModel.activeWorkspace - 1) % wsModel.shownCount + wsModel.shownCount) % wsModel.shownCount
+    property int workspaceIndexInGroup: wsModel.workspaceIndexInGroup
     property real specialTextSize: workspaceButtonWidth * 0.5
 
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter
@@ -54,7 +54,8 @@ ButtonMouseArea {
     }
 
     function switchWorkspaceToHovered() {
-        Kwin.switchToWorkspace(wsModel.getWorkspaceIdAt(hoverIndex), root.monitor?.name);
+        if (hoverIndex >= 0 && hoverIndex < wsModel.count)
+            Kwin.switchToWorkspace(wsModel.getWorkspaceIdAt(hoverIndex), root.monitor?.name);
     }
 
     function toggleSpecial() {
@@ -115,7 +116,7 @@ ButtonMouseArea {
                     readonly property int wsId: wsModel.getWorkspaceIdAt(index)
                     property bool currentOccupied: wsModel.occupied[index] && wsId != wsModel.fakeWorkspace
                     property bool previousOccupied: index > 0 && wsModel.occupied[index - 1] && (wsId - 1) != wsModel.fakeWorkspace
-                    property bool nextOccupied: index < wsModel.shownCount - 1 && wsModel.occupied[index + 1] && (wsId + 1) != wsModel.fakeWorkspace
+                    property bool nextOccupied: index < wsModel.count - 1 && wsModel.occupied[index + 1] && (wsId + 1) != wsModel.fakeWorkspace
                     implicitWidth: root.workspaceButtonWidth
                     implicitHeight: root.workspaceButtonWidth
 
@@ -169,7 +170,7 @@ ButtonMouseArea {
         TrailingIndicator {
             id: interactionIndicator
             z: 3
-            index: root.containsMouse ? root.hoverIndex : root.workspaceIndexInGroup
+            index: (root.containsMouse && root.hoverIndex >= 0 && root.hoverIndex < wsModel.count) ? root.hoverIndex : root.workspaceIndexInGroup
             color: "transparent"
             StateOverlay {
                 id: hoverOverlay
