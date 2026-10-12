@@ -35,6 +35,7 @@ build
 
 run.sh
 
+.agents
 /CONTEXT.md
 /CLAUDE.md
 /docs/agents/

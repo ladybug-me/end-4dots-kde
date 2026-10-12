@@ -33,6 +33,8 @@ UPSTREAM_SUBMODULE = "upstreams/caelestia-kde"
 
 # Paths that are strictly specific to end-4dots-kde and must never be overwritten
 PROTECTED_PATTERNS = (
+    ".gitignore",
+    "assets/logo.svg",
     ".gitmodules",
     "tools/sync-shell.py",
     "packaging/aur/README.md",
@@ -285,7 +287,17 @@ def resolve_upstream_tree(repo: Repo, upstream_ref: str) -> str:
     return upstream_ref
 
 
+def ensure_upstream_remote(repo: Repo) -> None:
+    check = repo._raw(("remote", "get-url", DEFAULT_UPSTREAM_REMOTE))
+    if check.returncode != 0:
+        local_sibling = repo.root.parent / "caelestia-kde"
+        upstream_url = str(local_sibling) if local_sibling.exists() else "https://github.com/ladybug-me/caelestia-kde.git"
+        repo._raw(("remote", "add", DEFAULT_UPSTREAM_REMOTE, upstream_url))
+        print(f"Added remote '{DEFAULT_UPSTREAM_REMOTE}' pointing to {upstream_url}")
+
+
 def do_fetch(repo: Repo) -> None:
+    ensure_upstream_remote(repo)
     print("Fetching upstream remote ...")
     try:
         repo.git("fetch", DEFAULT_UPSTREAM_REMOTE)
