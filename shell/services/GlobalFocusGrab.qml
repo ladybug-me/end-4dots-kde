@@ -3,12 +3,14 @@ pragma ComponentBehavior: Bound
 
 import QtQuick
 import Quickshell
+import Quickshell.Wayland
 
 Singleton {
     id: root
 
     property list<var> persistent: []
     property list<var> dismissable: []
+    readonly property bool hasDismissables: root.dismissable.length > 0
     property bool _wasActive: false
 
     signal dismissed
@@ -19,25 +21,45 @@ Singleton {
     }
 
     function addPersistent(window: var): void {
-        if (window && root.persistent.indexOf(window) === -1)
-            root.persistent.push(window);
+        if (!window)
+            return;
+        const list = root.persistent.slice();
+        if (list.indexOf(window) === -1) {
+            list.push(window);
+            root.persistent = list;
+        }
     }
 
     function removePersistent(window: var): void {
-        const index = root.persistent.indexOf(window);
-        if (index !== -1)
-            root.persistent.splice(index, 1);
+        if (!window)
+            return;
+        const list = root.persistent.slice();
+        const index = list.indexOf(window);
+        if (index !== -1) {
+            list.splice(index, 1);
+            root.persistent = list;
+        }
     }
 
     function addDismissable(window: var): void {
-        if (window && root.dismissable.indexOf(window) === -1)
-            root.dismissable.push(window);
+        if (!window)
+            return;
+        const list = root.dismissable.slice();
+        if (list.indexOf(window) === -1) {
+            list.push(window);
+            root.dismissable = list;
+        }
     }
 
     function removeDismissable(window: var): void {
-        const index = root.dismissable.indexOf(window);
-        if (index !== -1)
-            root.dismissable.splice(index, 1);
+        if (!window)
+            return;
+        const list = root.dismissable.slice();
+        const index = list.indexOf(window);
+        if (index !== -1) {
+            list.splice(index, 1);
+            root.dismissable = list;
+        }
     }
 
     function hasActive(element: var): bool {
@@ -60,7 +82,7 @@ Singleton {
 
         interval: 100
         repeat: true
-        running: root.dismissable.length > 0
+        running: root.hasDismissables
 
         onRunningChanged: {
             if (!running)
@@ -82,6 +104,41 @@ Singleton {
             } else if (root._wasActive && !anyActive) {
                 root._wasActive = false;
                 root.dismiss();
+            }
+        }
+    }
+
+    Variants {
+        model: Quickshell.screens
+
+        PanelWindow {
+            id: scrimWindow
+            required property ShellScreen modelData
+            screen: modelData
+
+            visible: root.hasDismissables
+            color: "transparent"
+
+            WlrLayershell.namespace: "quickshell:focus-scrim"
+            WlrLayershell.layer: WlrLayer.Top
+            WlrLayershell.keyboardFocus: WlrKeyboardFocus.None
+            exclusionMode: ExclusionMode.Ignore
+
+            anchors {
+                top: true
+                bottom: true
+                left: true
+                right: true
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.AllButtons
+                hoverEnabled: false
+                cursorShape: Qt.ArrowCursor
+                onPressed: {
+                    root.dismiss();
+                }
             }
         }
     }

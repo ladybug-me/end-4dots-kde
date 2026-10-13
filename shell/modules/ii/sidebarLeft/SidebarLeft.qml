@@ -99,6 +99,7 @@ Scope { // Scope
             exclusiveZone: root.pin ? sidebarWidth : 0
             implicitWidth: Appearance.sizes.sidebarWidthExtended + Appearance.sizes.elevationMargin
             WlrLayershell.namespace: "quickshell:sidebarLeft"
+            WlrLayershell.layer: WlrLayer.Overlay
             // Hyprland 0.49: OnDemand is Exclusive, Exclusive just breaks click-outside-to-close
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
             color: "transparent"
@@ -113,13 +114,26 @@ Scope { // Scope
                 item: sidebarLeftBackground
             }
 
-            onVisibleChanged: {
-                if (visible) {
+            function updateDismissable(): void {
+                if (panelWindow.visible && !root.pin && !root.detach) {
                     GlobalFocusGrab.addDismissable(panelWindow);
                 } else {
                     GlobalFocusGrab.removeDismissable(panelWindow);
                 }
             }
+
+            onVisibleChanged: updateDismissable()
+
+            Connections {
+                target: root
+                function onPinChanged() {
+                    panelWindow.updateDismissable();
+                }
+                function onDetachChanged() {
+                    panelWindow.updateDismissable();
+                }
+            }
+
             Connections {
                 target: GlobalFocusGrab
                 function onDismissed() {
