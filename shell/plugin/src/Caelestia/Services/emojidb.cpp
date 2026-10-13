@@ -35,7 +35,7 @@ int EmojiDb::count() const {
     return static_cast<int>(m_emojis.size());
 }
 
-bool EmojiDb::loadKdeDict(const QString& path) {
+bool EmojiDb::loadKdeDict(const QString& path, QHash<QString, int>& charMap) {
     QFile file(path);
     if (!file.open(QIODevice::ReadOnly))
         return false;
@@ -77,24 +77,26 @@ bool EmojiDb::loadKdeDict(const QString& path) {
         }
 
         entry.nameLower = (entry.name + u' ' + tags.join(u' ')).toLower();
-        m_emojis.append(std::move(entry));
+
+        auto it = charMap.find(entry.ch);
+        if (it != charMap.end()) {
+            m_emojis[*it] = std::move(entry);
+        } else {
+            charMap.insert(entry.ch, static_cast<int>(m_emojis.size()));
+            m_emojis.append(std::move(entry));
+        }
     }
 
-    return m_emojis.size() > initialSize;
+    return m_emojis.size() > initialSize || count > 0;
 }
 
-bool EmojiDb::loadTextFile(const QString& path) {
+bool EmojiDb::loadTextFile(const QString& path, QHash<QString, int>& charMap) {
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly | QIODevice::Text))
         return false;
 
     QTextStream in(&f);
     const qsizetype initialSize = m_emojis.size();
-    QSet<QString> existingChars;
-    existingChars.reserve(m_emojis.size());
-    for (const auto& e : m_emojis) {
-        existingChars.insert(e.ch);
-    }
 
     while (!in.atEnd()) {
         const auto line = in.readLine();
@@ -106,15 +108,15 @@ bool EmojiDb::loadTextFile(const QString& path) {
             continue;
 
         const QString ch = line.left(spaceIdx);
-        if (existingChars.contains(ch))
+        if (charMap.contains(ch))
             continue;
 
         EmojiEntry entry;
         entry.ch = ch;
         entry.name = line.mid(spaceIdx + 1).trimmed();
         entry.nameLower = entry.name.toLower();
+        charMap.insert(ch, static_cast<int>(m_emojis.size()));
         m_emojis.append(std::move(entry));
-        existingChars.insert(ch);
     }
 
     return m_emojis.size() > initialSize;
@@ -122,23 +124,33 @@ bool EmojiDb::loadTextFile(const QString& path) {
 
 void EmojiDb::loadEmojis() {
     m_emojis.clear();
+    QHash<QString, int> charMap;
 
     const QString kdeDir = QStringLiteral("/usr/share/plasma/emoji");
     if (QDir(kdeDir).exists()) {
         const QString localeName = QLocale::system().name();
         const QString lang = localeName.section(u'_', 0, 0);
 
-        const QStringList kdeCandidates = {
-            kdeDir + u'/' + localeName + QStringLiteral(".dict"),
-            kdeDir + u'/' + lang + QStringLiteral(".dict"),
+        QStringList kdeLoadOrder = {
             kdeDir + QStringLiteral("/en.dict"),
         };
 
-        for (const auto& path : kdeCandidates) {
-            if (QFile::exists(path) && loadKdeDict(path)) {
+        if (lang != QStringLiteral("en")) {
+            const QString langDict = kdeDir + u'/' + lang + QStringLiteral(".dict");
+            if (!kdeLoadOrder.contains(langDict))
+                kdeLoadOrder.append(langDict);
+        }
+
+        if (localeName != lang && localeName != QStringLiteral("en")) {
+            const QString localeDict = kdeDir + u'/' + localeName + QStringLiteral(".dict");
+            if (!kdeLoadOrder.contains(localeDict))
+                kdeLoadOrder.append(localeDict);
+        }
+
+        for (const auto& path : kdeLoadOrder) {
+            if (QFile::exists(path) && loadKdeDict(path, charMap)) {
                 m_loaded = true;
-                qCInfo(lcEmojiDb) << "Loaded" << m_emojis.size() << "emojis from KDE dictionary:" << path;
-                break;
+                qCInfo(lcEmojiDb) << "Loaded" << m_emojis.size() << "emojis after KDE dictionary:" << path;
             }
         }
     }
@@ -159,7 +171,7 @@ void EmojiDb::loadEmojis() {
 
     for (const auto& path : textCandidates) {
         if (!path.isEmpty() && QFile::exists(path)) {
-            if (loadTextFile(path)) {
+            if (loadTextFile(path, charMap)) {
                 m_loaded = true;
                 qCInfo(lcEmojiDb) << "Loaded extra emojis from text file:" << path;
             }

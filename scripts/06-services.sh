@@ -5,6 +5,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/install-kind.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/virtual-desktops.sh"
 
 echo
 echo ""
@@ -26,17 +27,7 @@ done
 echo "  Disabling legacy quickshell-kde-bridge KWin script..."
 kwriteconfig6 --file kwinrc --group "Plugins" --key "quickshell-kde-bridgeEnabled" "false"
 
-echo "  Setting default KWin virtual desktops to 5 (only if not already configured)..."
-EXISTING_DESKTOPS="$(kreadconfig6 --file kwinrc --group "Desktops" --key "Number" 2>/dev/null || true)"
-if [ -z "$EXISTING_DESKTOPS" ]; then
-    kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "5"
-    kwriteconfig6 --file kwinrc --group "Desktops" --key "Rows" "1"
-    for i in $(seq 1 5); do
-        kwriteconfig6 --file kwinrc --group "Desktops" --key "Name_$i" "Desktop $i"
-    done
-else
-    echo "  Existing virtual desktop configuration found - leaving it untouched."
-fi
+ensure_five_virtual_desktops
 
 UINPUT_RULE="/etc/udev/rules.d/70-uinput.rules"
 LEGACY_UINPUT_RULE="/etc/udev/rules.d/80-uinput.rules"
@@ -154,7 +145,7 @@ configure_quick_share() {
     local port status
 
     if install_is_packaged; then
-        skip "Quick Share's system access is the shell's own prompt on a packaged install."
+        skip "Quick Share's setup is the shell's own prompt on a packaged install."
         return 0
     fi
 

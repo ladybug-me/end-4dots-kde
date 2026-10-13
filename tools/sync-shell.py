@@ -105,8 +105,13 @@ ADAPTED_FILES = {
     "tests/test_bar_workspaces.sh",
     "tests/test_hotspot_toggle.sh",
     "tests/test_nexus_page_switch.sh",
+    "tests/test_quickshare_setup.sh",
     "tests/test_quickshare_ui.sh",
     "tests/test_uninstall_button.sh",
+    "tests/test_desktop_fixes.sh",
+    "tests/test_hidden_animations.sh",
+    "tests/test_notif_sanitization.sh",
+    "tests/test_streaming_dnd.sh",
 }
 
 # Upstream paths that are part of Caelestia UI but replaced by end-4 UI

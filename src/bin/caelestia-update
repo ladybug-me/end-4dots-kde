@@ -129,7 +129,7 @@ if [ "$PACKAGED" -eq 1 ]; then
     # `caelestia install` deploys from them idempotently (parity-6).
     if [[ -x "$SELF_DIR/caelestia" ]]; then
         info "Re-applying the user's configuration..."
-        "$SELF_DIR/caelestia" install || warn "Applying the user's configuration failed; see the output above."
+        CAELESTIA_FRESH_INSTALL=0 "$SELF_DIR/caelestia" install || warn "Applying the user's configuration failed; see the output above."
     fi
 
     echo "    then log out and back in."

@@ -269,6 +269,24 @@ jobs:
           path: test-artifacts/
           if-no-files-found: ignore
 
+  # Alongside shell-tests rather than inside it: this one needs the release tags, which a
+  # shallow checkout does not have. The job runs on every pull request so the gate below
+  # stays satisfied; the check is what is release-only, because a promotion onto main is
+  # the one pull request where this tree and the tree on a user's machine are a release
+  # apart and the updater that runs is the deployed one (issue #1075).
+  release-update-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          # The release an update comes from is a tag in this history.
+          fetch-depth: 0
+
+      - name: Check an update from the previous release
+        if: github.base_ref == 'main'
+        run: bash tests/run-tests.sh --suite isolated test_update_across_versions.sh
+
   build-parity:
     name: Clean offline build and artifact parity
     runs-on: ubuntu-latest
@@ -437,6 +455,7 @@ jobs:
     needs:
       - python-quality
       - shell-tests
+      - release-update-safety
       - repo-integrity
       - json-validation
       - file-hygiene
@@ -476,6 +495,7 @@ jobs:
           job_results[qml-template-interp]="${{ needs.qml-template-interp.result }}"
           job_results[shell-quality]="${{ needs.shell-quality.result }}"
           job_results[shell-tests]="${{ needs.shell-tests.result }}"
+          job_results[release-update-safety]="${{ needs.release-update-safety.result }}"
           job_results[cpp-format]="${{ needs.cpp-format.result }}"
           job_results[build-parity]="${{ needs.build-parity.result }}"
           job_results[installer-build]="${{ needs.installer-build.result }}"

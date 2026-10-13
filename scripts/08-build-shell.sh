@@ -228,6 +228,26 @@ configure_lockscreen_greeter() {
     fi
 }
 
+sparsify_checkout_paths() {
+    local rule path sparse_file
+
+    for rule in "$@"; do
+        path="${rule%/}"
+        [[ -e "$BUNDLE_DIR/$path" ]] && continue
+
+        (
+            cd "$BUNDLE_DIR" || exit 0
+            sparse_file="$(git rev-parse --git-path info/sparse-checkout 2>/dev/null || true)"
+            [[ -n "$sparse_file" && -f "$sparse_file" ]] || exit 0
+
+            grep -q "^$rule" "$sparse_file" 2>/dev/null || echo "$rule" >> "$sparse_file"
+            git read-tree -mu HEAD 2>/dev/null ||
+                git checkout HEAD -- "$path" 2>/dev/null || true
+        )
+    done
+    return 0
+}
+
 CCACHE_DIR="${CCACHE_DIR:-${XDG_CACHE_HOME:-$HOME/.cache}/caelestia-kde/ccache}"
 export CCACHE_DIR
 mkdir -p "$CCACHE_DIR"
@@ -243,23 +263,7 @@ if [[ "${CAELESTIA_SETUP_RUNNING:-0}" == "0" ]]; then
         bash "$BUNDLE_DIR/scripts/02a-submodules.sh" || die "Failed to initialize submodules"
     fi
 
-    # A checkout that predates `installer/` being in the sparse-checkout rules needs
-    # the path adding before anything can read it. src/bin/caelestia-update owns that
-    # list and writes it before it checks the tree out; this is the fallback for the
-    # copies it already deployed. Run from the tree so the path git prints resolves
-    # there, and ask git for it: in a linked worktree .git is a file and the rules
-    # live in the main repository instead.
-    if [[ ! -d "$BUNDLE_DIR/installer" ]]; then
-        (
-            cd "$BUNDLE_DIR" || exit 0
-            sparse_file="$(git rev-parse --git-path info/sparse-checkout 2>/dev/null || true)"
-            [[ -n "$sparse_file" && -f "$sparse_file" ]] || exit 0
-
-            grep -q '^installer/' "$sparse_file" 2>/dev/null || echo "installer/" >> "$sparse_file"
-            git read-tree -mu HEAD 2>/dev/null ||
-                git checkout HEAD -- installer 2>/dev/null || true
-        )
-    fi
+    sparsify_checkout_paths installer/ assets/ uninstall.sh
 
     if [[ -f "$BUNDLE_DIR/scripts/02-all-packages.sh" && -d "$BUNDLE_DIR/installer" ]]; then
         info "Checking core, shell, theme, and utility dependencies..."

@@ -18,14 +18,27 @@ fi
 
 echo
 echo ""
-info "Installing Caelestia SDDM theme"
+info "Configuring the Caelestia login screen"
 echo ""
 
 THEME_NAME="caelestia"
 INSTALL_DIR="/usr/share/sddm/themes/$THEME_NAME"
 SYNC_SCRIPT="$INSTALL_DIR/scripts/sync.sh"
 
-VARIANT="${SDDM_THEME_VARIANT:-full}"
+installed_variant() {
+    [[ -f "$1/metadata.desktop" ]] || return 1
+
+    if [[ -d "$1/singletons" ]]; then
+        printf 'mini\n'
+    else
+        printf 'full\n'
+    fi
+}
+
+VARIANT="${SDDM_THEME_VARIANT:-}"
+if [[ -z "$VARIANT" ]]; then
+    VARIANT="$(installed_variant "$INSTALL_DIR")" || VARIANT="full"
+fi
 case "$VARIANT" in
     full|mini) ;;
     *) die "Unknown SDDM theme variant: $VARIANT" ;;
@@ -137,14 +150,20 @@ PYEOF
 }
 
 is_plasmalogin_active() {
+    local target
+    target="$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null || true)"
+
+    case "$target" in
+        *plasmalogin*) return 0 ;;
+        *sddm*) return 1 ;;
+    esac
+
     if systemctl is-active plasmalogin.service &>/dev/null || \
-       systemctl is-enabled plasmalogin.service &>/dev/null || \
-       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"plasmalogin"* ]]; then
+       systemctl is-enabled plasmalogin.service &>/dev/null; then
         return 0
     fi
     if systemctl is-active sddm.service &>/dev/null || \
-       systemctl is-enabled sddm.service &>/dev/null || \
-       [[ "$(readlink -f /etc/systemd/system/display-manager.service 2>/dev/null)" == *"sddm"* ]]; then
+       systemctl is-enabled sddm.service &>/dev/null; then
         return 1
     fi
     if [[ -e /etc/plasmalogin.conf ]] && ! command -v sddm >/dev/null 2>&1; then
@@ -278,6 +297,91 @@ for required in theme.conf metadata.desktop Main.qml; do
     fi
 done
 
+theme_qt_version() {
+    sed -n 's/^[[:space:]]*QtVersion[[:space:]]*=[[:space:]]*\([0-9][0-9]*\)[[:space:]]*$/\1/p' "$1" 2>/dev/null | tail -n 1
+}
+
+greeter_binary_for_qt() {
+    if [[ "$1" == "5" ]]; then
+        printf '%s\n' sddm-greeter
+    else
+        printf 'sddm-greeter-qt%s\n' "$1"
+    fi
+}
+
+greeter_path_for_qt() {
+    local name path
+    name="$(greeter_binary_for_qt "$1")"
+
+    if path="$(command -v "$name" 2>/dev/null)" && [[ -n "$path" ]]; then
+        printf '%s\n' "$path"
+        return 0
+    fi
+
+    local dir
+    for dir in /usr/bin /usr/local/bin /usr/lib/sddm /usr/libexec/sddm; do
+        if [[ -x "$dir/$name" ]]; then
+            printf '%s\n' "$dir/$name"
+            return 0
+        fi
+    done
+
+    return 1
+}
+
+verify_theme_greeter() {
+    local metadata="$INSTALL_DIR/metadata.desktop"
+    local version path
+    version="$(theme_qt_version "$metadata")"
+    if [[ -z "$version" ]]; then
+        warn "$metadata does not declare a QtVersion, so SDDM would run this Qt 6 theme under its Qt 5 greeter."
+        return 1
+    fi
+
+    path="$(greeter_path_for_qt "$version")" || path=""
+    if [[ -z "$path" ]]; then
+        warn "SDDM has no $(greeter_binary_for_qt "$version") to run the theme with."
+        return 1
+    fi
+
+    ok "Theme runs under $(basename -- "$path") (Qt $version)."
+}
+
+THEME_RUNNABLE=true
+if ! verify_theme_greeter; then
+    THEME_RUNNABLE=false
+    ALL_OK=false
+fi
+
+remove_theme_selection() {
+    local dropin
+    for dropin in /etc/sddm.conf.d/zz-caelestia.conf /etc/sddm.conf.d/caelestia.conf; do
+        if [[ -f "$dropin" ]]; then
+            caelestia_sudo rm -f "$dropin"
+            ok "Removed the SDDM theme drop-in: $(basename -- "$dropin")"
+        fi
+    done
+
+    command -v kwriteconfig6 >/dev/null 2>&1 || return 0
+
+    local backup="${XDG_STATE_HOME:-$HOME/.local/state}/caelestia/sddm.conf.theme-current"
+    local current=""
+    if [[ -f "$backup" ]]; then
+        current="$(cat "$backup")"
+    else
+        current="$(kreadconfig6 --file /etc/sddm.conf --group Theme --key Current 2>/dev/null || true)"
+        [[ "$current" == "$THEME_NAME" ]] || return 0
+    fi
+
+    if [[ "$current" == "#none" ]]; then
+        caelestia_sudo kwriteconfig6 --file /etc/sddm.conf --group Theme --key Current --delete 2>/dev/null || true
+    else
+        caelestia_sudo kwriteconfig6 --file /etc/sddm.conf --group Theme --key Current "$current" 2>/dev/null || true
+    fi
+    rm -f "$backup"
+    ok "Restored the login screen theme selection."
+}
+
 mkdir -p "$HOME/.config/caelestia/templates"
 if [[ -f "$THEME_SOURCE/theme.conf.template" ]]; then
     cp "$THEME_SOURCE/theme.conf.template" "$HOME/.config/caelestia/templates/sddm-theme.conf"
@@ -286,6 +390,13 @@ fi
 
 if install_is_packaged; then
     skip "The theme selection belongs to the package."
+    if [[ "$THEME_RUNNABLE" != "true" ]]; then
+        warn "The package selects the theme anyway. Point [Theme] Current at another theme until the greeter above is installed."
+    fi
+elif [[ "$THEME_RUNNABLE" != "true" ]]; then
+    warn "The theme is installed but left unselected: a login screen that cannot start is worse than the default one."
+    warn "Install the greeter above, then run 'caelestia login-screen'."
+    remove_theme_selection
 else
 caelestia_sudo mkdir -p /etc/sddm.conf.d
 cat <<'DROPIN' | caelestia_sudo tee /etc/sddm.conf.d/zz-caelestia.conf >/dev/null

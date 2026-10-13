@@ -52,6 +52,8 @@ qml_module(caelestia-services
         emojidb.hpp
         brightnesswatcher.cpp
         brightnesswatcher.hpp
+        pipewirestreamwatcher.cpp
+        pipewirestreamwatcher.hpp
         clipboardmanager.cpp
         clipboardmanager.hpp
         schemeloader.cpp

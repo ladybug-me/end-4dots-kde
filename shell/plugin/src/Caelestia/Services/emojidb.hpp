@@ -41,8 +41,8 @@ signals:
 
 private:
     void loadEmojis();
-    bool loadKdeDict(const QString& path);
-    bool loadTextFile(const QString& path);
+    bool loadKdeDict(const QString& path, QHash<QString, int>& charMap);
+    bool loadTextFile(const QString& path, QHash<QString, int>& charMap);
     void loadFrequencies();
     void saveFrequencies();
     void buildTrigramIndex();

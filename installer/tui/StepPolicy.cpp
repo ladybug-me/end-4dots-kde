@@ -19,7 +19,7 @@ bool is_skipped(const std::string &step_name,
   }
   if (step_name == "Install optional components") {
     static const char *optional_answers[] = {
-        "INSTALL_VSCODE",  "INSTALL_ZED",     "INSTALL_SPICETIFY",
+        "INSTALL_VSCODE", "INSTALL_ZED", "INSTALL_SPICETIFY",
         "INSTALL_DISCORD", "INSTALL_TODOIST", "INSTALL_FIREFOX_THEME",
     };
     for (const char *answer : optional_answers) {

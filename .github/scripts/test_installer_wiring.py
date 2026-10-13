@@ -101,21 +101,23 @@ class InstallerTests(unittest.TestCase):
 
         The updater writes that list before it checks the tree out, so a helper cannot
         live in the tree and be called from there: the two name the same paths twice.
-        This is what stops the second copy from drifting to a path nothing sparsifies,
+        This is what stops the second copy from drifting to a rule nothing else writes,
         which would leave the fallback silently doing nothing.
         """
         updater = (ROOT / "src" / "bin" / "caelestia-update").read_text(encoding="utf-8")
         build = (ROOT / "scripts" / "08-build-shell.sh").read_text(encoding="utf-8")
 
         owned = set(re.findall(r'echo "([^"]+)" >+ \.git/info/sparse-checkout', updater))
-        added = set(re.findall(r'echo "([^"]+)" >> "\$sparse_file"', build))
+        added = set()
+        for call in re.findall(r"^\s*sparsify_checkout_paths (.+)$", build, re.MULTILINE):
+            added.update(call.split())
 
         self.assertTrue(owned, "caelestia-update should still write the sparse-checkout list")
-        self.assertTrue(added, "08-build-shell.sh should still name the path it adds")
+        self.assertTrue(added, "08-build-shell.sh should still name the rules it adds")
         self.assertEqual(
             sorted(added - owned),
             [],
-            "08-build-shell.sh sparsifies path(s) caelestia-update never writes:",
+            "08-build-shell.sh sparsifies rule(s) caelestia-update never writes:",
         )
 
     def test_the_sparse_checkout_covers_everything_the_shell_install_reads(self) -> None:

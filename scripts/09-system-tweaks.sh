@@ -3,6 +3,7 @@
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib/log.sh"
 source "$(dirname "${BASH_SOURCE[0]}")/lib/privileges.sh"
+source "$(dirname "${BASH_SOURCE[0]}")/lib/virtual-desktops.sh"
 
 echo
 echo ""
@@ -37,19 +38,7 @@ first_install() {
 }
 
 tweak_five_desktops() {
-    if ! first_install; then
-        skip "Existing virtual desktop configuration found - leaving it untouched."
-        return 0
-    fi
-    info "Configuring 5 virtual desktops..."
-
-    kwriteconfig6 --file kwinrc --group "Desktops" --key "Number" "5"
-    kwriteconfig6 --file kwinrc --group "Desktops" --key "Rows" "1"
-    for i in $(seq 1 5); do
-        kwriteconfig6 --file kwinrc --group "Desktops" --key "Name_$i" "Desktop $i"
-    done
-
-    ok "5 virtual desktops configured."
+    ensure_five_virtual_desktops
 }
 
 tweak_remove_panels() {

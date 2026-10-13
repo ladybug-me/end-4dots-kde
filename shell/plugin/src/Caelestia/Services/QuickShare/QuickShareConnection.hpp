@@ -6,8 +6,10 @@
 #include <QTcpSocket>
 
 #include "QuickShareCrypto.hpp"
+#ifndef Q_MOC_RUN
 #include "offline_wire_formats.pb.h"
 #include "wire_format.pb.h"
+#endif
 
 namespace caelestia::services {
 

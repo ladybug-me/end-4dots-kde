@@ -82,6 +82,7 @@ Commands
   shell [OPTS] [MESSAGE...]    start the shell, or message the running one
   install                      set up this user's half of the shell
   update [REF]                 update the shell and re-apply the configuration
+  login-screen                 configure the login screen for the display manager in use
   wallpaper [OPTS]             set the wallpaper and derive the palette from it
   scheme <list|get|set> [...]  manage the color scheme
   screenshot [OPTS]            take a screenshot
@@ -274,6 +275,8 @@ EOF
         10-autostart.sh
     )
 
+    export CAELESTIA_FRESH_INSTALL="${CAELESTIA_FRESH_INSTALL:-1}"
+
     echo "Deploying the user's half of a packaged Caelestia install"
     echo "  steps: $SCRIPTS_DIR"
     echo
@@ -328,6 +331,38 @@ EOF
     packaged_install
 }
 
+cmd_login_screen() {
+    case "${1:-}" in
+        -h|--help)
+            cat <<'EOF'
+Usage: caelestia login-screen
+
+Configure the login screen for the display manager this machine boots. Run it after
+switching between Plasma Login and SDDM: the installer configures the manager that
+was live when it ran.
+
+The theme is installed in the variant that is already there, so an install made with
+SDDM_THEME_VARIANT=mini keeps the mini theme.
+EOF
+            return 0
+            ;;
+    esac
+    if [[ $# -gt 0 ]]; then
+        printf '[ERR] unknown option for login-screen: %s\n' "$1" >&2
+        return 2
+    fi
+
+    local step="$SCRIPTS_DIR/05-sddm-theme.sh"
+    if [[ ! -f "$step" ]]; then
+        printf '[ERR] no login screen step script at %s\n\n' "$step" >&2
+        printf '      A package keeps the installer scripts in /usr/share/caelestia;\n' >&2
+        printf '      a checkout is named with CAELESTIA_DIR.\n' >&2
+        return 1
+    fi
+
+    exec env BUNDLE_DIR="$DATA_DIR" CAELESTIA_INSTALL_KIND="$KIND" INSTALL_SDDM=true bash "$step"
+}
+
 cmd_version() {
     # From the helper CMake installs into INSTALL_LIBDIR (what upstream's CLI reads too):
     # compiled with the build's version, so it cannot go stale on a package. An unbuilt
@@ -365,6 +400,9 @@ main() {
             ;;
         update)
             helper caelestia-update "$@"
+            ;;
+        login-screen)
+            cmd_login_screen "$@"
             ;;
         wallpaper|scheme)
             helper caelestia-color "$command" "$@"

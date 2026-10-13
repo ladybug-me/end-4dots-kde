@@ -129,7 +129,7 @@ test_help_lists_the_commands() {
     assert_contains "$RUN_OUTPUT" "Usage: caelestia" "help shows a usage line"
 
     local command
-    for command in shell install update wallpaper scheme screenshot record version; do
+    for command in shell install update login-screen wallpaper scheme screenshot record version; do
         assert_contains "$RUN_OUTPUT" "$command" "help should mention '$command'"
     done
 
@@ -140,6 +140,10 @@ test_help_lists_the_commands() {
     run_cli shell -h
     assert_status 0 "$RUN_STATUS" "shell -h should succeed"
     assert_contains "$RUN_OUTPUT" "Usage: caelestia shell" "shell -h shows its own usage"
+
+    run_cli login-screen -h
+    assert_status 0 "$RUN_STATUS" "login-screen -h should succeed"
+    assert_contains "$RUN_OUTPUT" "Usage: caelestia login-screen" "login-screen -h shows its own usage"
 }
 
 test_unknown_command_and_option_are_rejected() {
@@ -155,6 +159,10 @@ test_unknown_command_and_option_are_rejected() {
 
     run_cli screenshot --nonsense
     assert_status 2 "$RUN_STATUS" "an unknown screenshot option should exit 2"
+
+    run_cli login-screen --nonsense
+    assert_status 2 "$RUN_STATUS" "an unknown login-screen option should exit 2"
+    assert_contains "$RUN_OUTPUT" "unknown option for login-screen: --nonsense" "the option is named"
 }
 
 test_install_with_nothing_to_install_from_explains_itself() {

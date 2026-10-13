@@ -167,10 +167,6 @@ jobs:
     needs: version-release
     runs-on: ubuntu-latest
     container: archlinux:base-devel
-    env:
-      http_proxy: http://127.0.0.1:9
-      https_proxy: http://127.0.0.1:9
-      all_proxy: http://127.0.0.1:9
     permissions:
       contents: write
     steps:
@@ -207,6 +203,10 @@ jobs:
           echo "TAG=$VERSION" >> "$GITHUB_ENV"
 
       - name: Configure Shell
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
         run: |
           set -euo pipefail
           cmake -G Ninja -B shell/build -S shell -DCMAKE_BUILD_TYPE=Release \
@@ -220,11 +220,19 @@ jobs:
             -DINSTALL_QMLDIR=usr/lib/qt6/qml
 
       - name: Build Shell
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
         run: |
           set -euo pipefail
           cmake --build shell/build -j"$(nproc)"
 
       - name: Stage Compiled Artifacts
+        env:
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+          all_proxy: http://127.0.0.1:9
         run: |
           set -euo pipefail
           QT_ABI="$(pkg-config --modversion Qt6Core | grep -oE '^[0-9]+\.[0-9]+')"

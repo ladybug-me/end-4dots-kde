@@ -2,8 +2,8 @@
 #include "Draw.hpp"
 #include "Globals.hpp"
 #include "Input.hpp"
-#include "StepPolicy.hpp"
 #include "Sudo.hpp"
+#include "StepPolicy.hpp"
 #include "Term.hpp"
 #include "UI.hpp"
 #include <cerrno>
@@ -430,6 +430,7 @@ void execute() {
   }
 
   setenv("CONFIRM_ARG", "--noconfirm", 1);
+  setenv("CAELESTIA_FRESH_INSTALL", "1", 1);
 
   // One shared install log: every step appends, and the live view tails it. It
   // carries every step's output, so it stays 0600 and never opens through a
@@ -590,13 +591,12 @@ void execute() {
   }
 
   // Record the steps that failed and were ignored, so the completion screen's
-  // "completed with warnings" summary (and TROUBLESHOOTING's `cat` advice) is
-  // real. The file is cleared at the start of this run, so a stale failure
-  // cannot leak in.
+  // "completed with warnings" summary (and TROUBLESHOOTING's `cat` advice) is real.
+  // The file is cleared at the start of this run, so a stale failure cannot leak in.
   {
     ofstream failed_steps(cache_dir + "/failed_steps.txt", ios::app);
     if (failed_steps) {
-      for (const auto &st : steps) {
+      for (const auto& st : steps) {
         if (st.status == "IGNORED")
           failed_steps << st.name << '\n';
       }
