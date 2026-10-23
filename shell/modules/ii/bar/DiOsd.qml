@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import qs
 import qs.services
 import qs.modules.common
@@ -17,9 +16,7 @@ RowLayout {
     }
     spacing: 6
 
-    readonly property var focusedScreen: WM.compositor === "hyprland"
-        ? Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
-        : Quickshell.screens.find(s => s.name === WM.focusedMonitor?.name)
+    readonly property var focusedScreen: Quickshell.screens.find(s => s.name === (Kwin.focusedMonitor?.name ?? WM.focusedMonitor?.name)) ?? Quickshell.screens[0]
     readonly property var brightnessMonitor: Brightness.getMonitorForScreen(focusedScreen)
 
     MaterialShapeWrappedMaterialSymbol {

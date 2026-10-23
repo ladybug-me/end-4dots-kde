@@ -363,6 +363,10 @@ Singleton {
         return false;
     }
 
+    function fullscreenOnMonitor(screenName: string): bool {
+        return hasFullscreenOn(screenName);
+    }
+
     function hasWindowOverlapping(screenName: string, x: real, y: real, width: real, height: real, focusedOnly: bool): bool {
         const wins = root.windowList;
         const activeWin = root.activeWindow;

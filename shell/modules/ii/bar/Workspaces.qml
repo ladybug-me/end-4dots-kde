@@ -12,37 +12,33 @@ import Quickshell
 
 ButtonMouseArea {
     id: root
-    property color contentColor: Appearance.colors.colOnLayer1
-    property bool contentColorOverridden: false
-    signal styleEditorRequested()
 
+    readonly property var monitor: (root.QsWindow.window?.screen && root.QsWindow.window.screen.name) ? Kwin.monitorFor(root.QsWindow.window.screen) : (Kwin.focusedMonitor ?? null)
     WorkspaceModel {
         id: wsModel
-        screen: root.QsWindow.window?.screen
+        monitor: root.monitor
     }
 
     property bool vertical: Config.options.bar.vertical
+    property real widgetPadding: 0
     property bool superPressAndHeld: false // Relevant modifications at bottom of file
 
-    property real workspaceButtonWidth: (Config.options.bar.cornerStyle === 3 || Config.options.bar.cornerStyle === 4) ? 30 : 26
+    property real workspaceButtonWidth: 26
     property real activeWorkspaceMargin: 2
     property real activeWorkspaceSize: workspaceButtonWidth - activeWorkspaceMargin * 2
     property real workspaceIconSize: workspaceButtonWidth * 0.69
     property real workspaceIconSizeShrinked: workspaceButtonWidth * 0.55
     property real workspaceIconOpacityShrinked: 1
     property real workspaceIconMarginShrinked: -4
-    property int workspaceIndexInGroup: (wsModel.activeNumber - 1) % wsModel.shownCount
-    readonly property string style: Config.options.bar.workspaces.style ?? "default"
-    readonly property bool altStyle: root.style !== "default"
-    readonly property real slotLength: root.style === "gnome" ? 16 : root.style === "dots" ? 24 : root.style === "ticks" ? 16 : root.workspaceButtonWidth
+    property int workspaceIndexInGroup: wsModel.workspaceIndexInGroup
     property real specialTextSize: workspaceButtonWidth * 0.5
 
     Layout.alignment: vertical ? Qt.AlignHCenter : Qt.AlignVCenter
     Layout.fillWidth: vertical
     Layout.fillHeight: !vertical
     readonly property real barThickness: vertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
-    implicitWidth: vertical ? barThickness : (altStyle ? (altLoader.item?.implicitWidth ?? 0) : occupiedIndicators.implicitWidth)
-    implicitHeight: vertical ? (altStyle ? (altLoader.item?.implicitHeight ?? 0) : occupiedIndicators.implicitHeight) : barThickness
+    implicitWidth: vertical ? barThickness : occupiedIndicators.implicitWidth
+    implicitHeight: vertical ? occupiedIndicators.implicitHeight : barThickness
 
     property real specialBlur: (wsModel.specialWorkspaceActive && !containsMouse) ? 1 : 0
     Behavior on specialBlur {
@@ -50,60 +46,41 @@ ButtonMouseArea {
     }
 
     // Interactions
-    acceptedButtons: Qt.LeftButton | Qt.RightButton
+    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.BackButton
     hoverEnabled: true
     property int hoverIndex: {
         const position = root.vertical ? mouseY : mouseX;
-        if (root.altStyle && altLoader.item) return altLoader.item.indexAt(position);
-        return Math.floor(position / root.slotLength);
+        return Math.floor(position / root.workspaceButtonWidth);
     }
 
     function switchWorkspaceToHovered() {
-        WM.switchWorkspace(wsModel.getWorkspaceIdAt(hoverIndex));
+        if (hoverIndex >= 0 && hoverIndex < wsModel.count)
+            Kwin.switchToWorkspace(wsModel.getWorkspaceIdAt(hoverIndex), root.monitor?.name);
     }
+
+    function toggleSpecial() {
+        Kwin.cycleSpecialWorkspace("next");
+    }
+
     onPressed: mouse => {
         if (mouse.button == Qt.LeftButton)
             switchWorkspaceToHovered();
-    }
-    onClicked: mouse => {
-        if (mouse.button == Qt.RightButton)
+        else if (mouse.button == Qt.RightButton)
             GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
-    }
-    onPressAndHold: mouse => {
-        if (mouse.button == Qt.RightButton)
-            root.styleEditorRequested();
+        else if (mouse.button == Qt.BackButton) 
+            toggleSpecial()
     }
     onWheel: event => {
         if (event.angleDelta.y < 0)
-            WM.switchWorkspaceRelative("next");
+            Kwin.nextDesktop();
         else if (event.angleDelta.y > 0)
-            WM.switchWorkspaceRelative("prev");
-    }
-
-    Loader {
-        id: altLoader
-        active: root.altStyle
-        anchors.centerIn: parent
-        scale: 1 - 0.08 * root.specialBlur
-        layer.smooth: true
-        layer.enabled: root.altStyle && root.specialBlur > 0
-        layer.effect: MultiEffect {
-            brightness: -0.1 * root.specialBlur
-            blurEnabled: true
-            blur: root.specialBlur
-            blurMax: 32
-        }
-        sourceComponent: WorkspacesAlt {
-            host: root
-            model: wsModel
-        }
+            Kwin.previousDesktop();
     }
 
     // Indications
     Item {
         id: regularWorkspaces
         anchors.fill: parent
-        visible: !root.altStyle
 
         scale: 1 - 0.08 * root.specialBlur
         layer.smooth: true
@@ -139,7 +116,7 @@ ButtonMouseArea {
                     readonly property int wsId: wsModel.getWorkspaceIdAt(index)
                     property bool currentOccupied: wsModel.occupied[index] && wsId != wsModel.fakeWorkspace
                     property bool previousOccupied: index > 0 && wsModel.occupied[index - 1] && (wsId - 1) != wsModel.fakeWorkspace
-                    property bool nextOccupied: index < wsModel.shownCount - 1 && wsModel.occupied[index + 1] && (wsId + 1) != wsModel.fakeWorkspace
+                    property bool nextOccupied: index < wsModel.count - 1 && wsModel.occupied[index + 1] && (wsId + 1) != wsModel.fakeWorkspace
                     implicitWidth: root.workspaceButtonWidth
                     implicitHeight: root.workspaceButtonWidth
 
@@ -193,7 +170,7 @@ ButtonMouseArea {
         TrailingIndicator {
             id: interactionIndicator
             z: 3
-            index: root.containsMouse ? root.hoverIndex : root.workspaceIndexInGroup
+            index: (root.containsMouse && root.hoverIndex >= 0 && root.hoverIndex < wsModel.count) ? root.hoverIndex : root.workspaceIndexInGroup
             color: "transparent"
             StateOverlay {
                 id: hoverOverlay
@@ -241,7 +218,7 @@ ButtonMouseArea {
                 delegate: WorkspaceItem {
                     id: wsApp
                     property var biggestWindow: wsModel.biggestWindow[index]
-                    property var mainAppIconSource: SystemAppearance.iconPath(AppSearch.guessIcon(biggestWindow?.class), "image-missing")
+                    property var mainAppIconSource: WinIcons.sourceForClient(biggestWindow)
 
                     AppIcon {
                         id: appIcon
@@ -393,7 +370,7 @@ ButtonMouseArea {
         id: wsNum
         property bool hasBiggestWindow: !!wsModel.biggestWindow[index]
         property int wsId: wsModel.getWorkspaceIdAt(index)
-        property color contentColor: (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? Appearance.colors.colOnSecondaryContainer : (root.contentColorOverridden ? Qt.alpha(root.contentColor, 0.5) : Appearance.colors.colOnLayer1Inactive)
+        property color contentColor: (wsModel.occupied[wsNum.index] && wsId !== wsModel.fakeWorkspace) ? Appearance.colors.colOnSecondaryContainer : Appearance.colors.colOnLayer1Inactive
         property bool showingNumbers: {
             if (root.superPressAndHeld)
                 return true;
@@ -407,42 +384,10 @@ ButtonMouseArea {
         FadeLoader {
             shown: !wsNum.showingNumbers
             anchors.centerIn: parent
-            Loader {
+            Circle {
                 anchors.centerIn: parent
-                sourceComponent: (Config.options?.bar.workspaces.indicatorStyle ?? "dot") === "icon" ? iconComponent : dotComponent
-
-                Component {
-                    id: dotComponent
-                    Circle {
-                        anchors.centerIn: parent
-                        diameter: root.workspaceButtonWidth * 0.18
-                        color: wsNum.contentColor
-                    }
-                }
-
-                Component {
-                    id: iconComponent
-                    MaterialSymbol {
-                        anchors.centerIn: parent
-                        iconSize: root.workspaceButtonWidth * 0.50
-                        color: wsNum.contentColor
-                        text: {
-                            switch (wsNum.wsId) {
-                                case 1:  return "code"
-                                case 2:  return "public"
-                                case 3:  return "music_note"
-                                case 4:  return "edit_square"
-                                case 5:  return "image"
-                                case 6:  return "forum"
-                                case 7:  return "browser_updated"
-                                case 8:  return "finance_mode"
-                                case 9:  return "monitor"
-                                case 10: return "analytics"
-                                default: return "circle"
-                            }
-                        }
-                    }
-                }
+                diameter: root.workspaceButtonWidth * 0.18
+                color: wsNum.contentColor
             }
         }
         FadeLoader {

@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 import Quickshell.Widgets
 import qs.services
 import qs.modules.common
@@ -41,12 +40,6 @@ Item {
     }
 
     function open(button, appId) {
-        // The menu relies on HyprlandFocusGrab to close and on Hyprland window
-        // addresses to move windows; elsewhere keep right-click as toggle pin.
-        if (WM.compositor !== "hyprland") {
-            TaskbarApps.togglePin(appId);
-            return;
-        }
         menuLoader.active = false;
         const topLeft = root.QsWindow.mapFromItem(button, 0, 0);
         root.anchorRect = Qt.rect(topLeft.x, topLeft.y, button.width, button.height);
@@ -64,9 +57,9 @@ Item {
 
     function moveToWorkspace(ws) {
         for (const toplevel of root.toplevels) {
-            const address = toplevel.HyprlandToplevel?.address;
+            const address = toplevel.HyprlandToplevel?.address ?? toplevel.address;
             if (address)
-                WM.moveWindowToWorkspace(`0x${address}`, ws);
+                WM.moveWindowToWorkspace(WM.compositor === "hyprland" ? `0x${address}` : address, ws);
         }
     }
 
@@ -96,10 +89,13 @@ Item {
                 adjustment: DockStyle.vertical ? PopupAdjustment.SlideY : PopupAdjustment.SlideX
             }
 
-            HyprlandFocusGrab {
-                active: true
-                windows: [contextPopup]
-                onCleared: root.close()
+            Component.onCompleted: GlobalFocusGrab.addDismissable(contextPopup)
+            Component.onDestruction: GlobalFocusGrab.removeDismissable(contextPopup)
+            Connections {
+                target: GlobalFocusGrab
+                function onDismissed() {
+                    root.close();
+                }
             }
 
             color: "transparent"

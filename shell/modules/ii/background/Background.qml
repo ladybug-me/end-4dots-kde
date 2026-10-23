@@ -12,7 +12,6 @@ import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Variants {
     id: root
@@ -41,15 +40,13 @@ Variants {
         property string currentShader: "pixelate"
         property string wallpaperAnimation: Config.options.background.wallpaperAnimation ?? "random"
 
-        property list<HyprlandWorkspace> workspacesForMonitor: Hyprland.workspaces.values.filter(workspace => workspace.monitor && workspace.monitor.name == monitor.name)
-        property var activeWorkspaceWithFullscreen: workspacesForMonitor.filter(workspace => ((workspace.toplevels.values.filter(window => window.wayland?.fullscreen)[0] != undefined) && workspace.active))[0]
+        property var monitor: Kwin.monitorFor(modelData)
+        property bool hasFullscreen: (monitor && Kwin.fullscreenOnMonitor) ? Kwin.fullscreenOnMonitor(modelData.name) : false
         visible: true
 
         readonly property bool hiddenForFullscreen: !GlobalStates.screenLocked
-            && (activeWorkspaceWithFullscreen != undefined)
+            && hasFullscreen
             && Config?.options.background.hideWhenFullscreen
-
-        property HyprlandMonitor monitor: Hyprland.monitorFor(modelData)
 
         property string effectiveWallpaperPath: {
             if (GlobalStates.screenLocked && Config.options.background.lockWall !== "")

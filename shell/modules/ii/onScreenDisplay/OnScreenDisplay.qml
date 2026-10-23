@@ -8,15 +8,13 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope {
     id: root
     property string protectionMessage: ""
-    property var focusedScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name)
+    property var focusedScreen: Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name)
 
     property string currentIndicator: "volume"
-    onCurrentIndicatorChanged: GlobalStates.osdIndicatorType = currentIndicator
     property var indicators: [
         {
             id: "volume",
@@ -127,7 +125,7 @@ Scope {
 
             implicitWidth: columnLayout.implicitWidth
             implicitHeight: columnLayout.implicitHeight
-            visible: osdLoader.active && !GlobalStates.dynamicIslandEnabled
+            visible: osdLoader.active
 
             ColumnLayout {
                 id: columnLayout
@@ -219,7 +217,7 @@ Scope {
             GlobalStates.osdVolumeOpen = !GlobalStates.osdVolumeOpen;
         }
     }
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "osdVolumeTrigger"
         description: "Triggers volume OSD on press"
 
@@ -227,7 +225,7 @@ Scope {
             root.triggerOsd();
         }
     }
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "osdVolumeHide"
         description: "Hides volume OSD on press"
 

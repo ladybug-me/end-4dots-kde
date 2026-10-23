@@ -7,7 +7,6 @@ import QtQuick
 import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope { // Scope
     id: root
@@ -173,6 +172,7 @@ Scope { // Scope
             exclusiveZone: root.pin ? sidebarWidth : 0
             implicitWidth: Appearance.sizes.sidebarWidthExtended + Appearance.sizes.elevationMargin
             WlrLayershell.namespace: "quickshell:sidebarLeft"
+            WlrLayershell.layer: WlrLayer.Overlay
             // Hyprland 0.49: OnDemand is Exclusive, Exclusive just breaks click-outside-to-close
             WlrLayershell.keyboardFocus: WlrKeyboardFocus.OnDemand
             color: "transparent"

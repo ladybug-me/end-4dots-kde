@@ -101,7 +101,9 @@ LazyLoader {
         readonly property Item groupBox: root.group ? root.group.box : root.hoverTarget
         readonly property var barWin: root.hoverTarget?.QsWindow?.window ?? null
         readonly property var barLayer: {
-            const levels = HyprlandData.layers[popupWindow.screen.name]?.levels
+            const levels = (WM.compositor === "hyprland" && typeof HyprlandData !== "undefined")
+                ? HyprlandData.layers[popupWindow.screen.name]?.levels
+                : null
             if (!levels) return null
             const namespace = root.barVertical ? "quickshell:verticalBar" : "quickshell:bar"
             for (const level in levels) {
@@ -185,7 +187,10 @@ LazyLoader {
             return Math.max(margin, Math.min(base, maxTop))
         }
 
-        Component.onCompleted: HyprlandData.updateLayers()
+        Component.onCompleted: {
+            if (WM.compositor === "hyprland" && typeof HyprlandData !== "undefined")
+                HyprlandData.updateLayers()
+        }
 
         Binding {
             target: root.group

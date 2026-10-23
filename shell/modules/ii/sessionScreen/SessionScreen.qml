@@ -9,17 +9,10 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope {
     id: root
-
-    property string focusedScreenName: WM.compositor === "niri"
-        ? (NiriBackend.focusedMonitor?.name ?? "")
-        : (Hyprland.focusedMonitor?.name ?? "")
-
-    property var focusedScreen: Quickshell.screens.find(s => s.name === root.focusedScreenName)
-        ?? Quickshell.screens[0]
+    property var focusedScreen: Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name)
 
     Loader {
         id: sessionLoader
@@ -40,7 +33,6 @@ Scope {
 
         sourceComponent: PanelWindow { // Session menu
             id: sessionRoot
-            screen: root.focusedScreen
             visible: sessionLoader.active
             property string subtitle
 
@@ -316,20 +308,16 @@ Scope {
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "sessionToggle"
         description: "Toggles session screen on press"
 
         onPressed: {
-            if (Config.options.bar.layouts.middleLayout.includes("dynamicIsland")) {
-                GlobalStates.diSessionOpen = !GlobalStates.diSessionOpen;
-            } else {
-                GlobalStates.sessionOpen = !GlobalStates.sessionOpen;
-            }
+            GlobalStates.sessionOpen = !GlobalStates.sessionOpen;
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "sessionOpen"
         description: "Opens session screen on press"
 
@@ -338,7 +326,7 @@ Scope {
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "sessionClose"
         description: "Closes session screen on press"
 

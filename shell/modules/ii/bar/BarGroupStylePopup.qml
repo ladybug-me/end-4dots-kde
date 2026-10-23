@@ -7,7 +7,6 @@ import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import Quickshell.Hyprland
 
 PopupWindow {
     id: root
@@ -33,9 +32,6 @@ PopupWindow {
         return spaced.charAt(0).toUpperCase() + spaced.slice(1);
     }
 
-    Component.onCompleted: GlobalStates.barStyleEditorOpen = true
-    Component.onDestruction: GlobalStates.barStyleEditorOpen = false
-
     color: "transparent"
     visible: true
     mask: Region {
@@ -55,10 +51,19 @@ PopupWindow {
             : (Config.options.bar.bottom ? Edges.Top : Edges.Bottom)
     }
 
-    HyprlandFocusGrab {
-        active: root.visible
-        windows: [root]
-        onCleared: root.close()
+    Component.onCompleted: {
+        GlobalStates.barStyleEditorOpen = true;
+        GlobalFocusGrab.addDismissable(root);
+    }
+    Component.onDestruction: {
+        GlobalStates.barStyleEditorOpen = false;
+        GlobalFocusGrab.removeDismissable(root);
+    }
+    Connections {
+        target: GlobalFocusGrab
+        function onDismissed() {
+            root.close();
+        }
     }
 
     Item {

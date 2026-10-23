@@ -8,41 +8,19 @@ import QtQuick.Controls
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope {
     id: root
 
-    property bool reallyOpen: false
-
-    Connections {
-        target: GlobalStates
-        function onWallpaperSelectorOpenChanged() {
-            if (GlobalStates.wallpaperSelectorOpen) {
-                closeAnimTimer.stop();
-                root.reallyOpen = true;
-            } else {
-                closeAnimTimer.restart();
-            }
-        }
-    }
-
-    Timer {
-        id: closeAnimTimer
-        interval: Appearance.animation.sidebarSlideExit.duration
-        onTriggered: root.reallyOpen = false
-    }
-
     Loader {
         id: wallpaperSelectorLoader
-        active: root.reallyOpen
+        active: GlobalStates.wallpaperSelectorOpen
 
         sourceComponent: PanelWindow {
             id: panelWindow
-            readonly property var monitor: WM.monitorFor(panelWindow.screen)
-            property bool monitorIsFocused: WM.compositor === "hyprland"
-                ? (Hyprland.focusedMonitor?.name == monitor?.name)
-                : (WM.focusedMonitor?.name == monitor?.name)
+            screen: (Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name) ?? Quickshell.screens[0] ?? null)
+            readonly property var monitor: (panelWindow.screen && panelWindow.screen.name) ? Kwin.monitorFor(panelWindow.screen) : (Kwin.focusedMonitor ?? null)
+            property bool monitorIsFocused: (Kwin.focusedMonitor?.id == monitor?.id)
 
             exclusionMode: ExclusionMode.Ignore
             WlrLayershell.namespace: "quickshell:wallpaperSelector"
@@ -64,7 +42,6 @@ Scope {
 
             Component.onCompleted: {
                 GlobalFocusGrab.addDismissable(panelWindow);
-                content.slideIn();
             }
             Component.onDestruction: {
                 GlobalFocusGrab.removeDismissable(panelWindow);
@@ -78,41 +55,8 @@ Scope {
 
             WallpaperSelectorContent {
                 id: content
-                width: parent.width
-                height: parent.height
-                x: 0
-                y: 0
-
-                function slideIn() {
-                    content.y = -content.height;
-                    if (WM.compositor === "niri") {
-                        Qt.callLater(() => { Qt.callLater(() => { content.y = 0; }); });
-                    } else {
-                        Qt.callLater(() => { content.y = 0; });
-                    }
-                }
-
-                Connections {
-                    target: GlobalStates
-                    function onWallpaperSelectorOpenChanged() {
-                        if (!GlobalStates.wallpaperSelectorOpen) {
-                            content.y = -content.height;
-                        }
-                    }
-                }
-
-                Behavior on y {
-                    NumberAnimation {
-                        duration: WM.compositor === "niri"
-                            ? Appearance.animation.sidebarSlideEnter.duration
-                            : Appearance.animation.sidebarSlideExit.duration
-                        easing.type: GlobalStates.wallpaperSelectorOpen
-                            ? Appearance.animation.sidebarSlideEnter.type
-                            : Appearance.animation.sidebarSlideExit.type
-                        easing.bezierCurve: GlobalStates.wallpaperSelectorOpen
-                            ? Appearance.animation.sidebarSlideEnter.bezierCurve
-                            : Appearance.animation.sidebarSlideExit.bezierCurve
-                    }
+                anchors {
+                    fill: parent
                 }
             }
         }
@@ -138,7 +82,7 @@ Scope {
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "wallpaperSelectorToggle"
         description: "Toggle wallpaper selector"
         onPressed: {
@@ -146,7 +90,7 @@ Scope {
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "wallpaperSelectorRandom"
         description: "Select random wallpaper in current folder"
         onPressed: {

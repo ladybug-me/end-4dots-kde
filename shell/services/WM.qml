@@ -9,7 +9,7 @@ Singleton {
     id: root
 
     readonly property string compositor: detectCompositor()
-    property QtObject backend: null
+    readonly property QtObject backend: backendLoader.item
 
     function switchWorkspaceRelative(direction) { backend?.switchWorkspaceRelative(direction) }
 
@@ -26,21 +26,15 @@ Singleton {
         return "kwin"; // Default to kwin in this KDE port
     }
 
-    Component { id: kwinComp; KwinBackend {} }
-    Component { id: hyprlandComp; HyprlandBackend {} }
-    Component { id: niriComp; NiriBackend {} }
-    // Component { id: swayComp; SwayBackend {} }
-    // Component { id: mangoComp; MangoBackend {} }
-
-    Component.onCompleted: {
-        switch (root.compositor) {
-        case "kwin":     backend = kwinComp.createObject(root); break;
-        case "hyprland": backend = hyprlandComp.createObject(root); break;
-        case "niri":     backend = niriComp.createObject(root); break;
-        // case "sway":  backend = swayComp.createObject(root); break;
-        // case "mango": backend = mangoComp.createObject(root); break;
-        default:
-            backend = kwinComp.createObject(root);
+    Loader {
+        id: backendLoader
+        source: {
+            switch (root.compositor) {
+            case "kwin":     return "KwinBackend.qml";
+            case "hyprland": return "HyprlandBackend.qml";
+            case "niri":     return "NiriBackend.qml";
+            default:         return "KwinBackend.qml";
+            }
         }
     }
 

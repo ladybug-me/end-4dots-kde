@@ -8,7 +8,6 @@ import QtQuick.Layouts
 import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 
 Scope { // Scope
     id: root
@@ -71,14 +70,8 @@ Scope { // Scope
             }
             Rectangle {
                 id: oskBackground
-                WindowGlass {
-                    anchors.fill: parent
-                    glassEnabled: (parent?.color.a ?? 0) > 0
-                    cardRadius: parent?.radius ?? 0
-                    tint: parent?.color ?? 'transparent'
-                }
                 anchors.centerIn: parent
-                color: Appearance.colors.colUiBackground
+                color: Appearance.colors.colLayer0
                 radius: Appearance.rounding.windowRounding
                 property real padding: 10
                 implicitWidth: oskRowLayout.implicitWidth + padding * 2
@@ -149,7 +142,7 @@ Scope { // Scope
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "oskToggle"
         description: "Toggles on screen keyboard on press"
 
@@ -158,7 +151,7 @@ Scope { // Scope
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "oskOpen"
         description: "Opens on screen keyboard on press"
 
@@ -167,7 +160,7 @@ Scope { // Scope
         }
     }
 
-    CompositorGlobalShortcut {
+    GlobalShortcut {
         name: "oskClose"
         description: "Closes on screen keyboard on press"
 

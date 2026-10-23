@@ -5,13 +5,16 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 
+/**
+ * System and OS information service.
+ */
 Singleton {
     id: root
 
-    property string distroName: "Unknown"
-    property string distroId: "unknown"
-    property string distroIcon: ""
-    property string username: "user"
+    property string distroName: "Linux"
+    property string distroId: "linux"
+    property string distroIcon: "linux-symbolic"
+    readonly property string username: Quickshell.env("USER") || Quickshell.env("LOGNAME") || "user"
     property string hostname: ""
     property string homeUrl: ""
     property string documentationUrl: ""
@@ -19,8 +22,9 @@ Singleton {
     property string bugReportUrl: ""
     property string privacyPolicyUrl: ""
     property string logo: ""
-    property string desktopEnvironment: ""
-    property string windowingSystem: ""
+    readonly property string desktopEnvironment: Quickshell.env("XDG_CURRENT_DESKTOP") || "KDE"
+    readonly property string windowingSystem: Quickshell.env("WAYLAND_DISPLAY") ? "Wayland" : (Quickshell.env("DISPLAY") ? "X11" : "Wayland")
+
     property string cpu: ""
     property string gpu: ""
     property string memory: ""
@@ -30,20 +34,15 @@ Singleton {
     property string installAge: ""
     property string kernelVersion: ""
 
-    function refresh() {
-        getCpu.running = false;       getCpu.running = true
-        getGpu.running = false;       getGpu.running = true
-        getMemory.running = false;    getMemory.running = true
-        getDisk.running = false;      getDisk.running = true
-        getShell.running = false;     getShell.running = true
-        getPackages.running = false;  getPackages.running = true
-        getInstallAge.running = false; getInstallAge.running = true
-        getKernel.running = false; getKernel.running = true
-    }
-
-    function refreshHostname() {
-        getHostname.running = false
-        getHostname.running = true
+    function refresh(): void {
+        getCpu.running = false; getCpu.running = true;
+        getGpu.running = false; getGpu.running = true;
+        getMemory.running = false; getMemory.running = true;
+        getDisk.running = false; getDisk.running = true;
+        getShell.running = false; getShell.running = true;
+        getPackages.running = false; getPackages.running = true;
+        getInstallAge.running = false; getInstallAge.running = true;
+        getKernel.running = false; getKernel.running = true;
     }
 
     Timer {
@@ -51,82 +50,85 @@ Singleton {
         interval: 1
         running: true
         repeat: false
+
         onTriggered: {
-            getUsername.running = true
-            getHostname.running = true
-            fileOsRelease.reload()
-            const textOsRelease = fileOsRelease.text()
+            getHostname.running = true;
+            fileOsRelease.reload();
+            const textOsRelease = fileOsRelease.text();
 
-            const prettyNameMatch = textOsRelease.match(/^PRETTY_NAME="(.+?)"/m)
-            const nameMatch = textOsRelease.match(/^NAME="(.+?)"/m)
-            distroName = prettyNameMatch ? prettyNameMatch[1] : (nameMatch ? nameMatch[1].replace(/Linux/i, "").trim() : "Unknown")
+            const prettyNameMatch = textOsRelease.match(/^PRETTY_NAME="(.+?)"/m);
+            const nameMatch = textOsRelease.match(/^NAME="(.+?)"/m);
+            root.distroName = prettyNameMatch ? prettyNameMatch[1] : (nameMatch ? nameMatch[1].replace(/Linux/i, "").trim() : "Linux");
 
-            const idMatch = textOsRelease.match(/^ID="?(.+?)"?$/m)
-            distroId = idMatch ? idMatch[1] : "unknown"
+            const idMatch = textOsRelease.match(/^ID="?(.+?)"?$/m);
+            root.distroId = idMatch ? idMatch[1].toLowerCase() : "linux";
 
-            const homeUrlMatch = textOsRelease.match(/^HOME_URL="(.+?)"/m)
-            homeUrl = homeUrlMatch ? homeUrlMatch[1] : ""
-            const documentationUrlMatch = textOsRelease.match(/^DOCUMENTATION_URL="(.+?)"/m)
-            documentationUrl = documentationUrlMatch ? documentationUrlMatch[1] : ""
-            const supportUrlMatch = textOsRelease.match(/^SUPPORT_URL="(.+?)"/m)
-            supportUrl = supportUrlMatch ? supportUrlMatch[1] : ""
-            const bugReportUrlMatch = textOsRelease.match(/^BUG_REPORT_URL="(.+?)"/m)
-            bugReportUrl = bugReportUrlMatch ? bugReportUrlMatch[1] : ""
-            const privacyPolicyUrlMatch = textOsRelease.match(/^PRIVACY_POLICY_URL="(.+?)"/m)
-            privacyPolicyUrl = privacyPolicyUrlMatch ? privacyPolicyUrlMatch[1] : ""
-            const logoFieldMatch = textOsRelease.match(/^LOGO="?(.+?)"?$/m)
-            logo = logoFieldMatch ? logoFieldMatch[1] : ""
+            const homeUrlMatch = textOsRelease.match(/^HOME_URL="(.+?)"/m);
+            root.homeUrl = homeUrlMatch ? homeUrlMatch[1] : "";
+            const documentationUrlMatch = textOsRelease.match(/^DOCUMENTATION_URL="(.+?)"/m);
+            root.documentationUrl = documentationUrlMatch ? documentationUrlMatch[1] : "";
+            const supportUrlMatch = textOsRelease.match(/^SUPPORT_URL="(.+?)"/m);
+            root.supportUrl = supportUrlMatch ? supportUrlMatch[1] : "";
+            const bugReportUrlMatch = textOsRelease.match(/^BUG_REPORT_URL="(.+?)"/m);
+            root.bugReportUrl = bugReportUrlMatch ? bugReportUrlMatch[1] : "";
+            const privacyPolicyUrlMatch = textOsRelease.match(/^PRIVACY_POLICY_URL="(.+?)"/m);
+            root.privacyPolicyUrl = privacyPolicyUrlMatch ? privacyPolicyUrlMatch[1] : "";
+            const logoFieldMatch = textOsRelease.match(/^LOGO="?(.+?)"?$/m);
+            root.logo = logoFieldMatch ? logoFieldMatch[1] : "";
 
-            switch (distroId) {
-                case "artix":
-                case "arch":        distroIcon = "arch-symbolic"; break
-                case "endeavouros": distroIcon = "endeavouros-symbolic"; break
-                case "cachyos":     distroIcon = "cachyos-symbolic"; break
-                case "nixos":       distroIcon = "nixos-symbolic"; break
-                case "fedora":      distroIcon = "fedora-symbolic"; break
-                case "linuxmint":
-                case "ubuntu":
-                case "zorin":
-                case "popos":       distroIcon = "ubuntu-symbolic"; break
-                case "debian":
-                case "raspbian":
-                case "kali":        distroIcon = "debian-symbolic"; break
-                case "funtoo":
-                case "gentoo":      distroIcon = "gentoo-symbolic"; break
-                default:            distroIcon = "arch-symbolic"; break
+            switch (root.distroId) {
+            case "artix":
+            case "arch":
+                root.distroIcon = "arch-symbolic";
+                break;
+            case "manjaro":
+                root.distroIcon = "manjaro-symbolic";
+                break;
+            case "endeavouros":
+                root.distroIcon = "endeavouros-symbolic";
+                break;
+            case "cachyos":
+                root.distroIcon = "cachyos-symbolic";
+                break;
+            case "nixos":
+                root.distroIcon = "nixos-symbolic";
+                break;
+            case "fedora":
+                root.distroIcon = "fedora-symbolic";
+                break;
+            case "linuxmint":
+            case "ubuntu":
+            case "zorin":
+            case "pop":
+            case "popos":
+                root.distroIcon = "ubuntu-symbolic";
+                break;
+            case "debian":
+            case "raspbian":
+            case "kali":
+                root.distroIcon = "debian-symbolic";
+                break;
+            case "gentoo":
+            case "funtoo":
+                root.distroIcon = "gentoo-symbolic";
+                break;
+            default:
+                root.distroIcon = "linux-symbolic";
+                break;
             }
+
             if (textOsRelease.toLowerCase().includes("nyarch"))
-                distroIcon = "nyarch-symbolic"
+                root.distroIcon = "nyarch-symbolic";
 
-            if (logo.trim().length === 0)
-                logo = distroIcon
+            if (root.logo.trim().length === 0)
+                root.logo = root.distroIcon;
         }
-    }
-
-    Process {
-        id: getUsername
-        command: ["whoami"]
-        stdout: SplitParser { onRead: data => root.username = data.trim() }
     }
 
     Process {
         id: getHostname
         command: ["cat", "/etc/hostname"]
         stdout: SplitParser { onRead: data => root.hostname = data.trim() }
-    }
-
-    Process {
-        id: getDesktopEnvironment
-        running: true
-        command: ["bash", "-c", "echo $XDG_CURRENT_DESKTOP,$WAYLAND_DISPLAY"]
-        stdout: StdioCollector {
-            id: deCollector
-            onStreamFinished: {
-                const [desktop, wayland] = deCollector.text.split(",")
-                root.desktopEnvironment = desktop.trim()
-                root.windowingSystem = wayland.trim().length > 0 ? "Wayland" : "X11"
-            }
-        }
     }
 
     FileView {
@@ -154,7 +156,6 @@ Singleton {
         command: ["bash", "-c", `
             gpu=$(glxinfo 2>/dev/null | grep 'renderer string' | grep -o 'Intel(R) HD Graphics [0-9]\\{4\\}' | sed 's/Intel(R)/Intel®/')
             if [ -z "$gpu" ]; then
-                # Prefer a discrete card: the iGPU usually sits first on the bus
                 gpus=$(lspci | grep -iE 'vga|3d|display')
                 line=$(echo "$gpus" | grep -vi 'Intel Corporation' | head -1)
                 [ -z "$line" ] && line=$(echo "$gpus" | head -1)

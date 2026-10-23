@@ -27,7 +27,8 @@ Singleton {
     })
 
     Connections {
-        target: Hyprland
+        target: (WM.compositor === "hyprland" && typeof Hyprland !== "undefined") ? Hyprland : null
+        enabled: WM.compositor === "hyprland"
 
         function onRawEvent(event) {
             if (event.name == "configreloaded") {

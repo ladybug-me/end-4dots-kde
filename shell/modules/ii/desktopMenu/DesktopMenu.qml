@@ -5,7 +5,6 @@ import QtQuick.Layouts
 import Qt.labs.folderlistmodel
 import Quickshell
 import Quickshell.Wayland
-import Quickshell.Hyprland
 import Quickshell.Io
 import qs
 import qs.services
@@ -21,7 +20,7 @@ Scope {
             GlobalStates.desktopMenuOpen = false
             return
         }
-        const focusedName = Hyprland.focusedMonitor?.name
+        const focusedName = Kwin.focusedMonitor?.name ?? WM.focusedMonitor?.name
         const screen = Quickshell.screens.find(s => s.name === focusedName) ?? Quickshell.screens[0]
         GlobalStates.desktopMenuScreen = screen
         GlobalStates.desktopMenuX = screen.width / 2

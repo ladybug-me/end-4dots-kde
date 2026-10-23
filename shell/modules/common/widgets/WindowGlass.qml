@@ -98,14 +98,14 @@ Item {
 
     Process {
         id: tracker
-        running: root.live && root.floating && !!root.win?.visible
+        running: WM.compositor === "hyprland" && root.live && root.floating && !!root.win?.visible
         command: ["bash", "-c", "while :; do hyprctl -j activewindow | tr -d '\\n'; echo; sleep 0.016; done"]
         stdout: SplitParser {
             onRead: line => {
                 try {
                     const client = JSON.parse(line)
                     if (client.title !== root.win.title || !root.scr) return
-                    const mon = HyprlandData.monitors.find(m => m.name === root.scr.name)
+                    const mon = (typeof HyprlandData !== "undefined") ? HyprlandData.monitors.find(m => m.name === root.scr.name) : null
                     root.floatX = client.at[0] - (mon?.x ?? 0)
                     root.floatY = client.at[1] - (mon?.y ?? 0)
                 } catch (e) {}

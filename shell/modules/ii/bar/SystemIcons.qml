@@ -124,7 +124,7 @@ Item {
             }
         }
         Loader {
-            source: "HyprlandXkbIndicator.qml"
+            source: "KbLayoutIndicator.qml"
             onLoaded: item.color = root.iconColor
         }
         MaterialSymbol {

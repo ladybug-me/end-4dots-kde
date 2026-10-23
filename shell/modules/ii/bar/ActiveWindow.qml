@@ -1,94 +1,54 @@
-import qs
-import qs.services
-import qs.modules.common
-import qs.modules.common.models
-import qs.modules.common.widgets
-import qs.modules.common.functions
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
-import QtQuick.Controls
 import Quickshell.Wayland
-import Quickshell.Widgets
-import Qt5Compat.GraphicalEffects
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
 
 Item {
     id: root
-    property color contentColor: Appearance.colors.colOnLayer0
-    property bool contentColorOverridden: false
-    property bool vertical: false
-    readonly property var monitor: WM.monitorFor(root.QsWindow.window?.screen)
+
+    readonly property var monitor: (root.QsWindow.window?.screen && root.QsWindow.window.screen.name) ? Kwin.monitorFor(root.QsWindow.window.screen) : (Kwin.focusedMonitor ?? null)
+    readonly property int currentWsId: {
+        const activeWs = Kwin.activeWsId;
+        const activeByOut = Kwin.activeByOutput;
+        const perOutput = (monitor?.name && activeByOut) ? activeByOut[monitor.name] : 0;
+        return perOutput > 0 ? perOutput : (activeWs > 0 ? activeWs : 1);
+    }
     readonly property Toplevel activeWindow: ToplevelManager.activeToplevel
-    property string activeWindowAddress: activeWindow?.HyprlandToplevel?.address ? `0x${activeWindow.HyprlandToplevel.address}` : ""
-    property bool focusingThisMonitor: WM.focusedMonitor?.name === monitor?.name
-    property var biggestWindow: WM.biggestWindowForWorkspace(WM.activeWorkspaceForMonitor(monitor?.name)?.id ?? 1)
+    property string activeWindowAddress: Kwin.activeWindow?.address ? String(Kwin.activeWindow.address) : ""
+    property bool focusingThisMonitor: Kwin.focusedMonitor?.name === monitor?.name
+    property var biggestWindow: Kwin.biggestWindowForWorkspace(currentWsId)
 
-    property string activeAppClass: {
-        if (!root.focusingThisMonitor || !root.activeWindow?.activated)
-            return root.biggestWindow?.class ?? ""
-        return root.activeWindow?.appId ?? root.biggestWindow?.class ?? ""
-    }
+    implicitWidth: colLayout.implicitWidth
 
-    property var mainAppIconSource: {
-        if (!root.activeAppClass || root.activeAppClass === "")
-            return SystemAppearance.iconPath("user-desktop", "image-missing")
-        return SystemAppearance.iconPath(AppSearch.guessIcon(root.activeAppClass), 
-            SystemAppearance.iconPath("user-desktop", "image-missing"))     // ← fallback Desktop
-    }
-
-    Component.onCompleted: {
-        console.log("appId:", root.activeWindow?.appId)
-        console.log("class:", root.biggestWindow?.class)
-        console.log("guessIcon:", AppSearch.guessIcon(root.activeAppClass))
-        console.log("iconPath:", root.mainAppIconSource)
-    }
-
-    implicitWidth:  vertical ? Appearance.sizes.verticalBarWidth : Math.min(colLayout.implicitWidth + 12, 280)
-    implicitHeight: vertical ? iconItem.implicitHeight : Appearance.sizes.barHeight
-
-    // Vertical
-    Item {
-        id: iconItem
-        visible: root.vertical
-        anchors.centerIn: parent
-        implicitWidth: 22
-        implicitHeight: 22
-
-        IconImage {
-            anchors.centerIn: parent
-            source: root.mainAppIconSource
-            implicitSize: 18
-            visible: root.mainAppIconSource !== ""
-        }
-    }
-
-    // Horizontal
     ColumnLayout {
         id: colLayout
-        visible: !root.vertical
+
         anchors.verticalCenter: parent.verticalCenter
         anchors.left: parent.left
         anchors.right: parent.right
-        anchors.leftMargin: 6
         spacing: -4
 
         StyledText {
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.smaller
-            color: root.contentColorOverridden ? Qt.alpha(root.contentColor, 0.7) : Appearance.colors.colSubtext
+            color: Appearance.colors.colSubtext
             elide: Text.ElideRight
-            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
+            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
                 root.activeWindow?.appId :
-                (root.biggestWindow?.class) ?? Translation.tr("Desktop")
+                (root.biggestWindow?.["class"]) ?? Translation.tr("Desktop")
         }
+
         StyledText {
             Layout.fillWidth: true
             font.pixelSize: Appearance.font.pixelSize.small
-            color: root.contentColor
+            color: Appearance.colors.colOnLayer0
             elide: Text.ElideRight
-            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ?
+            text: root.focusingThisMonitor && root.activeWindow?.activated && root.biggestWindow ? 
                 root.activeWindow?.title :
-                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${WM.activeWorkspaceForMonitor(monitor?.name)?.id ?? 1}`
+                (root.biggestWindow?.title) ?? `${Translation.tr("Workspace")} ${root.currentWsId}`
         }
     }
 }

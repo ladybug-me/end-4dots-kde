@@ -5,7 +5,7 @@ import qs.services
 import qs.modules.common
 import qs.modules.common.widgets
 import qs.modules.common.functions
-import Quickshell.Hyprland
+import Quickshell
 
 
 ContentPage {
@@ -1389,7 +1389,7 @@ ContentPage {
 
             ContentSubsection {
                 title: Translation.tr("Show widgets on")
-                visible: Hyprland.monitors.values.length > 1
+                visible: Quickshell.screens.length > 1
                 Layout.bottomMargin: 10
 
                 WidgetsMonitorSelector {

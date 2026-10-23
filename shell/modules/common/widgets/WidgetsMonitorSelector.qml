@@ -3,7 +3,7 @@ import qs.modules.common.widgets
 import qs.services
 import QtQuick
 import QtQuick.Layouts
-import Quickshell.Hyprland
+import Quickshell
 
 Flow {
     id: root
@@ -13,7 +13,7 @@ Flow {
 
     SelectionGroupButton {
         leftmost: true
-        rightmost: Hyprland.monitors.length === 0
+        rightmost: Quickshell.screens.length === 0
         buttonIcon: "tv_displays"
         buttonText: Translation.tr("All")
         toggled: root.configEntry.screenList.length === 0
@@ -21,17 +21,17 @@ Flow {
     }
 
     Repeater {
-        model: Hyprland.monitors
+        model: Quickshell.screens
         delegate: SelectionGroupButton {
             required property var modelData
             required property int index
             leftmost: false
-            rightmost: index === Hyprland.monitors.length - 1
+            rightmost: index === Quickshell.screens.length - 1
             buttonIcon: "monitor"
             buttonText: modelData.name
             toggled: root.configEntry.screenList.includes(modelData.name)
             onClicked: {
-                const allNames = Array.from({length: Hyprland.monitors.length}, (_, i) => Hyprland.monitors[i].name)
+                const allNames = Quickshell.screens.map(s => s.name)
                 let list = root.configEntry.screenList.length === 0 ? allNames.slice() : root.configEntry.screenList.slice()
                 if (toggled) list = list.filter(s => s !== modelData.name)
                 else list.push(modelData.name)
