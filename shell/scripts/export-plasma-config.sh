@@ -907,19 +907,21 @@ VISUALIZER_ARGS=()
 APPLET_ARGS=()
 
 if [[ $# -eq 0 ]]; then
-    DO_SKWD=true
-    is_vis_enabled=true
-    vis_profile="double_reversed"
-    if [[ -f "$USER_CONFIG_DIR/caelestia/shell.json" ]]; then
-        is_vis_enabled="$(python3 -c "import json; print(str(json.load(open('$USER_CONFIG_DIR/caelestia/shell.json')).get('background', {}).get('visualiser', {}).get('enabled', True)).lower())" 2>/dev/null || echo "true")"
-        vis_profile="$(python3 -c "import json; print(str(json.load(open('$USER_CONFIG_DIR/caelestia/shell.json')).get('background', {}).get('visualiser', {}).get('profile', 'double_reversed')).lower())" 2>/dev/null || echo "double_reversed")"
-    fi
-    VISUALIZER_ARGS=("$vis_profile")
-    if [[ "$is_vis_enabled" == "false" ]]; then
-        VISUALIZER_ACTION="disable"
-    else
-        VISUALIZER_ACTION="enable"
-    fi
+    # skwd-wall and plasma-audio-visualizer disabled in End-4
+    # DO_SKWD=true
+    # is_vis_enabled=true
+    # vis_profile="double_reversed"
+    # if [[ -f "$USER_CONFIG_DIR/caelestia/shell.json" ]]; then
+    #     is_vis_enabled="$(python3 -c "import json; print(str(json.load(open('$USER_CONFIG_DIR/caelestia/shell.json')).get('background', {}).get('visualiser', {}).get('enabled', True)).lower())" 2>/dev/null || echo "true")"
+    #     vis_profile="$(python3 -c "import json; print(str(json.load(open('$USER_CONFIG_DIR/caelestia/shell.json')).get('background', {}).get('visualiser', {}).get('profile', 'double_reversed')).lower())" 2>/dev/null || echo "double_reversed")"
+    # fi
+    # VISUALIZER_ARGS=("$vis_profile")
+    # if [[ "$is_vis_enabled" == "false" ]]; then
+    #     VISUALIZER_ACTION="disable"
+    # else
+    #     VISUALIZER_ACTION="enable"
+    # fi
+    :
 else
     while [[ $# -gt 0 ]]; do
         case "$1" in
@@ -1044,13 +1046,13 @@ else
     done
 fi
 
-if [[ "$DO_SKWD" == true ]]; then
-    handle_skwd_command "export"
-fi
+# if [[ "$DO_SKWD" == true ]]; then
+#     handle_skwd_command "export"
+# fi
 
-if [[ -n "$VISUALIZER_ACTION" ]]; then
-    exec 200>"/tmp/plasma-export-config.lock"
-    flock -x 200
-    handle_visualizer_command "$VISUALIZER_ACTION" "${VISUALIZER_ARGS[@]}"
-fi
+# if [[ -n "$VISUALIZER_ACTION" ]]; then
+#     exec 200>"/tmp/plasma-export-config.lock"
+#     flock -x 200
+#     handle_visualizer_command "$VISUALIZER_ACTION" "${VISUALIZER_ARGS[@]}"
+# fi
 fi

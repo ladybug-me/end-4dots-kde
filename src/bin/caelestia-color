@@ -1461,13 +1461,13 @@ write_wallpaper_state() {
     # theme authority called us). Calling skwd-helm apply here would tell skwd-walld
     # to apply the same wallpaper again, which triggers the theme authority again,
     # creating an infinite loop. The wallpaper state is written above regardless.
-    if command -v skwd-helm >/dev/null 2>&1 && ! _called_from_skwd_walld; then
-        local curr_helm
-        curr_helm="$(skwd-helm current 2>/dev/null | cut -f2- || true)"
-        if [[ "$curr_helm" != "$wallpaper" ]]; then
-            skwd-helm apply "$wallpaper" >/dev/null 2>&1 || true
-        fi
-    fi
+    # if command -v skwd-helm >/dev/null 2>&1 && ! _called_from_skwd_walld; then
+    #     local curr_helm
+    #     curr_helm="$(skwd-helm current 2>/dev/null | cut -f2- || true)"
+    #     if [[ "$curr_helm" != "$wallpaper" ]]; then
+    #         skwd-helm apply "$wallpaper" >/dev/null 2>&1 || true
+    #     fi
+    # fi
 }
 
 stored_wallpaper() {
