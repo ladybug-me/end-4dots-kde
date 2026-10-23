@@ -81,9 +81,9 @@ Scope {
             id: settingsWindow
             WindowGlass {
                 anchors.fill: parent
-                glassEnabled: (parent?.color.a ?? 0) > 0
-                cardRadius: parent?.radius ?? 0
-                tint: parent?.color ?? 'transparent'
+                glassEnabled: settingsWindow.color.a > 0
+                cardRadius: settingsWindow.radius
+                tint: settingsWindow.color
             }
             width: Config.options.settings.style === "minimal" ? Math.min(parent.width - 70, 980 * sizeScale) : Math.min(parent.width - 80, 980 * sizeScale)
             height: Math.min(parent.height - 80, 665 * sizeScale)
@@ -168,9 +168,9 @@ Scope {
 
     IpcHandler {
         target: "settings"
-        function toggle(): void { GlobalStates.settingsOpen = !GlobalStates.settingsOpen; }
-        function open(): void   { GlobalStates.settingsOpen = true; }
-        function close(): void  { GlobalStates.settingsOpen = false; }
+        function toggle() { GlobalStates.settingsOpen = !GlobalStates.settingsOpen; }
+        function open()   { GlobalStates.settingsOpen = true; }
+        function close()  { GlobalStates.settingsOpen = false; }
     }
 
     CompositorGlobalShortcut {

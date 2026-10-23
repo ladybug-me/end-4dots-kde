@@ -14,7 +14,7 @@ DashboardCard {
     property var override: null
 
     readonly property var control: override ?? SettingsQuickControls.controls[controlKey] ?? null
-    readonly property var options: control?.options ?? []
+    readonly property var options: (control && control.options) ? control.options : []
     readonly property var currentValue: control ? control.get() : null
 
     tint: Appearance.colors.colPrimaryContainer
