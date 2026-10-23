@@ -1,12 +1,11 @@
-import QtQuick
-import QtQuick.Layouts
-import Quickshell
 import qs
 import qs.services
 import qs.services.network
-import qs.utils
 import qs.modules.common
 import qs.modules.common.widgets
+import QtQuick
+import QtQuick.Layouts
+import Quickshell
 
 WindowDialog {
     id: root
@@ -27,6 +26,7 @@ WindowDialog {
         Layout.rightMargin: -Appearance.rounding.large
     }
     ListView {
+        id: networksView
         Layout.fillHeight: true
         Layout.fillWidth: true
         Layout.topMargin: -15
@@ -40,6 +40,9 @@ WindowDialog {
         model: ScriptModel {
             values: Network.friendlyWifiNetworks
         }
+
+        TouchpadScrollArea { flickable: networksView }
+
         delegate: WifiNetworkItem {
             required property WifiAccessPoint modelData
             wifiNetwork: modelData
@@ -51,7 +54,7 @@ WindowDialog {
         DialogButton {
             buttonText: Translation.tr("Details")
             onClicked: {
-                Launch.exec(["bash", "-c", `${Network.ethernet ? Config.options.apps.networkEthernet : Config.options.apps.network}`]);
+                Quickshell.execDetached(["bash", "-c", `${Network.ethernet ? Config.options.apps.networkEthernet : Config.options.apps.network}`]);
                 GlobalStates.sidebarRightOpen = false;
             }
         }

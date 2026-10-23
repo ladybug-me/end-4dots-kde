@@ -42,14 +42,15 @@ StyledImage {
         id: thumbnailGeneration
         command: {
             const maxSize = Images.thumbnailSizes[root.thumbnailSizeName];
-            return ["bash", "-c", 
-                `[ -f '${FileUtils.trimFileProtocol(root.thumbnailPath)}' ] && exit 0 || { magick '${root.sourcePath}' -resize ${maxSize}x${maxSize} '${FileUtils.trimFileProtocol(root.thumbnailPath)}' && exit 1; }`
+            const thumbPath = FileUtils.trimFileProtocol(root.thumbnailPath);
+            return ["bash", "-c",
+                `[ -f '${thumbPath}' ] && exit 0 || { tmp='${thumbPath}.$$.tmp.png'; magick '${root.sourcePath}' -resize ${maxSize}x${maxSize} '\${tmp}' && mv '\${tmp}' '${thumbPath}' && exit 1; exit 2; }`
             ]
         }
         onExited: (exitCode, exitStatus) => {
-            if (exitCode === 1) { // Force reload if thumbnail had to be generated
+            if (exitCode === 1) {
                 root.source = "";
-                root.source = root.thumbnailPath; // Force reload
+                root.source = root.thumbnailPath;
             }
         }
     }

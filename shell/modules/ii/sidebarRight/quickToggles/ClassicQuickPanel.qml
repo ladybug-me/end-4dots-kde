@@ -18,6 +18,7 @@ AbstractQuickPanel {
         id: buttonGroup
         spacing: 5
         padding: 5
+        glass: true
         color: Appearance.colors.colLayer1
 
         NetworkToggle {
@@ -31,6 +32,7 @@ AbstractQuickPanel {
             }
         }
         NightLight {}
+        LiveWallpaperToggle {}
         GameMode {}
         IdleInhibitor {}
         EasyEffectsToggle {}

@@ -20,6 +20,10 @@ Item {
     property var suggestionQuery: ""
     property var suggestionList: []
 
+    Component.onCompleted: {
+        Ai.refreshLocalModels();
+    }
+
     onFocusChanged: focus => {
         if (focus) {
             root.inputField.forceActiveFocus();
@@ -45,7 +49,7 @@ Item {
     property var allCommands: [
         {
             name: "attach",
-            description: Translation.tr("Attach a file. Only works with Gemini."),
+            description: Translation.tr("Attach an image / file"),
             execute: args => {
                 Ai.attachFile(args.join(" ").trim());
             }
@@ -124,6 +128,14 @@ Item {
             description: Translation.tr("Clear chat history"),
             execute: () => {
                 Ai.clearMessages();
+            }
+        },
+        {
+            name: "refresh",
+            description: Translation.tr("Refresh local models (Ollama, vLLM)"),
+            execute: () => {
+                Ai.refreshLocalModels();
+                Ai.addMessage(Translation.tr("Refreshing local models..."), Ai.interfaceRole);
             }
         },
         {
@@ -282,14 +294,15 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
         spacing: root.padding
 
         Item {
+            id: messagesArea
             // Messages
             Layout.fillWidth: true
             Layout.fillHeight: true
             layer.enabled: true
             layer.effect: OpacityMask {
                 maskSource: Rectangle {
-                    width: swipeView.width
-                    height: swipeView.height
+                    width: messagesArea.width
+                    height: messagesArea.height
                     radius: Appearance.rounding.small
                 }
             }
@@ -309,7 +322,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                     top: parent.top
-                    topMargin: 4
+                    topMargin: 0
                 }
                 implicitWidth: statusRowLayout.implicitWidth + 10 * 2
                 implicitHeight: Math.max(statusRowLayout.implicitHeight, 38)
@@ -361,18 +374,17 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
                 topMargin: statusBg.implicitHeight + statusBg.anchors.topMargin * 2
 
                 touchpadScrollFactor: Config.options.interactions.scrolling.touchpadScrollFactor * 1.4
-                mouseScrollFactor: Config.options.interactions.scrolling.mouseScrollFactor * 1.4
 
                 property int lastResponseLength: 0
-                // onContentHeightChanged: {
-                //     if (atYEnd)
-                //         Qt.callLater(positionViewAtEnd);
-                // }
-                // onCountChanged: {
-                //     // Auto-scroll when new messages are added
-                //     if (atYEnd)
-                //         Qt.callLater(positionViewAtEnd);
-                // }
+                onContentHeightChanged: {
+                    if (atYEnd)
+                        Qt.callLater(positionViewAtEnd);
+                }
+                onCountChanged: {
+                    // Auto-scroll when new messages are added
+                    if (atYEnd)
+                        Qt.callLater(positionViewAtEnd);
+                }
 
                 add: null // Prevent function calls from being janky
 
@@ -506,6 +518,7 @@ Inline w/ backslash and round brackets \\(e^{i\\pi} + 1 = 0\\)
 
                 ScrollView {
                     id: inputScrollView
+                    property TouchpadScrollArea _touchpadScroll: TouchpadScrollArea { flickable: inputScrollView.contentItem }
                     Layout.fillWidth: true
                     Layout.preferredHeight: Math.min(root.height * 3/5, messageInputField.height)
                     clip: true

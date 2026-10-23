@@ -1,9 +1,10 @@
 pragma ComponentBehavior: Bound
+import qs
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Io
-import qs
-import qs.services
+import Quickshell.Hyprland
 
 Scope {
     id: root
@@ -12,7 +13,7 @@ Scope {
         GlobalStates.screenTranslatorOpen = false
     }
 
-    readonly property var currentScreen: Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name) ?? null
+    readonly property var currentScreen: Quickshell.screens.find(s => s.name === Hyprland.focusedMonitor?.name) ?? null
     
     Loader {
         id: translatorLoader
@@ -48,7 +49,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "screenTranslate"
         description: "Translates screen content"
         onPressed: root.translate()

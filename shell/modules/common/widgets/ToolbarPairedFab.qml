@@ -1,24 +1,17 @@
 pragma ComponentBehavior: Bound
-
 import QtQuick
 import qs.modules.common
-import qs.modules.common.widgets
 
 Item {
     id: root
-
+    signal clicked(event: var)
     property alias iconText: fabWidget.iconText
+    property alias baseSize: fabWidget.baseSize
     default property alias fabData: fabWidget.data
     property bool enableShadow: true
 
-    signal clicked(event: var)
-
     implicitWidth: fabWidget.implicitWidth
     implicitHeight: fabWidget.implicitHeight
-
-    anchors {
-        verticalCenter: parent.verticalCenter
-    }
 
     StyledRectangularShadow {
         visible: root.enableShadow
@@ -28,13 +21,11 @@ Item {
 
     FloatingActionButton {
         id: fabWidget
-
+        onClicked: e => root.clicked(e)
         baseSize: 48
         colBackground: Appearance.colors.colTertiaryContainer
         colBackgroundHover: Appearance.colors.colTertiaryContainerHover
         colRipple: Appearance.colors.colTertiaryContainerActive
         colOnBackground: Appearance.colors.colOnTertiaryContainer
-
-        onClicked: e => root.clicked(e)
     }
 }

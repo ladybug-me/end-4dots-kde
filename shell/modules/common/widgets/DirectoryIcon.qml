@@ -1,3 +1,4 @@
+import qs.services
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -7,7 +8,7 @@ import qs.modules.common.functions
 // From https://github.com/caelestia-dots/shell with modifications.
 // License: GPLv3
 
-StyledImage {
+Image {
     id: root
     required property var fileModelData
     asynchronous: true
@@ -15,17 +16,17 @@ StyledImage {
 
     source: {
         if (!fileModelData.fileIsDir)
-            return Quickshell.iconPath("application-x-zerosize");
+            return SystemAppearance.iconPath("application-x-zerosize");
 
         if ([Directories.documents, Directories.downloads, Directories.music, Directories.pictures, Directories.videos].some(dir => FileUtils.trimFileProtocol(dir) === fileModelData.filePath))
-            return Quickshell.iconPath(`folder-${fileModelData.fileName.toLowerCase()}`);
+            return SystemAppearance.iconPath(`folder-${fileModelData.fileName.toLowerCase()}`);
 
-        return Quickshell.iconPath("inode-directory");
+        return SystemAppearance.iconPath("inode-directory");
     }
 
     onStatusChanged: {
         if (status === Image.Error)
-            source = Quickshell.iconPath("error");
+            source = SystemAppearance.iconPath("error");
     }
 
     Process {
@@ -34,7 +35,7 @@ StyledImage {
         stdout: StdioCollector {
             onStreamFinished: {
                 const mime = text.split(";")[0].replace("/", "-");
-                root.source = Images.validImageTypes.some(t => mime === `image-${t}`) ? fileModelData.fileUrl : Quickshell.iconPath(mime, "image-missing");
+                root.source = Images.validImageTypes.some(t => mime === `image-${t}`) ? fileModelData.fileUrl : SystemAppearance.iconPath(mime, "image-missing");
             }
         }
     }

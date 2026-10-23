@@ -11,11 +11,14 @@ Singleton {
     id: root
 
     property bool barOpen: true
+    property bool barStyleEditorOpen: false
     property bool crosshairOpen: false
+    property bool equalizerOpen: false
     property bool sidebarLeftOpen: false
     property bool sidebarRightOpen: false
     property bool mediaControlsOpen: false
     property bool osdBrightnessOpen: false
+    property bool settingsOpen: false
     property bool osdVolumeOpen: false
     property bool oskOpen: false
     property bool overlayOpen: false
@@ -31,13 +34,112 @@ Singleton {
     property bool superReleaseMightTrigger: true
     property bool wallpaperSelectorOpen: false
     property bool workspaceShowNumbers: false
+    property var settingsTarget: null
+    property Item currentPageInstance: null
+    property list<real> visualizerPoints: []
+    property bool desktopWidgetKeyboardFocus: false
+    property bool desktopMenuOpen: false
+    property var desktopMenuScreen: null
+    property real desktopMenuX: 0
+    property real desktopMenuY: 0
+    property string wallpaperSelectorTarget: "wallpaper"
+    property bool dropShelfOpen: false
+    property real dropShelfX: 0
+    property real dropShelfY: 0
+    property string osdIndicatorType: "volume"
+    property bool barCenterOnly: false
+    property int dashboardPage: 0
+    property string dashboardGroup: ""
+    property var frameHover: ({})
+    property bool diSessionOpen: false
+    property bool startupLockPending: true
 
+    readonly property bool dynamicIslandEnabled: Config.options.bar.layouts.leftLayout.includes("dynamicIsland")
+        || Config.options.bar.layouts.middleLayout.includes("dynamicIsland")
+        || Config.options.bar.layouts.rightLayout.includes("dynamicIsland")
+
+    readonly property var centeredShapeOptions: [
+        "Circle", "Square", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Pill",
+        "Triangle", "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny",
+        "Cookie4Sided", "Cookie6Sided", "Cookie7Sided", "Cookie9Sided", "Cookie12Sided",
+        "Ghostish", "Clover4Leaf", "Clover8Leaf", "Burst", "SoftBurst", "Flower",
+        "Puffy", "PuffyDiamond", "PixelCircle", "Bun", "Heart"
+    ]
+
+    readonly property var hotCornerOptions: [
+        { displayName: Translation.tr("None"),                  value: "none" },
+        { displayName: Translation.tr("Left Sidebar"),           value: "sidebarLeftOpen" },
+        { displayName: Translation.tr("Right Sidebar"),          value: "sidebarRightOpen" },
+        { displayName: Translation.tr("Overview Launcher"),      value: "overviewOpen" },
+        { displayName: Translation.tr("Wallpaper Selector"),     value: "wallpaperSelectorOpen" },
+        { displayName: Translation.tr("Media Controls"),         value: "mediaControlsOpen" },
+        { displayName: Translation.tr("Overlay"),                value: "overlayOpen" },
+        { displayName: Translation.tr("ScreenShot Region"),      value: "regionSelectorOpen" },
+        { displayName: Translation.tr("Screen Translator"),      value: "screenTranslatorOpen" },
+        { displayName: Translation.tr("On-screen Keyboard"),     value: "oskOpen" },
+        { displayName: Translation.tr("Session Menu"),           value: "sessionOpen" },
+        { displayName: Translation.tr("Equalizer"),              value: "equalizerOpen" }
+    ]
+
+    signal requestBluetoothDialog()
     signal requestScreenshot()
     signal requestSearch()
     signal requestOcr()
     signal requestRecord()
     signal requestRecordWithSound()
     signal requestCheatsheetToggle()
+    signal centeredWallpaperThumpRequested()
+
+    function openSettingsAt(pageId, label, section, subsection) {
+        root.settingsOpen = true;
+        Qt.callLater(() => {
+            root.settingsTarget = { page: pageId, label: label ?? "", section: section ?? "", subsection: subsection ?? "" };
+        });
+    }
+
+    function setFrameHover(screenName, side, hovered) {
+        const key = `${screenName}:${side}`;
+        if ((root.frameHover[key] ?? false) === hovered) return;
+        const next = Object.assign({}, root.frameHover);
+        next[key] = hovered;
+        root.frameHover = next;
+    }
+
+    function isFrameHovered(screenName, side) {
+        return root.frameHover[`${screenName}:${side}`] ?? false;
+    }
+
+    function cycleCenteredWallpaperShape(direction) {
+        const opts = root.centeredShapeOptions;
+        const i = opts.indexOf(Config.options.background.centeredWallpaperShape);
+        Config.options.background.centeredWallpaperShape = opts[(i + direction + opts.length) % opts.length];
+    }
+
+    function toggleState(name) {
+        if (!name || name === "none") return;
+        root[name] = !root[name];
+    }
+
+    function refreshBar() {
+        if (!root.barOpen) return;
+        root.barOpen = false;
+        barRefreshTimer.restart();
+    }
+
+    Timer {
+        interval: 3000
+        running: true
+        onTriggered: root.startupLockPending = false
+    }
+
+    Timer {
+        id: barRefreshTimer
+        interval: 200
+        repeat: false
+        onTriggered: {
+            root.barOpen = true;
+        }
+    }
 
     onSidebarRightOpenChanged: {
         if (GlobalStates.sidebarRightOpen) {
@@ -49,12 +151,22 @@ Singleton {
     GlobalShortcut {
         name: "workspaceNumber"
         description: "Hold to show workspace numbers, release to show icons"
+        onPressed: { root.superDown = true; }
+        onReleased: { root.superDown = false; }
+    }
 
-        onPressed: {
-            root.superDown = true
+    IpcHandler {
+        target: "background"
+        function toggleCenteredWallpaper(): void {
+            Config.options.background.centeredWallpaper = !Config.options.background.centeredWallpaper;
         }
-        onReleased: {
-            root.superDown = false
+    }
+
+    GlobalShortcut {
+        name: "centeredWallpaperToggle"
+        description: "Toggles centered wallpaper"
+        onPressed: {
+            Config.options.background.centeredWallpaper = !Config.options.background.centeredWallpaper;
         }
     }
 }

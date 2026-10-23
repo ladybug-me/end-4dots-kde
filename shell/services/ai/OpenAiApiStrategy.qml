@@ -1,7 +1,10 @@
 import QtQuick
+import qs.modules.common
+import qs.modules.common.functions as CF
 
 ApiStrategy {
     property bool isReasoning: false
+    readonly property string localImagePrefix: "__LOCAL_IMAGE_FILE__:"
     
     function buildEndpoint(model: AiModel): string {
         // console.log("[AI] Endpoint: " + model.endpoint);
@@ -9,17 +12,50 @@ ApiStrategy {
     }
 
     function buildRequestData(model: AiModel, messages, systemPrompt: string, temperature: real, tools: list<var>, filePath: string) {
+        const hasPendingFile = (filePath && filePath.length > 0);
+
+        let formattedMessages = [
+            { role: "system", content: systemPrompt }
+        ];
+
+        for (let i = 0; i < messages.length; i++) {
+            const message = messages[i];
+            const isLastMessage = (i === messages.length - 1);
+
+            let imagePath = "";
+            if (isLastMessage && hasPendingFile) {
+                imagePath = CF.FileUtils.trimFileProtocol(filePath);
+            } else if (message.localFilePath && message.localFilePath.length > 0) {
+                imagePath = CF.FileUtils.trimFileProtocol(message.localFilePath);
+            }
+
+            if (imagePath.length > 0 && message.role === "user") {
+                formattedMessages.push({
+                    "role": message.role,
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": message.rawContent
+                        },
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": `${localImagePrefix}${imagePath}`
+                            }
+                        }
+                    ]
+                });
+            } else {
+                formattedMessages.push({
+                    "role": message.role,
+                    "content": message.rawContent
+                });
+            }
+        }
+
         let baseData = {
             "model": model.model,
-            "messages": [
-                {role: "system", content: systemPrompt},
-                ...messages.map(message => {
-                    return {
-                        "role": message.role,
-                        "content": message.rawContent,
-                    }
-                }),
-            ],
+            "messages": formattedMessages,
             "stream": true,
             "tools": tools,
             "temperature": temperature,
@@ -29,6 +65,42 @@ ApiStrategy {
 
     function buildAuthorizationHeader(apiKeyEnvVarName: string): string {
         return `-H "Authorization: Bearer \$\{${apiKeyEnvVarName}\}"`;
+    }
+
+    function buildScriptFileSetup(filePath) {
+        return "mkdir -p /tmp/quickshell/ai\n";
+    }
+
+    function finalizeScriptContent(scriptContent: string): string {
+        if (!scriptContent.includes(localImagePrefix)) {
+            return scriptContent;
+        }
+
+        const dataMarker = " --data '";
+        const markerIndex = scriptContent.lastIndexOf(dataMarker);
+        if (markerIndex === -1) return scriptContent;
+
+        const beforeData = scriptContent.substring(0, markerIndex);
+        let afterData = scriptContent.substring(markerIndex + dataMarker.length);
+        if (afterData.endsWith("\n")) afterData = afterData.slice(0, -1);
+        if (afterData.endsWith("'")) afterData = afterData.slice(0, -1);
+
+        const jsonPayload = afterData.replace(/'\\''/g, "'");
+
+        const curlCmdIndex = beforeData.lastIndexOf("curl ");
+        const prefixBeforeCurl = beforeData.substring(0, curlCmdIndex);
+        const curlCmd = beforeData.substring(curlCmdIndex);
+
+        const pythonScriptPath = `${CF.FileUtils.trimFileProtocol(Directories.scriptPath)}/ai/prepare-openai-payload.py`;
+
+        let res = "";
+        res += prefixBeforeCurl;
+        res += `cat << 'QUICKSHELL_AI_PAYLOAD_EOF' > /tmp/quickshell/ai/payload_template.json\n`;
+        res += `${jsonPayload}\n`;
+        res += `QUICKSHELL_AI_PAYLOAD_EOF\n\n`;
+        res += `python3 '${pythonScriptPath}' /tmp/quickshell/ai/payload_template.json /tmp/quickshell/ai/payload.json\n\n`;
+        res += `${curlCmd} --data-binary "@/tmp/quickshell/ai/payload.json"\n`;
+        return res;
     }
 
     function parseResponseLine(line, message) {

@@ -51,14 +51,14 @@ DialogListItem {
                     textFormat: Text.PlainText
                 }
                 StyledText {
-                    visible: (root.device?.connected || root.device?.paired) ?? false
+                    visible: (BluetoothStatus.isConnected(root.device) || root.device?.paired) ?? false
                     Layout.fillWidth: true
                     font.pixelSize: Appearance.font.pixelSize.smaller
                     color: Appearance.colors.colSubtext
                     elide: Text.ElideRight
                     text: {
                         if (!root.device?.paired) return "";
-                        let statusText = root.device?.connected ? Translation.tr("Connected") : Translation.tr("Paired");
+                        let statusText = BluetoothStatus.isConnected(root.device) ? Translation.tr("Connected") : Translation.tr("Paired");
                         if (!root.device?.batteryAvailable) return statusText;
                         statusText += ` • ${Math.round(root.device?.battery * 100)}%`;
                         return statusText;
@@ -92,21 +92,27 @@ DialogListItem {
 
                 buttonText: p ? Translation.tr("Forget") : Translation.tr("Always connect")
                 onClicked: {
-                    if (root.device?.paired) {
-                        root.device?.forget();
+                    const device = root.device;
+                    if (!device) return;
+                    if (device.paired) {
+                        device.forget();
                     } else {
-                        root.device?.pair();
+                        device.pair();
                     }
                 }
             }
             ActionButton {
-                buttonText: root.device?.connected ? Translation.tr("Disconnect") : Translation.tr("Connect")
+                buttonText: BluetoothStatus.isConnected(root.device) ? Translation.tr("Disconnect") : Translation.tr("Connect")
 
                 onClicked: {
-                    if (root.device?.connected) {
-                        root.device.disconnect();
+                    const device = root.device;
+                    if (!device) return;
+                    // Disconnect() works even in the state where BlueZ reports the
+                    // device as disconnected (see BluetoothStatus.isConnected).
+                    if (BluetoothStatus.isConnected(device)) {
+                        device.disconnect();
                     } else {
-                        root.device.connect();
+                        device.connect();
                     }
                 }
             }

@@ -1,0 +1,683 @@
+pragma ComponentBehavior: Bound
+import qs.modules.common
+import qs.modules.common.models
+import qs.modules.common.widgets
+import qs.services
+import qs.modules.common.functions
+import Qt5Compat.GraphicalEffects
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Effects
+import QtQuick.Layouts
+import Quickshell
+import Quickshell.Io
+import Quickshell.Services.Mpris
+
+Item {
+    id: root
+    property var player: Mpris.players.values[root.currentPlayerIndex] ?? Mpris.players.values[0]
+    property var artUrl: player?.trackArtUrl ?? ""
+    property string artDownloadLocation: Directories.coverArt
+    property bool showLyrics: Config.options.sidebar.media.showLyrics ?? true
+    property string artFileName: Qt.md5(artUrl)
+    property string artFilePath: `${artDownloadLocation}/${artFileName}`
+    property color artDominantColor: Config.options.sidebar.media.artColors
+        ? ColorUtils.mix(
+            (colorQuantizer?.colors[0] ?? Appearance.colors.colPrimary),
+            Appearance.colors.colPrimaryContainer,
+            0.8
+          )
+        : Appearance.colors.colPrimaryContainer
+    property bool downloaded: Boolean(root.artUrl && (root.artUrl.startsWith("data:") || root.artUrl.startsWith("file:/") || root.artUrl.startsWith("/")))
+    property list<real> visualizerPoints: []
+    property real maxVisualizerValue: 1000
+    property int visualizerSmoothing: 2
+    property real radius
+    property int currentPlayerIndex: 0
+    property bool blurredBackground: Config.options.sidebar.media.blurredBackground ?? false
+    property bool shapeArt: Config.options.sidebar.media.shapeArt ?? false
+    readonly property var artShapeOptions: ["Circle", "Square", "Pill", "Bun", "Cookie12Sided", "Clover4Leaf", "Heart", "Slanted", "Arch", "Arrow", "SemiCircle", "Oval", "Triangle", "Diamond", "ClamShell", "Pentagon", "Gem", "Sunny", "VerySunny", "Cookie4Sided", "Cookie6Sided", "Cookie7Sided", "Cookie9Sided", "Ghostish", "Clover8Leaf", "Burst", "SoftBurst", "Boom", "SoftBoom", "Flower", "Puffy", "PuffyDiamond"]
+
+    property string displayedArtFilePath: {
+        if (!root.artUrl || root.artUrl.length === 0) return ""
+        if (root.artUrl.startsWith("data:")) return root.artUrl
+        if (root.artUrl.startsWith("file:/")) return root.artUrl
+        if (root.artUrl.startsWith("/")) return "file://" + root.artUrl
+        if (!root.downloaded) return ""
+        return Qt.resolvedUrl(artFilePath)
+    }
+
+    Timer {
+        running: root.player?.playbackState == MprisPlaybackState.Playing
+        interval: Config.options.resources.updateInterval
+        repeat: true
+        onTriggered: root.player?.positionChanged()  
+    }
+
+    onArtFilePathChanged: {
+        if (!root.artUrl || root.artUrl.length == 0) {
+            root.artDominantColor = Appearance.m3colors.m3secondaryContainer
+            root.downloaded = false
+            return
+        }
+        if (root.artUrl.startsWith("data:") || root.artUrl.startsWith("file:/") || root.artUrl.startsWith("/")) {
+            root.downloaded = true
+            return
+        }
+        if (root.artUrl.startsWith("http://") || root.artUrl.startsWith("https://")) {
+            coverArtDownloader.targetFile = root.artUrl
+            coverArtDownloader.artFilePath = root.artFilePath
+            root.downloaded = false
+            coverArtDownloader.running = true
+        } else {
+            root.downloaded = true
+        }
+    }
+
+    Process {
+        id: coverArtDownloader
+        property string targetFile: root.artUrl
+        property string artFilePath: root.artFilePath
+        command: ["bash", "-c", `[ -f ${artFilePath} ] || curl -sSL '${targetFile}' -o '${artFilePath}'`]
+        onExited: (exitCode, exitStatus) => { root.downloaded = true }
+    }
+
+    ColorQuantizer {
+        id: colorQuantizer
+        source: root.displayedArtFilePath
+        depth: 0
+        rescaleSize: 1
+    }
+
+    property QtObject blendedColors: AdaptedMaterialScheme {
+        color: artDominantColor
+    }
+
+    Rectangle {
+        id: background
+        anchors.fill: parent
+        anchors.leftMargin: 4
+        anchors.rightMargin: 4
+        anchors.topMargin: -1
+        anchors.bottomMargin: 4
+        color: ColorUtils.transparentize(artDominantColor, 0.9)
+        radius: Appearance.rounding.normal
+        clip: true
+
+        WindowGlass {
+            anchors.fill: parent
+            cardRadius: parent.radius
+            tint: root.artDominantColor
+            tintStrength: 0.4
+        }
+
+        Image {
+            id: blurArtSource
+            anchors.fill: parent
+            source: root.displayedArtFilePath
+            fillMode: Image.PreserveAspectCrop
+            cache: false
+            asynchronous: true
+            visible: false
+        }
+
+        FastBlur {
+            id: blurArt
+            anchors.fill: parent
+            source: blurArtSource
+            radius: 80
+            opacity: 0.5
+            visible: root.blurredBackground && root.displayedArtFilePath !== ""
+
+            layer.enabled: blurArt.visible
+            layer.effect: OpacityMask {
+                maskSource: Rectangle {
+                    width: blurArt.width
+                    height: blurArt.height
+                    radius: background.radius
+                }
+            }
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: parent.height * 0.04
+            spacing: 0
+
+            // ── Album art ──
+            Item {
+                id: artBackground
+                Layout.alignment: Qt.AlignHCenter
+                Layout.preferredWidth: Math.min(parent.width * 1, parent.height * 0.45)
+                Layout.preferredHeight: Layout.preferredWidth
+
+                property bool useShape: root.shapeArt && (Config.options.sidebar.media.artShape ?? "Rectangle") !== "Rectangle"
+                property int materialShape: ShapeUtils.getShape(Config.options.sidebar.media.artShape)
+
+                Rectangle {
+                    id: artRect
+                    anchors.fill: parent
+                    visible: !artBackground.useShape
+                    radius: Appearance.rounding.normal
+                    color: Appearance.colors.colPrimaryContainer
+
+                    layer.enabled: !artBackground.useShape
+                    layer.effect: OpacityMask {
+                        maskSource: Rectangle {
+                            width: artRect.width
+                            height: artRect.height
+                            radius: artRect.radius
+                        }
+                    }
+
+                    StyledImage {
+                        anchors.fill: parent
+                        source: root.displayedArtFilePath
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        antialiasing: true
+                        sourceSize.width: artBackground.width * 2
+                        sourceSize.height: artBackground.height * 2
+                    }
+                }
+
+                MaterialShape {
+                    id: artShapeItem
+                    anchors.fill: parent
+                    visible: artBackground.useShape
+                    shape: artBackground.materialShape
+                    color: Appearance.colors.colPrimaryContainer
+
+                    layer.enabled: artBackground.useShape
+                    layer.effect: OpacityMask {
+                        maskSource: MaterialShape {
+                            width: artShapeItem.width
+                            height: artShapeItem.height
+                            shape: artBackground.materialShape
+                        }
+                    }
+
+                    StyledImage {
+                        anchors.fill: parent
+                        source: root.displayedArtFilePath
+                        fillMode: Image.PreserveAspectCrop
+                        cache: false
+                        antialiasing: true
+                        sourceSize.width: artBackground.width * 2
+                        sourceSize.height: artBackground.height * 2
+                    }
+                }
+
+                MaterialSymbol {
+                    visible: MprisController.activePlayer === null
+                    anchors.centerIn: parent 
+                    fill: 1
+                    text: "music_note"
+                    color: Appearance.colors.colPrimary
+                    iconSize: Appearance.font.pixelSize.hugeass + 100
+                }
+            }
+
+            // ── Title & Artist ──
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 20
+                spacing: 5
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: titleText.implicitHeight
+                    clip: true
+
+                    StyledText {
+                        id: titleText
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        font.pixelSize: Appearance.font.pixelSize.huge
+                        font.weight: Font.Bold
+                        color: blendedColors.colOnLayer0
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        text: StringUtils.cleanMusicTitle(root.player?.trackTitle) || "Play"
+
+                        Behavior on text {
+                            SequentialAnimation {
+                                NumberAnimation { target: titleText; property: "x"; to: -titleText.width; duration: 150; easing.type: Easing.InQuad }
+                                PropertyAction { target: titleText; property: "text" }
+                                NumberAnimation { target: titleText; property: "x"; from: titleText.width; to: 0; duration: 150; easing.type: Easing.OutQuad }
+                            }
+                        }
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: artistText.implicitHeight
+                    clip: true
+
+                    StyledText {
+                        id: artistText
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: parent.width
+                        font.pixelSize: Appearance.font.pixelSize.large 
+                        color: blendedColors.colSubtext
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                        elide: Text.ElideRight
+                        text: root.player?.trackArtist || "Something"
+
+                        Behavior on text {
+                            SequentialAnimation {
+                                NumberAnimation { target: artistText; property: "x"; to: -artistText.width; duration: 150; easing.type: Easing.InQuad }
+                                PropertyAction { target: artistText; property: "text" }
+                                NumberAnimation { target: artistText; property: "x"; from: artistText.width; to: 0; duration: 150; easing.type: Easing.OutQuad }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Lyrics ──
+            Item {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                Lyrics {
+                    id: lyricsComp
+                    anchors.fill: parent
+                    opacity: (MprisController.activePlayer !== null && Config.options.sidebar.media.showLyrics) ? 1 : 0
+                    textAlignment: Text.AlignHCenter
+                    textColor: blendedColors.colOnLayer0
+                    activeColor: blendedColors.colPrimary
+                    dimColor: blendedColors.colSubtext
+                    indicatorColor: {
+                        let c = blendedColors.colPrimaryContainer
+                        return (c && c != "#000000" && c != "transparent") ? c : root.artDominantColor
+                    }
+                    indicatorShapeColor: {
+                        let c = blendedColors.colOnPrimaryContainer
+                        if (c && c != "#000000" && c != "#ffffff" && c != "transparent") return c
+                        return blendedColors.colPrimary || Appearance.colors.colPrimary
+                    }
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+                }
+
+                Loader {
+                    anchors.fill: parent
+                    active: !Config.options.sidebar.media.showLyrics
+                    opacity: active ? 1 : 0
+                    Behavior on opacity { NumberAnimation { duration: 200 } }
+
+                    sourceComponent: Visualizer {
+                        vertical: false
+                        mirrored: false
+                        barCount: 32
+                        dotSize: 5
+                        dotSpacing: 6
+                        maxBarHeight: parent.height * 0.8
+                    }
+                }
+            }
+
+            // ── Controls ──
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 20
+                spacing: 20
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 24
+
+                    RippleButton {
+                        property real baseSize: Math.max(70, parent.parent.height * 0.1)
+                        Layout.fillWidth: true
+                        implicitHeight: baseSize
+                        buttonRadius: (root.player?.isPlaying ?? false) ? Appearance.rounding.verylarge : baseSize / 2
+                        colBackground: (root.player?.isPlaying ?? false) ? blendedColors.colPrimary : blendedColors.colSecondaryContainer
+                        colBackgroundHover: (root.player?.isPlaying ?? false) ? blendedColors.colPrimaryHover : blendedColors.colSecondaryContainerHover
+                        colRipple: (root.player?.isPlaying ?? false) ? blendedColors.colPrimaryActive : blendedColors.colSecondaryContainerActive
+                        downAction: () => root.player?.togglePlaying()
+                        contentItem: MaterialSymbol {
+                            iconSize: 50
+                            fill: 1
+                            horizontalAlignment: Text.AlignHCenter
+                            color: (root.player?.isPlaying ?? false) ? blendedColors.colOnPrimary : blendedColors.colOnSecondaryContainer
+                            text: (root.player?.isPlaying ?? false) ? "pause" : "play_arrow"
+                            Behavior on color {
+                                animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
+                            }
+                        }
+                    }
+
+                    RippleButton {
+                        property real baseSize: Math.max(60, parent.parent.height * 0.06)
+                        implicitWidth: baseSize
+                        implicitHeight: baseSize 
+                        buttonRadius: Appearance.rounding.verylarge
+                        colBackground: "transparent"
+                        colBackgroundHover: "transparent"
+                        colRipple: "transparent"
+                        padding: -10
+                        downAction: () => root.player?.next()
+                        contentItem: MaterialShapeWrappedMaterialSymbol {
+                            wrappedShape: MaterialShape.Shape.Cookie12Sided
+                            padding: 0
+                            iconSize: 32
+                            fill: 1
+                            text: "skip_next"
+                            color: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                            colSymbol: blendedColors.colOnSecondaryContainer
+                        }
+                    }
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 24
+
+                    RippleButton {
+                        property real baseSize: Math.max(60, parent.parent.height * 0.06)
+                        implicitWidth: baseSize
+                        implicitHeight: baseSize 
+                        buttonRadius: Appearance.rounding.verylarge
+                        colBackground: "transparent"
+                        colBackgroundHover: "transparent"
+                        colRipple: "transparent"
+                        padding: -10
+                        downAction: () => root.player?.previous()
+                        contentItem: MaterialShapeWrappedMaterialSymbol {
+                            wrappedShape: MaterialShape.Shape.Cookie12Sided
+                            padding: 0
+                            iconSize: 32
+                            fill: 1
+                            text: "skip_previous"
+                            color: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                            colSymbol: blendedColors.colOnSecondaryContainer
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        Item {
+                            Layout.fillWidth: true
+                            implicitHeight: Math.max(sliderLoader.implicitHeight, progressBarLoader.implicitHeight)
+
+                            Loader {
+                                id: sliderLoader
+                                property var player: root.player
+                                anchors.fill: parent
+                                active: sliderLoader.player?.canSeek ?? false
+                                sourceComponent: StyledSlider {
+                                    configuration: StyledSlider.Configuration.Wavy
+                                    highlightColor: blendedColors.colPrimary
+                                    trackColor: blendedColors.colSecondaryContainer
+                                    handleColor: blendedColors.colPrimary
+                                    value: (sliderLoader.player?.position ?? 0) / (sliderLoader.player?.length ?? 1)
+                                    onMoved: {
+                                        sliderLoader.player.position = value * sliderLoader.player.length
+                                        lyricsComp.restartLyrics()
+                                    }
+                                }
+                            }
+
+                            Loader {
+                                id: progressBarLoader
+                                property var player: root.player
+                                anchors {
+                                    verticalCenter: parent.verticalCenter
+                                    left: parent.left
+                                    right: parent.right
+                                }
+                                active: !(progressBarLoader.player?.canSeek ?? false)
+                                sourceComponent: StyledProgressBar {
+                                    wavy: progressBarLoader.player?.isPlaying ?? false
+                                    highlightColor: blendedColors.colPrimary
+                                    trackColor: blendedColors.colSecondaryContainer
+                                    value: (progressBarLoader.player?.position ?? 0) / (progressBarLoader.player?.length ?? 1)
+                                }
+                            }
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+
+                            StyledText {
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                                color: blendedColors.colSubtext
+                                font.letterSpacing: -0.4
+                                font.features: { "tnum": 1 }
+                                text: StringUtils.friendlyTimeForSeconds(root.player?.position ?? 0)
+                            }
+
+                            Item { Layout.fillWidth: true }
+
+                            StyledText {
+                                font.pixelSize: Appearance.font.pixelSize.normal
+                                color: blendedColors.colSubtext
+                                font.letterSpacing: -0.4
+                                font.features: { "tnum": 1 }
+                                text: StringUtils.friendlyTimeForSeconds(root.player?.length ?? 0)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Lyrics toggle Volume & settings  ──
+            RowLayout {
+                Layout.fillWidth: true
+                Layout.topMargin: 20
+                spacing: 8
+
+                RippleButton {
+                    property real baseSize: Math.max(36, parent.parent.height * 0.05)
+                    implicitWidth: baseSize
+                    implicitHeight: baseSize
+                    buttonRadius: Appearance.rounding.large
+                    colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                    colBackgroundHover: blendedColors.colSecondaryContainerHover
+                    colRipple: blendedColors.colSecondaryContainerActive
+                    downAction: () => {
+                        Config.options.sidebar.media.showLyrics = !Config.options.sidebar.media.showLyrics
+                    }
+                    contentItem: MaterialSymbol {
+                        iconSize: 18
+                        fill: Config.options.sidebar.media.showLyrics ? 1 : 0
+                        horizontalAlignment: Text.AlignHCenter
+                        color: blendedColors.colOnSecondaryContainer
+                        text: "lyrics"
+                    }
+                }
+
+                RippleButton {
+                    property real baseSize: Math.max(36, parent.parent.height * 0.05)
+                    implicitWidth: baseSize
+                    implicitHeight: baseSize
+                    buttonRadius: Appearance.rounding.large
+                    colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                    colBackgroundHover: blendedColors.colSecondaryContainerHover
+                    colRipple: blendedColors.colSecondaryContainerActive
+                    downAction: () => {
+                        if (root.player) root.player.volume = (root.player.volume > 0) ? 0 : 1.0  
+                    }
+                    contentItem: MaterialSymbol {
+                        iconSize: 18
+                        fill: 1
+                        horizontalAlignment: Text.AlignHCenter
+                        color: blendedColors.colOnSecondaryContainer
+                        text: (root.player?.volume ?? 1) <= 0 ? "volume_off"
+                            : (root.player?.volume ?? 1) < 0.5 ? "volume_down"
+                            : "volume_up"
+                    }
+                }
+
+                RippleButton {
+                    property real baseSize: Math.max(36, parent.parent.height * 0.05)
+                    Layout.fillWidth: true
+                    implicitHeight: baseSize
+                    buttonRadius: Appearance.rounding.large
+                    colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                    colBackgroundHover: blendedColors.colSecondaryContainerHover
+                    colRipple: blendedColors.colSecondaryContainerActive
+                    downAction: () => {
+                        if (root.player) root.player.volume = Math.max(0, (root.player.volume ?? 1) - 0.1)  
+                    }
+                    contentItem: MaterialSymbol {
+                        iconSize: 18
+                        fill: 1
+                        horizontalAlignment: Text.AlignHCenter
+                        color: blendedColors.colOnSecondaryContainer
+                        text: "volume_down"
+                    }
+                }
+
+                RippleButton {
+                    property real baseSize: Math.max(36, parent.parent.height * 0.05)
+                    Layout.fillWidth: true
+                    implicitHeight: baseSize
+                    buttonRadius: Appearance.rounding.large
+                    colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                    colBackgroundHover: blendedColors.colSecondaryContainerHover
+                    colRipple: blendedColors.colSecondaryContainerActive
+                    downAction: () => {
+                        if (root.player) root.player.volume = Math.min(1.5, (root.player.volume ?? 1) + 0.1)  
+                    }
+                    contentItem: MaterialSymbol {
+                        iconSize: 18
+                        fill: 1
+                        horizontalAlignment: Text.AlignHCenter
+                        color: blendedColors.colOnSecondaryContainer
+                        text: "volume_up"
+                    }
+                }
+
+                RippleButton {
+                    id: moreButton
+                    property real baseSize: Math.max(36, parent.parent.height * 0.05)
+                    implicitWidth: baseSize
+                    implicitHeight: baseSize
+                    buttonRadius: Appearance.rounding.large
+                    colBackground: ColorUtils.transparentize(blendedColors.colSecondaryContainer, 0.7)
+                    colBackgroundHover: blendedColors.colSecondaryContainerHover
+                    colRipple: blendedColors.colSecondaryContainerActive
+                    downAction: () => menuPopup.open()
+                    contentItem: MaterialSymbol {
+                        iconSize: 18
+                        fill: 1
+                        horizontalAlignment: Text.AlignHCenter
+                        color: blendedColors.colOnSecondaryContainer
+                        text: "more_vert"
+                    }
+
+                    Popup {
+                        id: menuPopup
+                        y: -implicitHeight - 8
+                        x: moreButton.width - implicitWidth
+                        width: 210
+                        padding: 16
+                        modal: true
+                        dim: false
+                        closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
+                        transformOrigin: Popup.BottomRight
+
+                        enter: Transition {
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    property: "scale"
+                                    from: 0.6
+                                    to: 1
+                                    duration: 500
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Appearance.animationCurves.expressiveFastSpatial
+                                }
+                                NumberAnimation {
+                                    property: "opacity"
+                                    from: 0
+                                    to: 1
+                                    duration: Appearance.animationCurves.expressiveEffectsDuration
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Appearance.animationCurves.expressiveEffects
+                                }
+                            }
+                        }
+                        exit: Transition {
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    property: "scale"
+                                    to: 0.6
+                                    duration: 220
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Appearance.animationCurves.emphasizedAccel
+                                }
+                                NumberAnimation {
+                                    property: "opacity"
+                                    to: 0
+                                    duration: 120
+                                    easing.type: Easing.BezierSpline
+                                    easing.bezierCurve: Appearance.animationCurves.emphasizedAccel
+                                }
+                            }
+                        }
+
+                        background: Rectangle {
+                            color: Appearance.m3colors.m3surfaceContainer
+                            radius: Appearance.rounding.verylarge
+                            border.width: 2
+                            border.color: Appearance.colors.colLayer0Border
+                        }
+
+                        contentItem: ColumnLayout {
+                            width: menuPopup.width
+                            spacing: 10
+
+                            ConfigSwitch {
+                                buttonIcon: "shape_line"
+                                text: Translation.tr("Shape Art")
+                                checked: Config.options.sidebar.media.shapeArt
+                                onCheckedChanged: { Config.options.sidebar.media.shapeArt = checked }
+                            }
+
+                            ConfigSelectionShapeArray {
+                                Layout.fillWidth: true
+                                visible: Config.options.sidebar.media.shapeArt
+                                currentValue: Config.options.sidebar.media.artShape
+                                shapeColor: Appearance.colors.colPrimary
+                                backgroundColor: Appearance.colors.colPrimaryContainer
+                                options: root.artShapeOptions
+                                onSelected: newValue => Config.options.sidebar.media.artShape = newValue
+                            }
+
+                            ConfigSwitch {
+                                buttonIcon: "radio_button_partial"
+                                text: Translation.tr("Art Colors")
+                                checked: Config.options.sidebar.media.artColors
+                                onCheckedChanged: { Config.options.sidebar.media.artColors = checked }
+                            }
+
+                            ConfigSwitch {
+                                buttonIcon: "blur_on"
+                                text: Translation.tr("Blurred Art")
+                                checked: Config.options.sidebar.media.blurredBackground
+                                onCheckedChanged: { Config.options.sidebar.media.blurredBackground = checked }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ── Player selector ──
+            StyledComboBox {
+                id: playerSelector
+                visible: Mpris.players.values.length > 1
+                Layout.fillWidth: true
+                Layout.topMargin: 12
+                model: Mpris.players.values.map(p => p.identity ?? p.desktopEntry ?? "Unknown")
+                currentIndex: 0
+            }
+        }
+    }
+}

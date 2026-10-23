@@ -120,7 +120,7 @@ Rectangle {
                                 width: Appearance.font.pixelSize.large
                                 height: Appearance.font.pixelSize.large
                                 source: messageData?.role == 'assistant' ? Ai.models[messageData?.model].icon :
-                                    messageData?.role == 'user' ? 'linux-symbolic' : 'desktop-symbolic'
+                                    messageData?.role == 'user' ? 'arch-symbolic' : 'desktop-symbolic'
 
                                 colorize: true
                                 color: Appearance.m3colors.m3onSecondaryContainer

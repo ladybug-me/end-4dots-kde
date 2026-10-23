@@ -8,6 +8,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Io
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 Scope {
     id: root
@@ -43,17 +44,12 @@ Scope {
                 right: true
             }
 
-            QtObject {
+            HyprlandFocusGrab {
                 id: grab
-
-                property bool active: false
-                property var windows: [overlayWindow]
-
-                signal cleared
-
-                onCleared: {
-                    if (!active)
-                        GlobalStates.overlayOpen = false;
+                windows: [overlayWindow]
+                active: false
+                onCleared: () => {
+                    if (!active) GlobalStates.overlayOpen = false;
                 }
             }
 
@@ -87,7 +83,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "overlayToggle"
         description: "Toggles overlay on press"
 

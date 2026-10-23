@@ -1,3 +1,4 @@
+import qs.services
 import qs.modules.common
 import qs.modules.common.functions
 import Qt5Compat.GraphicalEffects
@@ -30,7 +31,7 @@ MaterialShape { // App icon
     color: isUrgent ? Appearance.colors.colPrimaryContainer : Appearance.colors.colSecondaryContainer
     Loader {
         id: materialSymbolLoader
-        active: root.appIcon == "" && root.image == ""
+        active: root.appIcon == ""
         anchors.fill: parent
         sourceComponent: MaterialSymbol {
             text: {
@@ -54,7 +55,7 @@ MaterialShape { // App icon
             id: appIconImage
             implicitSize: root.appIconSize
             asynchronous: true
-            source: Quickshell.iconPath(root.appIcon, "image-missing")
+            source: SystemAppearance.iconPath(root.appIcon, "image-missing")
         }
     }
     Loader {
@@ -63,7 +64,7 @@ MaterialShape { // App icon
         anchors.fill: parent
         sourceComponent: Item {
             anchors.fill: parent
-            StyledImage {
+            Image {
                 id: notifImage
                 anchors.fill: parent
                 readonly property int size: parent.width
@@ -73,6 +74,11 @@ MaterialShape { // App icon
                 cache: false
                 antialiasing: true
                 asynchronous: true
+
+                width: size
+                height: size
+                sourceSize.width: size
+                sourceSize.height: size
 
                 layer.enabled: true
                 layer.effect: OpacityMask {
@@ -91,7 +97,7 @@ MaterialShape { // App icon
                 sourceComponent: IconImage {
                     implicitSize: root.smallAppIconSize
                     asynchronous: true
-                    source: Quickshell.iconPath(root.appIcon, "image-missing")
+                    source: SystemAppearance.iconPath(root.appIcon, "image-missing")
                 }
             }
         }

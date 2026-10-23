@@ -1,14 +1,12 @@
 pragma ComponentBehavior: Bound
-
+import qs
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Services.Pipewire
-import qs
-import qs.services
-import qs.utils
-import qs.modules.common
-import qs.modules.common.widgets
 
 WindowDialog {
     id: root
@@ -33,7 +31,7 @@ WindowDialog {
         DialogButton {
             buttonText: Translation.tr("Details")
             onClicked: {
-                Launch.exec(["bash", "-c", `${Config.options.apps.volumeMixer}`]);
+                Quickshell.execDetached(["bash", "-c", `${Config.options.apps.volumeMixer}`]);
                 GlobalStates.sidebarRightOpen = false;
             }
         }

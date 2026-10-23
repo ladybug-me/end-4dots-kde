@@ -10,6 +10,7 @@ import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
 import Quickshell
 import Quickshell.Io
+import Quickshell.Hyprland
 
 Button {
     id: root
@@ -146,7 +147,9 @@ Button {
                             buttonText: Translation.tr("Open file link")
                             onClicked: {
                                 root.showActions = false
+                                Hyprland.dispatch("hl.config({cursor = {no_warps = true}})")
                                 Qt.openUrlExternally(root.imageData.file_url)
+                                Hyprland.dispatch("hl.config({cursor = {no_warps = false}})")
                             }
                         }
                         MenuButton {
@@ -157,7 +160,9 @@ Button {
                             enabled: root.imageData.source && root.imageData.source.length > 0
                             onClicked: {
                                 root.showActions = false
+                                Hyprland.dispatch("hl.config({cursor = {no_warps = true}})")
                                 Qt.openUrlExternally(root.imageData.source)
+                                Hyprland.dispatch("hl.config({cursor = {no_warps = false}})")
                             }
                         }
                         MenuButton {

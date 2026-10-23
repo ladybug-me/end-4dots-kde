@@ -9,6 +9,7 @@ import QtQuick.Layouts
 import Quickshell.Io
 import Quickshell
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 WindowDialog {
     id: root
@@ -19,27 +20,22 @@ WindowDialog {
     WindowDialogTitle {
         text: Translation.tr("Eye protection")
     }
-    
-    WindowDialogSectionHeader {
-        text: Translation.tr("Night Light")
-    }
-
     WindowDialogSeparator {
         Layout.topMargin: -22
         Layout.leftMargin: 0
         Layout.rightMargin: 0
     }
+    
+    WindowDialogSectionHeader {
+        text: Translation.tr("Night Light")
+        Layout.bottomMargin: -10
+    }
 
-    Column {
-        id: nightLightColumn
-        Layout.topMargin: -16
-        Layout.fillWidth: true
-
+    GroupedList {
+        itemVerticalPadding: 16
+        bgcolor: Appearance.colors.colSurfaceContainerHigh  
         ConfigSwitch {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            Layout.topMargin: -2
             iconSize: Appearance.font.pixelSize.larger
             buttonIcon: "check"
             text: Translation.tr("Enable now")
@@ -50,10 +46,7 @@ WindowDialog {
         }
 
         ConfigSwitch {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            Layout.topMargin: -2
             iconSize: Appearance.font.pixelSize.larger
             buttonIcon: "night_sight_auto"
             text: Translation.tr("Automatic")
@@ -64,13 +57,8 @@ WindowDialog {
         }
 
         WindowDialogSlider {
-            anchors {
-                left: parent.left
-                right: parent.right
-                leftMargin: 4
-                rightMargin: 4
-            }
-            text: Translation.tr("Intensity")
+            Layout.topMargin: -2    
+            text: Translation.tr("")
             from: 6500
             to: 1200
             stopIndicatorValues: [5000, to]
@@ -80,26 +68,32 @@ WindowDialog {
         }
     }
 
+
     WindowDialogSectionHeader {
         text: Translation.tr("Anti-flashbang (experimental)")
+        Layout.bottomMargin: -10
     }
 
-    WindowDialogSeparator {
-        Layout.topMargin: -22
-        Layout.leftMargin: 0
-        Layout.rightMargin: 0
-    }
-
-    Column {
-        id: antiFlashbangColumn
-        Layout.topMargin: -16
-        Layout.fillWidth: true
+    GroupedList {
+        itemVerticalPadding: 16
+        bgcolor: Appearance.colors.colSurfaceContainerHigh
+        ConfigSwitch {
+            Layout.topMargin: -2  
+            iconSize: Appearance.font.pixelSize.larger
+            buttonIcon: "filter"
+            text: Translation.tr("Content adjustment")
+            checked: HyprlandAntiFlashbangShader.enabled
+            onCheckedChanged: {
+                if (checked) HyprlandAntiFlashbangShader.enable()
+                else HyprlandAntiFlashbangShader.disable()
+            }
+            StyledToolTip {
+                text: Translation.tr("<b>Dims screen content</b> as needed.<br><br>Pros: Immediately responsive<br>Cons: Expensive and can hurt color accuracy<br><br><i>Uses a Hyprland screen shader</i>")
+            }
+        }
 
         ConfigSwitch {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            Layout.topMargin: -2  
             iconSize: Appearance.font.pixelSize.larger
             buttonIcon: "light_mode"
             text: Translation.tr("Brightness adjustment")
@@ -108,33 +102,22 @@ WindowDialog {
                 Config.options.light.antiFlashbang.enable = checked;
             }
             StyledToolTip {
-                text: Translation.tr("Adapts the <b>display (physical screen) brightness</b><br><br>Pros: Less expensive, retains colors<br>Cons: Not immediately responsive")
+                text: Translation.tr("Adapts the <b>display (physical screen) brightness</b><br><br>Pros: Less expensive, retains colors<br>Cons: Not immediately responsive<br><br><i>Adjusts display brightness after each Hyprland IPC event</i>")
             }
         }
     }
 
     WindowDialogSectionHeader {
         text: Translation.tr("Brightness")
+        Layout.bottomMargin: -10
     }
 
-    WindowDialogSeparator {
-        Layout.topMargin: -22
-        Layout.leftMargin: 0
-        Layout.rightMargin: 0
-    }
-
-    Column {
-        id: brightnessColumn
-        Layout.topMargin: -16
-        Layout.fillWidth: true
+    GroupedList {
+        itemVerticalPadding: 16
+        bgcolor: Appearance.colors.colSurfaceContainerHigh  
 
         WindowDialogSlider {
-            anchors {
-                left: parent.left
-                right: parent.right
-                leftMargin: 4
-                rightMargin: 4
-            }
+            Layout.topMargin: -2
             value: root.brightnessMonitor.brightness
             onMoved: root.brightnessMonitor.setBrightness(value)
         }
@@ -142,27 +125,13 @@ WindowDialog {
 
     WindowDialogSectionHeader {
         text: Translation.tr("Gamma")
+        Layout.bottomMargin: -10
     }
 
-    WindowDialogSeparator {
-        Layout.topMargin: -22
-        Layout.leftMargin: 0
-        Layout.rightMargin: 0
-    }
-
-    Column {
-        id: gammaColumn
-        Layout.topMargin: -16
-        Layout.fillWidth: true
-        Layout.fillHeight: true
-
+    GroupedList {
+        itemVerticalPadding: 16
+        bgcolor: Appearance.colors.colSurfaceContainerHigh
         WindowDialogSlider {
-            anchors {
-                left: parent.left
-                right: parent.right
-                leftMargin: 4
-                rightMargin: 4
-            }
             from: Hyprsunset.gammaLowerLimit / 100
             value: Hyprsunset.gamma / 100
             onMoved: Hyprsunset.setGamma(value * 100)

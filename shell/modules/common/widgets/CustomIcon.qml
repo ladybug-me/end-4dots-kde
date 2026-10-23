@@ -2,6 +2,7 @@ import QtQuick
 import Quickshell
 import Quickshell.Widgets
 import Qt5Compat.GraphicalEffects
+import qs.modules.common.functions
 
 Item {
     id: root
@@ -9,7 +10,8 @@ Item {
     property bool colorize: false
     property color color
     property string source: ""
-    property string iconFolder: Qt.resolvedUrl(Quickshell.shellPath("assets/icons"))  // The folder to check first
+    property string customFolder: ""
+    property string iconFolder: FileUtils.folderUrl(root.customFolder) || Qt.resolvedUrl(Quickshell.shellPath("assets/icons"))
     width: 30
     height: 30
     

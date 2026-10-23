@@ -4,137 +4,308 @@ import qs.modules.common.widgets
 import QtQuick
 import QtQuick.Layouts
 import Quickshell
+import Quickshell.Io
 import Quickshell.Services.Pipewire
 import Quickshell.Services.UPower
 
 Item {
     id: root
+    property color contentColor: Appearance.colors.colOnLayer2
+    property bool contentColorOverridden: false
     property bool borderless: Config.options.bar.borderless
-    implicitWidth: rowLayout.implicitWidth + rowLayout.spacing * 2
-    implicitHeight: rowLayout.implicitHeight
+    property bool vertical: Config.options.bar.vertical
+    property bool isMaterial: Config.options.bar.cornerStyle === 3 || Config.options.bar.cornerStyle === 4
 
-    RowLayout {
-        id: rowLayout
+    implicitWidth: isMaterial && !root.vertical ? flow.implicitWidth : root.vertical ? Appearance.sizes.verticalBarWidth - 14 : flow.implicitWidth + 4
+    implicitHeight: isMaterial && root.vertical ? flow.implicitHeight: isMaterial ? 32 : root.vertical ? flow.implicitHeight + 4 : Appearance.sizes.barHeight
 
-        spacing: 4
+    Flow {
+        id: flow
         anchors.centerIn: parent
+        flow: root.vertical ? Flow.TopToBottom : Flow.LeftToRight
+        spacing: isMaterial ? 2 : 4
 
         Loader {
             active: Config.options.bar.utilButtons.showScreenSnip
-            visible: Config.options.bar.utilButtons.showScreenSnip
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"]);
-                MaterialSymbol {
-                    horizontalAlignment: Qt.AlignHCenter
-                    fill: 1
-                    text: "screenshot_region"
-                    iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
-                }
+            visible: active
+            sourceComponent: isMaterial ? screenSnipM3 : legacyScreenSnip
+        }
+
+        Component {
+            id: screenSnipM3
+            UtilButton {
+                iconText: "screenshot_region"
+                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
             }
         }
 
-        Loader {
-            active: Config.options.bar.utilButtons.showScreenRecord
-            visible: Config.options.bar.utilButtons.showScreenRecord
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: Quickshell.execDetached([Directories.recordScriptPath])
+        Component {
+            id: legacyScreenSnip
+            CircleUtilButton {
+                onClicked: Quickshell.execDetached(["qs", "-p", Quickshell.shellPath(""), "ipc", "call", "region", "screenshot"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
-                    fill: 1
-                    text: "videocam"
+                    fill: 1; text: "screenshot_region"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
                 }
             }
         }
 
         Loader {
             active: Config.options.bar.utilButtons.showColorPicker
-            visible: Config.options.bar.utilButtons.showColorPicker
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
+            visible: active
+            sourceComponent: isMaterial ? colorPickerM3 : legacyColorPicker
+        }
+        Component {
+            id: colorPickerM3
+            UtilButton {
+                iconText: "colorize"
+                onClicked: Quickshell.execDetached(["hyprpicker", "-a"])
+            }
+        }
+        Component {
+            id: legacyColorPicker
+            CircleUtilButton {
                 onClicked: Quickshell.execDetached(["hyprpicker", "-a"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
-                    fill: 1
-                    text: "colorize"
+                    fill: 1; text: "colorize"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
                 }
             }
         }
 
         Loader {
+            active: Config.options.bar.utilButtons.showScreenRecord
+            visible: active
+            sourceComponent: isMaterial ? screenRecordM3 : legacyScreenRecord
+        }
+
+        Component {
+            id: legacyScreenRecord
+            Item {
+                id: recordingItem
+                implicitWidth: btn.implicitWidth + timerRevealer.implicitWidth
+                implicitHeight: btn.implicitHeight
+
+                property bool isRecording: Persistent.states.record.enable
+                property int elapsedSeconds: 0
+
+                onIsRecordingChanged: {
+                    if (!isRecording) elapsedSeconds = 0
+                }
+
+                function formatTime(s) {
+                    return Math.floor(s / 60).toString().padStart(2, '0') + ":" + (s % 60).toString().padStart(2, '0')
+                }
+
+                Timer {
+                    interval: 1000
+                    repeat: true
+                    running: recordingItem.isRecording
+                    onTriggered: recordingItem.elapsedSeconds++
+                }
+
+                CircleUtilButton {
+                    id: btn
+                    anchors.left: parent.left
+                    anchors.verticalCenter: parent.verticalCenter
+                    colBackground: recordingItem.isRecording ? Appearance.colors.colPrimaryContainer : "transparent"
+                    buttonRadius: recordingItem.isRecording ? Appearance.rounding.normal : implicitHeight / 2
+                    onClicked: Quickshell.execDetached([Directories.recordScriptPath])
+
+                    Behavior on colBackground { ColorAnimation { duration: 200 } }
+                    Behavior on buttonRadius { NumberAnimation { duration: 200; easing.type: Easing.OutCubic } }
+
+                    MaterialSymbol {
+                        horizontalAlignment: Qt.AlignHCenter
+                        fill: 1
+                        text: recordingItem.isRecording ? "stop_circle" : "screen_record"
+                        iconSize: Appearance.font.pixelSize.large
+                        color: recordingItem.isRecording ? Appearance.colors.colPrimary : root.contentColor
+                        Behavior on color { ColorAnimation { duration: 200 } }
+                    }
+                }
+
+                Revealer {
+                    id: timerRevealer
+                    anchors.left: btn.right
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: btn.verticalCenter
+                    reveal: recordingItem.isRecording && !root.vertical && !GlobalStates.dynamicIslandEnabled
+
+                    StyledText {
+                        width: implicitWidth
+                        text: recordingItem.formatTime(recordingItem.elapsedSeconds)
+                        font.pixelSize: Appearance.font.pixelSize.small
+                        font.features: { "tnum": 1 }
+                        font.letterSpacing: -0.3
+                        color: root.contentColor
+                        rightPadding: 8
+                        Component.onCompleted: width = implicitWidth
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: screenRecordM3
+            UtilButton {
+                iconText: Persistent.states.record.enable ? "stop_circle" : "screen_record"
+                forceHovered: Persistent.states.record.enable
+                onClicked: Quickshell.execDetached([Directories.recordScriptPath])
+            }
+        }
+
+        Loader {
             active: Config.options.bar.utilButtons.showKeyboardToggle
-            visible: Config.options.bar.utilButtons.showKeyboardToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
+            visible: active
+            sourceComponent: isMaterial ? keyboardM3 : legacyKeyboard
+        }
+        Component {
+            id: keyboardM3
+            UtilButton {
+                iconText: "keyboard"
+                onClicked: GlobalStates.oskOpen = !GlobalStates.oskOpen
+            }
+        }
+        Component {
+            id: legacyKeyboard
+            CircleUtilButton {
                 onClicked: GlobalStates.oskOpen = !GlobalStates.oskOpen
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
-                    fill: 0
-                    text: "keyboard"
+                    fill: 0; text: "keyboard"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
+                }
+            }
+        }
+
+        Loader {
+            active: Config.options.bar.utilButtons.showWallpaperToggle
+            visible: active
+            sourceComponent: isMaterial ? wallpaperM3 : legacyWallpaper
+        }
+        Component {
+            id: wallpaperM3
+            UtilButton {
+                iconText: "imagesmode"
+                onClicked: GlobalStates.wallpaperSelectorOpen = !GlobalStates.wallpaperSelectorOpen
+            }
+        }
+        Component {
+            id: legacyWallpaper
+            CircleUtilButton {
+                onClicked: GlobalStates.wallpaperSelectorOpen = !GlobalStates.wallpaperSelectorOpen
+                MaterialSymbol {
+                    horizontalAlignment: Qt.AlignHCenter
+                    fill: 0; text: "imagesmode"
+                    iconSize: Appearance.font.pixelSize.large
+                    color: root.contentColor
                 }
             }
         }
 
         Loader {
             active: Config.options.bar.utilButtons.showMicToggle
-            visible: Config.options.bar.utilButtons.showMicToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
+            visible: active
+            sourceComponent: isMaterial ? micM3 : legacyMic
+        }
+        Component {
+            id: micM3
+            UtilButton {
+                iconText: Pipewire.defaultAudioSource?.audio?.muted ? "mic_off" : "mic"
+                onClicked: Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_SOURCE@", "toggle"])
+            }
+        }
+        Component {
+            id: legacyMic
+            CircleUtilButton {
                 onClicked: Quickshell.execDetached(["wpctl", "set-mute", "@DEFAULT_SOURCE@", "toggle"])
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 0
                     text: Pipewire.defaultAudioSource?.audio?.muted ? "mic_off" : "mic"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
                 }
             }
         }
 
         Loader {
             active: Config.options.bar.utilButtons.showDarkModeToggle
-            visible: Config.options.bar.utilButtons.showDarkModeToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: event => {
-                    if (Appearance.m3colors.darkmode) {
-                        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "light", "--noswitch"])
-                    } else {
-                        Quickshell.execDetached([Directories.wallpaperSwitchScriptPath, "--mode", "dark", "--noswitch"])
-                    }
+            visible: active
+            sourceComponent: isMaterial ? darkModeM3 : legacyDarkMode
+        }
+        Component {
+            id: darkModeM3
+            UtilButton {
+                iconText: Appearance.m3colors.darkmode ? "light_mode" : "dark_mode"
+                onClicked: (e) => {
+                    if (Appearance.m3colors.darkmode)
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode light --noswitch`])
+                    else
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode dark --noswitch`])
+                }
+            }
+        }
+        Component {
+            id: legacyDarkMode
+            CircleUtilButton {
+                onClicked: (e) => {
+                    if (Appearance.m3colors.darkmode)
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode light --noswitch`])
+                    else
+                        Quickshell.execDetached(["bash", "-c", `${Directories.wallpaperSwitchScriptPath} --mode dark --noswitch`])
                 }
                 MaterialSymbol {
                     horizontalAlignment: Qt.AlignHCenter
                     fill: 0
                     text: Appearance.m3colors.darkmode ? "light_mode" : "dark_mode"
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
                 }
             }
         }
 
         Loader {
             active: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            visible: Config.options.bar.utilButtons.showPerformanceProfileToggle
-            sourceComponent: CircleUtilButton {
-                Layout.alignment: Qt.AlignVCenter
-                onClicked: event => {
+            visible: active
+            sourceComponent: isMaterial ? perfM3 : legacyPerf
+        }
+        Component {
+            id: perfM3
+            UtilButton {
+                iconText: switch(PowerProfiles.profile) {
+                    case PowerProfile.PowerSaver: return "energy_savings_leaf"
+                    case PowerProfile.Balanced: return "airwave"
+                    case PowerProfile.Performance: return "local_fire_department"
+                }
+                onClicked: (e) => {
                     if (PowerProfiles.hasPerformanceProfile) {
                         switch(PowerProfiles.profile) {
-                            case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced
-                            break;
-                            case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance
-                            break;
-                            case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver
-                            break;
+                            case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced; break;
+                            case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance; break;
+                            case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver; break;
+                        }
+                    } else {
+                        PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced
+                    }
+                }
+            }
+        }
+        Component {
+            id: legacyPerf
+            CircleUtilButton {
+                onClicked: (e) => {
+                    if (PowerProfiles.hasPerformanceProfile) {
+                        switch(PowerProfiles.profile) {
+                            case PowerProfile.PowerSaver: PowerProfiles.profile = PowerProfile.Balanced; break;
+                            case PowerProfile.Balanced: PowerProfiles.profile = PowerProfile.Performance; break;
+                            case PowerProfile.Performance: PowerProfiles.profile = PowerProfile.PowerSaver; break;
                         }
                     } else {
                         PowerProfiles.profile = PowerProfiles.profile == PowerProfile.Balanced ? PowerProfile.PowerSaver : PowerProfile.Balanced
@@ -149,7 +320,7 @@ Item {
                         case PowerProfile.Performance: return "local_fire_department"
                     }
                     iconSize: Appearance.font.pixelSize.large
-                    color: Appearance.colors.colOnLayer2
+                    color: root.contentColor
                 }
             }
         }

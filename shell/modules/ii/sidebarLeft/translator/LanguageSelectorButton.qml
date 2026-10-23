@@ -9,10 +9,13 @@ import QtQuick.Layouts
 RippleButton {
     id: root
     property string displayText: ""
-    colBackground: Appearance.colors.colLayer2
+    property color buttonColor: Appearance.colors.colLayer2
+    colBackground: buttonColor
+    colBackgroundHover: Appearance.colors.colPrimaryContainer
+    buttonRadius: Appearance.rounding.full
 
-    implicitWidth: contentItem.implicitWidth + horizontalPadding * 2
-    implicitHeight: contentItem.implicitHeight + verticalPadding * 2
+    implicitWidth: contentItem.implicitWidth + horizontalPadding * 2 + 10
+    implicitHeight: contentItem.implicitHeight + verticalPadding * 2 + 20 
 
     contentItem: Item {
         anchors.centerIn: parent

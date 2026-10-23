@@ -1,5 +1,7 @@
 pragma Singleton
+pragma ComponentBehavior: Bound
 
+import QtQuick
 import Quickshell
 import qs.services
 import qs.utils
@@ -9,10 +11,15 @@ Singleton {
     id: root
 
     function closeAllWindows() {
-        Kwin.windowList.map(w => w.pid).forEach(pid => {
-            if (pid)
-                Quickshell.execDetached(["kill", pid]);
-        });
+        if (WM.compositor === "kwin") {
+            Kwin.windowList.map(w => w.pid).forEach(pid => {
+                if (pid) Quickshell.execDetached(["kill", pid]);
+            });
+        } else {
+            (WM.windowList || []).map(w => w.pid).forEach(pid => {
+                if (pid) Quickshell.execDetached(["kill", pid]);
+            });
+        }
     }
 
     function changePassword() {
@@ -20,7 +27,11 @@ Singleton {
     }
 
     function lock() {
-        Quickshell.execDetached(["loginctl", "lock-session"]);
+        if (WM.compositor === "niri") {
+            Quickshell.execDetached(["qs", "-c", "end4-pC", "ipc", "call", "lock", "activate"]);
+        } else {
+            Quickshell.execDetached(["loginctl", "lock-session"]);
+        }
     }
 
     function suspend() {
@@ -29,7 +40,13 @@ Singleton {
 
     function logout() {
         closeAllWindows();
-        Quickshell.execDetached(["qdbus6", "org.kde.Shutdown", "/Shutdown", "logout"]);
+        if (WM.compositor === "niri") {
+            Quickshell.execDetached(["niri", "msg", "action", "quit"]);
+        } else if (WM.compositor === "kwin") {
+            Quickshell.execDetached(["qdbus6", "org.kde.Shutdown", "/Shutdown", "logout"]);
+        } else {
+            Quickshell.execDetached(["pkill", "-i", "Hyprland"]);
+        }
     }
 
     function launchTaskManager() {

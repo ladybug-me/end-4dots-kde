@@ -1,10 +1,9 @@
-import QtQuick
-import Quickshell
-import Quickshell.Io
+import qs.modules.common.widgets
 import qs
 import qs.services
-import qs.utils
-import qs.modules.common.widgets
+import QtQuick
+import Quickshell.Io
+import Quickshell
 
 QuickToggleButton {
     id: root
@@ -21,7 +20,7 @@ QuickToggleButton {
     }
 
     altAction: () => {
-        Launch.exec(["bash", "-c", "flatpak run com.github.wwmm.easyeffects || easyeffects"])
+        Quickshell.execDetached(["bash", "-c", "flatpak run com.github.wwmm.easyeffects || easyeffects"])
         GlobalStates.sidebarRightOpen = false
     }
 

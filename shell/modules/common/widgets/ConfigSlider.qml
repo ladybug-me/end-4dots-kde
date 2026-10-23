@@ -14,13 +14,18 @@ RowLayout {
     property string buttonIcon: ""
     property alias value: slider.value
     property alias stopIndicatorValues: slider.stopIndicatorValues
+    property alias stepSize: slider.stepSize
+    readonly property alias pressed: slider.pressed
+    signal moved()
     property bool usePercentTooltip: true
     property real from: slider.from
     property real to: slider.to
     property real textWidth: 120
+    property bool showLabel: true
 
     RowLayout {
         id: row
+        visible: root.showLabel
         spacing: 10
 
         OptionalMaterialSymbol {
@@ -35,7 +40,6 @@ RowLayout {
             color: Appearance.colors.colOnSecondaryContainer
         }
     }
-    
     StyledSlider {
         id: slider
         configuration: StyledSlider.Configuration.XS
@@ -43,5 +47,6 @@ RowLayout {
         value: root.value
         from: root.from
         to: root.to
+        onMoved: root.moved()
     }
 }

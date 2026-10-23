@@ -1,17 +1,16 @@
+import qs
+import qs.services
+import qs.modules.common
+import qs.modules.common.widgets
+import qs.modules.common.functions
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt5Compat.GraphicalEffects
-import Quickshell
-import Quickshell.Bluetooth
 import Quickshell.Io
+import Quickshell.Bluetooth
+import Quickshell
 import Quickshell.Wayland
-import qs
-import qs.services
-import qs.utils
-import qs.modules.common
-import qs.modules.common.functions
-import qs.modules.common.widgets
 
 WindowDialog {
     id: root
@@ -60,7 +59,7 @@ WindowDialog {
         DialogButton {
             buttonText: Translation.tr("Details")
             onClicked: {
-                Launch.exec(["bash", "-c", `${Config.options.apps.bluetooth}`]);
+                Quickshell.execDetached(["bash", "-c", `${Config.options.apps.bluetooth}`]);
                 GlobalStates.sidebarRightOpen = false;
             }
         }

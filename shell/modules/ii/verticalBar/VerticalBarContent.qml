@@ -3,6 +3,7 @@ import QtQuick.Layouts
 import Quickshell
 import Quickshell.Bluetooth
 import Quickshell.Services.UPower
+import Quickshell.Services.SystemTray
 import qs
 import qs.services
 import qs.modules.common
@@ -10,279 +11,502 @@ import qs.modules.common.widgets
 import qs.modules.common.functions
 import qs.modules.ii.bar as Bar
 
-Item { // Bar content region
+Item {
     id: root
+    implicitWidth: Appearance.sizes.verticalBarWidth
+    height: parent.height
+
+    readonly property real barPadding: 0
+    readonly property bool isMaterial: Config.options.bar.cornerStyle === 3 || Config.options.bar.cornerStyle === 4
+    readonly property bool isMaterialHug: Config.options.bar.cornerStyle === 4
+    readonly property bool isSplitHug: Config.options.bar.cornerStyle === 6
+    readonly property bool hasTabs: root.isMaterialHug || root.isSplitHug
+    readonly property bool useTabWrapper: root.isMaterial || root.isSplitHug
+    readonly property real splitGroupSpacing: Config.options.bar.borderless === "transparent" ? -4 : Config.options.bar.borderless === "segmented" ? -2 : 2
+    readonly property color materialPillBgColor: (Config.options.bar.followFrameColor && Config.options.bar.frameColor)
+        ? Appearance.getColorFromName(Config.options.bar.frameColor)
+        : Appearance.colors.colUiBackground
+    readonly property bool trayHasItems: SystemTray.items.values.length > 0
+    readonly property bool isPanel: Config.options.bar.cornerStyle === 5
+
+    function filterLayout(layout) {
+        if (trayHasItems) return layout
+        return layout.filter(name => name !== "sysTray")
+    }
+
+    readonly property var effectiveLeftLayout:   filterLayout(Config.options.bar.layouts.leftLayout)
+    readonly property var effectiveMiddleLayout: filterLayout(Config.options.bar.layouts.middleLayout)
+    readonly property var effectiveRightLayout:  filterLayout(Config.options.bar.layouts.rightLayout)
+
+    readonly property bool centerOnly: !root.useTabWrapper
+        && root.effectiveLeftLayout.length === 0
+        && root.effectiveRightLayout.length === 0
+    readonly property real centerPillY: centerPill.y
+    readonly property real centerPillHeight: centerPill.height
+
+    function shouldPaintMaterialPill(name) {
+        if (!root.isMaterial) return false;
+        const blacklist = ["workspaces", "divisor", "powerButton", "media", "docktoPanel", "leftSidebarButton", "dynamicIsland", "avatar"];
+        if (blacklist.includes(name)) {
+            return false;
+        }
+        return true;
+    }
+
+    function getMaterialPillColor(name) {
+        if (!root.isMaterial) return Appearance.colors.colPrimaryContainer;
+        switch(name) {
+            case "media":
+            case "sysTray":
+                return Appearance.colors.colSecondaryContainer;
+            case "resources":
+                return Appearance.colors.colTertiaryContainer;
+            case "systemIcons":
+                return Appearance.colors.colPrimary; 
+            default:
+                return Appearance.colors.colPrimaryContainer;
+        }
+    }
+
+    function getWidgetUrl(name) {
+        if (!name) return "";
+        let formattedName = name.charAt(0).toUpperCase() + name.slice(1);
+        return Qt.resolvedUrl("../bar/" + formattedName + ".qml");
+    }
+
+    function getMirroredForIndex(layout, idx) {
+        const prevCount = layout.slice(0, idx).filter(w => w === "visualizer").length
+        return prevCount % 2 === 1
+    }
 
     property var screen: root.QsWindow.window?.screen
-    property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
 
-    component HorizontalBarSeparator: Rectangle {
-        Layout.leftMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.rightMargin: Appearance.sizes.baseBarHeight / 3
-        Layout.fillWidth: true
-        implicitHeight: 1
-        color: Appearance.colors.colOutlineVariant
-    }
-
-    // Background shadow
-    Loader {
-        active: Config.options.bar.showBackground && Config.options.bar.cornerStyle === 1
-        anchors.fill: barBackground
-        sourceComponent: StyledRectangularShadow {
-            anchors.fill: undefined // The loader's anchors act on this, and this should not have any anchor
-            target: barBackground
-        }
-    }
-    // Background
     Rectangle {
         id: barBackground
+        WindowGlass {
+            anchors.fill: parent
+            glassEnabled: (parent?.fill.a ?? 0) > 0
+            cardRadius: parent?.radius ?? 0
+            tint: parent?.fill ?? 'transparent'
+        }
         anchors {
             fill: parent
-            margins: Config.options.bar.cornerStyle === 1 ? (Appearance.sizes.hyprlandGapsOut) : 0 // idk why but +1 is needed
+            margins: Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut : 0
         }
-        color: Config.options.bar.showBackground ? Appearance.colors.colLayer0 : "transparent"
+        property color fill: (!centerOnly && Config.options.bar.showBackground && Config.options.bar.cornerStyle !== 2 && !root.useTabWrapper)
+            ? (Config.options.bar.followFrameColor
+                ? Appearance.getColorFromName(Config.options.bar.frameColor)
+                : Appearance.colors.colUiBackground)
+            : "transparent"
+        color: Config.options.background.widgets.glass.enable && fill.a > 0 ? "transparent" : fill
+        radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding + 6 : 0
+        border.width: (!root.centerOnly && Config.options.bar.cornerStyle === 1) ? 1 : 0
+        border.color: Config.options.bar.showBackground ? Appearance.colors.colLayer0Border : "transparent"
+    }
+
+    // centerOnly
+    Rectangle {
+        id: centerPill
+        WindowGlass {
+            anchors.fill: parent
+            glassEnabled: (parent?.fill.a ?? 0) > 0
+            cardRadius: parent?.radius ?? 0
+            topLeftRadius: parent && parent.topLeftRadius >= 0 ? parent.topLeftRadius : cardRadius
+            topRightRadius: parent && parent.topRightRadius >= 0 ? parent.topRightRadius : cardRadius
+            bottomLeftRadius: parent && parent.bottomLeftRadius >= 0 ? parent.bottomLeftRadius : cardRadius
+            bottomRightRadius: parent && parent.bottomRightRadius >= 0 ? parent.bottomRightRadius : cardRadius
+            tint: parent?.fill ?? 'transparent'
+        }
+        visible: root.centerOnly && Config.options.bar.showBackground && Config.options.bar.cornerStyle !== 2
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter
+        height: middleCol.implicitHeight + 7
+        width: parent.width - (Config.options.bar.cornerStyle === 1 ? Appearance.sizes.hyprlandGapsOut * 2 : 0)
+        property color fill: Config.options.bar.followFrameColor
+            ? Appearance.getColorFromName(Config.options.bar.frameColor)
+            : Appearance.colors.colUiBackground
+        color: Config.options.background.widgets.glass.enable && fill.a > 0 ? "transparent" : fill
         radius: Config.options.bar.cornerStyle === 1 ? Appearance.rounding.windowRounding : 0
         border.width: Config.options.bar.cornerStyle === 1 ? 1 : 0
         border.color: Appearance.colors.colLayer0Border
+
+        bottomRightRadius: Config.options.bar.cornerStyle === 0 && !Config.options.bar.bottom ? Appearance.rounding.screenRounding : radius
+        topRightRadius:    Config.options.bar.cornerStyle === 0 && !Config.options.bar.bottom ? Appearance.rounding.screenRounding : radius
+        bottomLeftRadius:  Config.options.bar.cornerStyle === 0 && Config.options.bar.bottom  ? Appearance.rounding.screenRounding : radius
+        topLeftRadius:     Config.options.bar.cornerStyle === 0 && Config.options.bar.bottom  ? Appearance.rounding.screenRounding : radius
     }
 
-    FocusedScrollMouseArea { // Top section | scroll to change brightness
-        id: barTopSectionMouseArea
-        anchors.top: parent.top
-        implicitHeight: topSectionColumnLayout.implicitHeight
-        implicitWidth: Appearance.sizes.baseVerticalBarWidth
-        height: (root.height - middleSection.height) / 2
-        width: Appearance.sizes.verticalBarWidth
+    Item {
+        id: contentContainer
+        anchors.fill: barBackground
+        anchors.margins: root.barPadding
 
-        onScrollDown: Brightness.decreaseBrightness()
-        onScrollUp: Brightness.increaseBrightness()
-        onMovedAway: GlobalStates.osdBrightnessOpen = false
-        onPressed: event => {
-            if (event.button === Qt.LeftButton)
-                GlobalStates.sidebarLeftOpen = !GlobalStates.sidebarLeftOpen;
-        }
+        // Top
+        Item {
+            id: topItem
+            anchors.top: parent.top
+            anchors.topMargin: root.hasTabs ? 0 : (root.useTabWrapper ? (Appearance.sizes.hyprlandGapsOut || 5) : (Config.options.bar.cornerStyle === 1 ? 4 : Config.options.bar.cornerStyle === 5 ? 4 : 10))
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.useTabWrapper
+                ? (root.effectiveLeftLayout.length > 0 ? (topMaterialPill.height + (root.hasTabs ? topBottomOutwardCorner.implicitSize : 0)) : 0)
+                : topCol.implicitHeight
 
-        ColumnLayout { // Content
-            id: topSectionColumnLayout
-            anchors.fill: parent
-            spacing: 10
-
-            Bar.LeftSidebarButton { // Left sidebar button
-                Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: (Appearance.sizes.baseVerticalBarWidth - implicitWidth) / 2 + Appearance.sizes.hyprlandGapsOut
-                colBackground: barTopSectionMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
-            }
-
-            Item {
-                Layout.fillHeight: true
-            }
-            
-        }
-    }
-
-    Column { // Middle section
-        id: middleSection
-        anchors.centerIn: parent
-        spacing: 4
-
-        Bar.BarGroup {
-            vertical: true
-            padding: 8
-            Resources {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-            }
-            
-            HorizontalBarSeparator {}
-
-            VerticalMedia {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-            }
-        }
-
-        HorizontalBarSeparator {
-            visible: Config.options?.bar.borderless
-        }
-
-        Bar.BarGroup {
-            id: middleCenterGroup
-            vertical: true
-            padding: 6
-
-            Bar.Workspaces {
-                id: workspacesWidget
-                vertical: true
-                MouseArea {
-                    // Right-click to toggle overview
+            // Material pill wrapper
+            Rectangle {
+                id: topMaterialPill
+                WindowGlass {
                     anchors.fill: parent
-                    acceptedButtons: Qt.RightButton
-
-                    onPressed: event => {
-                        if (event.button === Qt.RightButton) {
-                            GlobalStates.overviewOpen = !GlobalStates.overviewOpen;
-                        }
-                    }
+                    glassEnabled: (parent?.fill.a ?? 0) > 0
+                    cardRadius: parent?.radius ?? 0
+                    topLeftRadius: parent && parent.topLeftRadius >= 0 ? parent.topLeftRadius : cardRadius
+                    topRightRadius: parent && parent.topRightRadius >= 0 ? parent.topRightRadius : cardRadius
+                    bottomLeftRadius: parent && parent.bottomLeftRadius >= 0 ? parent.bottomLeftRadius : cardRadius
+                    bottomRightRadius: parent && parent.bottomRightRadius >= 0 ? parent.bottomRightRadius : cardRadius
+                    tint: parent?.fill ?? 'transparent'
                 }
-            }
-        }
+                visible: root.useTabWrapper && root.effectiveLeftLayout.length > 0
+                anchors.top: parent.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: root.effectiveLeftLayout.length > 0
+                    ? (root.hasTabs ? (topMaterialCol.implicitHeight + 16) : (topMaterialCol.implicitHeight + 10))
+                    : 0
+                radius: root.hasTabs ? 0 : Appearance.rounding.full
+                property color fill: root.materialPillBgColor
+                color: Config.options.background.widgets.glass.enable && fill.a > 0 ? "transparent" : fill
 
-        HorizontalBarSeparator {
-            visible: Config.options?.bar.borderless
-        }
-
-        Bar.BarGroup {
-            vertical: true
-            padding: 8
-            
-            VerticalClockWidget {
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-            }
-
-            HorizontalBarSeparator {
-                visible: Battery.available
-            }
-
-            BatteryIndicator {
-                visible: Battery.available
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-            }
-            
-        }
-    }
-
-    FocusedScrollMouseArea { // Bottom section | scroll to change volume
-        id: barBottomSectionMouseArea
-
-        anchors {
-            left: parent.left
-            right: parent.right
-            bottom: parent.bottom
-        }
-        implicitWidth: Appearance.sizes.baseVerticalBarWidth
-        implicitHeight: bottomSectionColumnLayout.implicitHeight
-        
-        onScrollDown: Audio.decrementVolume();
-        onScrollUp: Audio.incrementVolume();
-        onMovedAway: GlobalStates.osdVolumeOpen = false;
-        onPressed: event => {
-            if (event.button === Qt.LeftButton) {
-                GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-            }
-        }
-
-        ColumnLayout {
-            id: bottomSectionColumnLayout
-            anchors.fill: parent
-            spacing: 4
-
-            Item { 
-                Layout.fillWidth: true
-                Layout.fillHeight: true 
-            }
-
-            Bar.SysTray {
-                vertical: true
-                Layout.fillWidth: true
-                Layout.fillHeight: false
-                invertSide: Config?.options.bar.bottom
-            }
-
-            RippleButton { // Right sidebar button
-                id: rightSidebarButton
-
-                Layout.alignment: Qt.AlignBottom | Qt.AlignHCenter
-                Layout.bottomMargin: Appearance.rounding.screenRounding
-                Layout.fillHeight: false
-
-                implicitHeight: indicatorsColumnLayout.implicitHeight + 4 * 2
-                implicitWidth: indicatorsColumnLayout.implicitWidth + 6 * 2
-
-                buttonRadius: Appearance.rounding.full
-                colBackground: barBottomSectionMouseArea.hovered ? Appearance.colors.colLayer1Hover : ColorUtils.transparentize(Appearance.colors.colLayer1Hover, 1)
-                colBackgroundHover: Appearance.colors.colLayer1Hover
-                colRipple: Appearance.colors.colLayer1Active
-                colBackgroundToggled: Appearance.colors.colSecondaryContainer
-                colBackgroundToggledHover: Appearance.colors.colSecondaryContainerHover
-                colRippleToggled: Appearance.colors.colSecondaryContainerActive
-                toggled: GlobalStates.sidebarRightOpen
-                property color colText: toggled ? Appearance.m3colors.m3onSecondaryContainer : Appearance.colors.colOnLayer0
-
-                Behavior on colText {
-                    animation: Appearance.animation.elementMoveFast.colorAnimation.createObject(this)
-                }
-
-                onPressed: {
-                    GlobalStates.sidebarRightOpen = !GlobalStates.sidebarRightOpen;
-                }
+                topLeftRadius: root.hasTabs ? 0 : radius
+                topRightRadius: root.hasTabs ? 0 : radius
+                bottomLeftRadius: (root.hasTabs && Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+                bottomRightRadius: (root.hasTabs && !Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
 
                 ColumnLayout {
-                    id: indicatorsColumnLayout
+                    id: topMaterialCol
                     anchors.centerIn: parent
-                    property real realSpacing: 6
-                    spacing: 0
+                    spacing: root.isSplitHug ? root.splitGroupSpacing : 3
 
-                    Revealer {
-                        vertical: true
-                        reveal: Audio.sink?.audio?.muted ?? false
+                    Repeater {
+                        model: root.effectiveLeftLayout
+                        delegate: topMaterialGroupDelegate
+                    }
+
+                    Component {
+                        id: topMaterialGroupDelegate
+                        Bar.BarGroup {
+                            Layout.fillWidth: true
+                            vertical: true
+                            currentIndex: index
+                            widgetName: modelData
+                            totalCount: root.effectiveLeftLayout.length
+                            paintMaterialPill: root.shouldPaintMaterialPill(modelData)
+                            bgColor: root.getMaterialPillColor(modelData)
+                            Loader {
+                                Layout.fillWidth: true
+                                source: root.getWidgetUrl(modelData)
+                                onLoaded: {
+                                    if (item && "vertical" in item) item.vertical = true
+                                    if (item && item.hasOwnProperty("mirrored"))
+                                        item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            RoundCorner {
+                id: topBottomOutwardCorner
+                glass: true
+                visible: root.hasTabs && root.effectiveLeftLayout.length > 0
+                anchors.top: topMaterialPill.bottom
+                anchors.left: !Config.options.bar.bottom ? parent.left : undefined
+                anchors.right: Config.options.bar.bottom ? parent.right : undefined
+                implicitSize: Appearance.rounding.screenRounding
+                width: implicitSize
+                height: implicitSize
+                color: root.materialPillBgColor
+                corner: !Config.options.bar.bottom ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.TopRight
+            }
+
+            ColumnLayout {
+                id: topCol
+                anchors.fill: parent
+                visible: !root.useTabWrapper
+                spacing: Config.options.bar.borderless === "transparent" ? -4
+                    : (Config.options?.bar.borderless === "segmented" && root.isPanel) ? 3
+                    : Config.options?.bar.borderless === "segmented" ? -2
+                    : root.isPanel ? 4 : 2
+
+                Repeater {
+                    model: root.effectiveLeftLayout
+                    delegate: Bar.BarGroup {
                         Layout.fillWidth: true
-                        Layout.bottomMargin: reveal ? indicatorsColumnLayout.realSpacing : 0
-                        Behavior on Layout.bottomMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                        }
-                        MaterialSymbol {
-                            text: "volume_off"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
+                        vertical: true
+                        currentIndex: index
+                        widgetName: modelData
+                        totalCount: root.effectiveLeftLayout.length
+                        Loader {
+                            Layout.fillWidth: true
+                            source: root.getWidgetUrl(modelData)
+                            onLoaded: {
+                                if (item && "vertical" in item) item.vertical = true
+                                if (item && item.hasOwnProperty("mirrored"))
+                                    item.mirrored = root.getMirroredForIndex(root.effectiveLeftLayout, index)
+                            }
                         }
                     }
-                    Revealer {
-                        vertical: true
-                        reveal: Audio.source?.audio?.muted ?? false
+                }
+            }
+        }
+
+        // Center
+        Item {
+            id: absoluteCenter
+            anchors.centerIn: parent
+            width: parent.width
+            height: root.useTabWrapper
+                ? (root.effectiveMiddleLayout.length > 0 ? (centerMaterialPill.height + (root.hasTabs ? (centerTopOutwardCorner.implicitSize + centerBottomOutwardCorner.implicitSize) : 0)) : 0)
+                : middleCol.implicitHeight
+
+            RoundCorner {
+                id: centerTopOutwardCorner
+                glass: true
+                visible: root.hasTabs && root.effectiveMiddleLayout.length > 0
+                anchors.bottom: centerMaterialPill.top
+                anchors.left: !Config.options.bar.bottom ? parent.left : undefined
+                anchors.right: Config.options.bar.bottom ? parent.right : undefined
+                implicitSize: Appearance.rounding.screenRounding
+                width: implicitSize
+                height: implicitSize
+                color: root.materialPillBgColor
+                corner: !Config.options.bar.bottom ? RoundCorner.CornerEnum.BottomLeft : RoundCorner.CornerEnum.BottomRight
+            }
+
+            // Material pill wrapper
+            Rectangle {
+                id: centerMaterialPill
+                WindowGlass {
+                    anchors.fill: parent
+                    glassEnabled: (parent?.fill.a ?? 0) > 0
+                    cardRadius: parent?.radius ?? 0
+                    topLeftRadius: parent && parent.topLeftRadius >= 0 ? parent.topLeftRadius : cardRadius
+                    topRightRadius: parent && parent.topRightRadius >= 0 ? parent.topRightRadius : cardRadius
+                    bottomLeftRadius: parent && parent.bottomLeftRadius >= 0 ? parent.bottomLeftRadius : cardRadius
+                    bottomRightRadius: parent && parent.bottomRightRadius >= 0 ? parent.bottomRightRadius : cardRadius
+                    tint: parent?.fill ?? 'transparent'
+                }
+                visible: root.useTabWrapper && root.effectiveMiddleLayout.length > 0
+                anchors.verticalCenter: parent.verticalCenter
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: root.effectiveMiddleLayout.length > 0
+                    ? (root.hasTabs ? (centerMaterialCol.implicitHeight + 16) : (centerMaterialCol.implicitHeight + 10))
+                    : 0
+                radius: root.hasTabs ? 0 : Appearance.rounding.full
+                property color fill: root.materialPillBgColor
+                color: Config.options.background.widgets.glass.enable && fill.a > 0 ? "transparent" : fill
+
+                topLeftRadius: (root.hasTabs && Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+                bottomLeftRadius: (root.hasTabs && Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+                topRightRadius: (root.hasTabs && !Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+                bottomRightRadius: (root.hasTabs && !Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+
+                ColumnLayout {
+                    id: centerMaterialCol
+                    anchors.centerIn: parent
+                    spacing: root.isSplitHug ? root.splitGroupSpacing : 3
+
+                    Repeater {
+                        model: root.effectiveMiddleLayout
+                        delegate: centerMaterialGroupDelegate
+                    }
+
+                    Component {
+                        id: centerMaterialGroupDelegate
+                        Bar.BarGroup {
+                            Layout.fillWidth: true
+                            vertical: true
+                            currentIndex: index
+                            widgetName: modelData
+                            paintBackground: modelData !== "dynamicIsland"
+                            totalCount: root.effectiveMiddleLayout.length
+                            paintMaterialPill: root.shouldPaintMaterialPill(modelData)
+                            bgColor: root.getMaterialPillColor(modelData)
+                            Loader {
+                                Layout.fillWidth: true
+                                source: root.getWidgetUrl(modelData)
+                                onLoaded: {
+                                    if (item && "vertical" in item) item.vertical = true
+                                    if (item && item.hasOwnProperty("mirrored"))
+                                        item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            RoundCorner {
+                id: centerBottomOutwardCorner
+                glass: true
+                visible: root.hasTabs && root.effectiveMiddleLayout.length > 0
+                anchors.top: centerMaterialPill.bottom
+                anchors.left: !Config.options.bar.bottom ? parent.left : undefined
+                anchors.right: Config.options.bar.bottom ? parent.right : undefined
+                implicitSize: Appearance.rounding.screenRounding
+                width: implicitSize
+                height: implicitSize
+                color: root.materialPillBgColor
+                corner: !Config.options.bar.bottom ? RoundCorner.CornerEnum.TopLeft : RoundCorner.CornerEnum.TopRight
+            }
+
+            ColumnLayout {
+                id: middleCol
+                anchors.fill: parent
+                visible: !root.useTabWrapper
+                spacing: Config.options.bar.borderless === "transparent" ? -4
+                    : (Config.options?.bar.borderless === "segmented" && root.isPanel) ? 3
+                    : Config.options?.bar.borderless === "segmented" ? -2
+                    : root.isPanel ? 4 : 2
+
+                Repeater {
+                    model: root.effectiveMiddleLayout
+                    delegate: Bar.BarGroup {
                         Layout.fillWidth: true
-                        Layout.bottomMargin: reveal ? indicatorsColumnLayout.realSpacing : 0
-                        Behavior on Layout.topMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
-                        }
-                        MaterialSymbol {
-                            text: "mic_off"
-                            iconSize: Appearance.font.pixelSize.larger
-                            color: rightSidebarButton.colText
+                        vertical: true
+                        currentIndex: index
+                        widgetName: modelData
+                        paintBackground: modelData !== "dynamicIsland"
+                        totalCount: root.effectiveMiddleLayout.length
+                        Loader {
+                            Layout.fillWidth: true
+                            source: root.getWidgetUrl(modelData)
+                            onLoaded: {
+                                if (item && "vertical" in item) item.vertical = true
+                                if (item && item.hasOwnProperty("mirrored"))
+                                    item.mirrored = root.getMirroredForIndex(root.effectiveMiddleLayout, index)
+                            }
                         }
                     }
-                    Bar.KbLayoutIndicator {
-                        vertical: true
-                        Layout.alignment: Qt.AlignHCenter
-                        Layout.bottomMargin: indicatorsColumnLayout.realSpacing
-                        color: rightSidebarButton.colText
+                }
+            }
+        }
+
+        // Bottom
+        Item {
+            id: bottomItem
+            anchors.bottom: parent.bottom
+            anchors.bottomMargin: root.hasTabs ? 0 : (root.useTabWrapper ? (Appearance.sizes.hyprlandGapsOut || 5) : (Config.options.bar.cornerStyle === 1 ? 4 : Config.options.bar.cornerStyle === 5 ? 4 : 10))
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: root.useTabWrapper
+                ? (root.effectiveRightLayout.length > 0 ? (bottomMaterialPill.height + (root.hasTabs ? bottomTopOutwardCorner.implicitSize : 0)) : 0)
+                : bottomCol.implicitHeight
+
+            RoundCorner {
+                id: bottomTopOutwardCorner
+                glass: true
+                visible: root.hasTabs && root.effectiveRightLayout.length > 0
+                anchors.bottom: bottomMaterialPill.top
+                anchors.left: !Config.options.bar.bottom ? parent.left : undefined
+                anchors.right: Config.options.bar.bottom ? parent.right : undefined
+                implicitSize: Appearance.rounding.screenRounding
+                width: implicitSize
+                height: implicitSize
+                color: root.materialPillBgColor
+                corner: !Config.options.bar.bottom ? RoundCorner.CornerEnum.BottomLeft : RoundCorner.CornerEnum.BottomRight
+            }
+
+            // Material pill wrapper
+            Rectangle {
+                id: bottomMaterialPill
+                WindowGlass {
+                    anchors.fill: parent
+                    glassEnabled: (parent?.fill.a ?? 0) > 0
+                    cardRadius: parent?.radius ?? 0
+                    topLeftRadius: parent && parent.topLeftRadius >= 0 ? parent.topLeftRadius : cardRadius
+                    topRightRadius: parent && parent.topRightRadius >= 0 ? parent.topRightRadius : cardRadius
+                    bottomLeftRadius: parent && parent.bottomLeftRadius >= 0 ? parent.bottomLeftRadius : cardRadius
+                    bottomRightRadius: parent && parent.bottomRightRadius >= 0 ? parent.bottomRightRadius : cardRadius
+                    tint: parent?.fill ?? 'transparent'
+                }
+                visible: root.useTabWrapper && root.effectiveRightLayout.length > 0
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+                height: root.effectiveRightLayout.length > 0
+                    ? (root.hasTabs ? (bottomMaterialCol.implicitHeight + 16) : (bottomMaterialCol.implicitHeight + 10))
+                    : 0
+                radius: root.hasTabs ? 0 : Appearance.rounding.full
+                property color fill: root.materialPillBgColor
+                color: Config.options.background.widgets.glass.enable && fill.a > 0 ? "transparent" : fill
+
+                bottomLeftRadius: root.hasTabs ? 0 : radius
+                bottomRightRadius: root.hasTabs ? 0 : radius
+                topLeftRadius: (root.hasTabs && Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+                topRightRadius: (root.hasTabs && !Config.options.bar.bottom) ? Appearance.rounding.screenRounding : (root.hasTabs ? 0 : radius)
+
+                ColumnLayout {
+                    id: bottomMaterialCol
+                    anchors.centerIn: parent
+                    spacing: root.isSplitHug ? root.splitGroupSpacing : 3
+
+                    Repeater {
+                        model: root.effectiveRightLayout
+                        delegate: bottomMaterialGroupDelegate
                     }
-                    Revealer {
-                        vertical: true
-                        reveal: Notifications.silent || Notifications.unread > 0
+
+                    Component {
+                        id: bottomMaterialGroupDelegate
+                        Bar.BarGroup {
+                            Layout.fillWidth: true
+                            vertical: true
+                            currentIndex: index
+                            widgetName: modelData
+                            totalCount: root.effectiveRightLayout.length
+                            paintMaterialPill: root.shouldPaintMaterialPill(modelData)
+                            bgColor: root.getMaterialPillColor(modelData)
+                            Loader {
+                                Layout.fillWidth: true
+                                source: root.getWidgetUrl(modelData)
+                                onLoaded: {
+                                    if (item && "vertical" in item) item.vertical = true
+                                    if (item && item.hasOwnProperty("mirrored"))
+                                        item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            ColumnLayout {
+                id: bottomCol
+                anchors.fill: parent
+                visible: !root.useTabWrapper
+                spacing: Config.options.bar.borderless === "transparent" ? -4
+                    : (Config.options?.bar.borderless === "segmented" && root.isPanel) ? 3
+                    : Config.options?.bar.borderless === "segmented" ? -2
+                    : root.isPanel ? 4 : 2
+
+                Repeater {
+                    model: root.effectiveRightLayout
+                    delegate: Bar.BarGroup {
                         Layout.fillWidth: true
-                        Layout.bottomMargin: reveal ? indicatorsColumnLayout.realSpacing : 0
-                        implicitHeight: reveal ? notificationUnreadCount.implicitHeight : 0
-                        implicitWidth: reveal ? notificationUnreadCount.implicitWidth : 0
-                        Behavior on Layout.bottomMargin {
-                            animation: Appearance.animation.elementMoveFast.numberAnimation.createObject(this)
+                        vertical: true
+                        currentIndex: index
+                        widgetName: modelData
+                        totalCount: root.effectiveRightLayout.length
+                        Loader {
+                            Layout.fillWidth: true
+                            source: root.getWidgetUrl(modelData)
+                            onLoaded: {
+                                if (item && "vertical" in item) item.vertical = true
+                                if (item && item.hasOwnProperty("mirrored"))
+                                    item.mirrored = root.getMirroredForIndex(root.effectiveRightLayout, index)
+                            }
                         }
-                        Bar.NotificationUnreadCount {
-                            id: notificationUnreadCount
-                        }
-                    }
-                    MaterialSymbol {
-                        text: Network.materialSymbol
-                        iconSize: Appearance.font.pixelSize.larger
-                        color: rightSidebarButton.colText
-                    }
-                    MaterialSymbol {
-                        Layout.topMargin: indicatorsColumnLayout.realSpacing
-                        visible: BluetoothStatus.available
-                        text: BluetoothStatus.connected ? "bluetooth_connected" : BluetoothStatus.enabled ? "bluetooth" : "bluetooth_disabled"
-                        iconSize: Appearance.font.pixelSize.larger
-                        color: rightSidebarButton.colText
                     }
                 }
             }

@@ -10,18 +10,48 @@ import Quickshell
 import Quickshell.Io
 import Quickshell.Services.Mpris
 import Quickshell.Wayland
+import Quickshell.Hyprland
 
 Scope {
     id: root
     property bool visible: false
     readonly property MprisPlayer activePlayer: MprisController.activePlayer
     readonly property var realPlayers: MprisController.players
-    readonly property var meaningfulPlayers: filterDuplicatePlayers(realPlayers)
+    readonly property var meaningfulPlayers: {
+        const preferred = Config.options.bar.media.preferredPlayer.trim().toLowerCase()
+        if (preferred.length === 0) return filterDuplicatePlayers(realPlayers)
+        const filtered = realPlayers.filter(p =>
+            (p.identity ?? "").toLowerCase().includes(preferred) ||
+            (p.desktopEntry ?? "").toLowerCase().includes(preferred)
+        )
+        if (filtered.length === 0) return filterDuplicatePlayers(realPlayers)
+        return filterDuplicatePlayers(filtered)
+    }
     readonly property real osdWidth: Appearance.sizes.osdWidth
     readonly property real widgetWidth: Appearance.sizes.mediaControlsWidth
     readonly property real widgetHeight: Appearance.sizes.mediaControlsHeight
     property real popupRounding: Appearance.rounding.screenRounding - Appearance.sizes.hyprlandGapsOut + 1
-    property list<real> visualizerPoints: []
+
+    readonly property string mediaPosition: {
+        if (Config.options.bar.layouts.leftLayout.includes("media")) return "left"
+        if (Config.options.bar.layouts.middleLayout.includes("media")) return "center"
+        if (Config.options.bar.layouts.rightLayout.includes("media")) return "right"
+        return "center"
+    }
+
+    readonly property bool barVertical: Config.options.bar.vertical
+    readonly property string growFrom: {
+        if (barEdge === "bottom") return "bottom"
+        if (barEdge === "top") return "top"
+        if (mediaPosition === "left") return "top"
+        if (mediaPosition === "right") return "bottom"
+        return "center"
+    }
+    readonly property string barEdge: {
+        if (!barVertical) return Config.options.bar.bottom ? "bottom" : "top"
+        return Config.options.bar.bottom ? "right" : "left"
+    }
+    readonly property real barThickness: barVertical ? Appearance.sizes.verticalBarWidth : Appearance.sizes.barHeight
 
     function filterDuplicatePlayers(players) {
         let filtered = [];
@@ -54,18 +84,28 @@ Scope {
 
     Process {
         id: cavaProc
-        running: mediaControlsLoader.active
+        running: (GlobalStates.mediaControlsOpen ||
+            GlobalStates.sidebarRightOpen ||
+            (GlobalStates.sidebarLeftOpen && !GlobalStates.mediaLyricsVisible) ||
+            GlobalStates.equalizerOpen ||
+            Config.options.bar.layouts.leftLayout.includes("visualizer") ||
+            Config.options.bar.layouts.middleLayout.includes("visualizer") ||
+            (Config.options.bar.layouts.middleLayout.includes("dynamicIsland") &&
+                (Config.options.bar.dynamicIsland.visualizerStyle === "wave" ||
+                (Config.options.bar.dynamicIsland.visualizerStyle === "dots" && !Config.options.bar.dynamicIsland.showMediaControls))) ||
+            Config.options.bar.layouts.rightLayout.includes("visualizer") ||
+            Config.options.background.widgets.visualizer.enable)
+            && (MprisController.activePlayer?.isPlaying ?? false)
         onRunningChanged: {
             if (!cavaProc.running) {
-                root.visualizerPoints = [];
+                GlobalStates.visualizerPoints = [];
             }
         }
         command: ["cava", "-p", `${FileUtils.trimFileProtocol(Directories.scriptPath)}/cava/raw_output_config.txt`]
         stdout: SplitParser {
             onRead: data => {
-                // Parse `;`-separated values into the visualizerPoints array
                 let points = data.split(";").map(p => parseFloat(p.trim())).filter(p => !isNaN(p));
-                root.visualizerPoints = points;
+                GlobalStates.visualizerPoints = points;
             }
         }
     }
@@ -89,54 +129,87 @@ Scope {
             implicitHeight: playerColumnLayout.implicitHeight
             color: "transparent"
             WlrLayershell.namespace: "quickshell:mediaControls"
-            WlrLayershell.layer: WlrLayer.Overlay
 
             anchors {
-                top: !Config.options.bar.bottom || Config.options.bar.vertical
-                bottom: Config.options.bar.bottom && !Config.options.bar.vertical
-                left: !(Config.options.bar.vertical && Config.options.bar.bottom)
-                right: Config.options.bar.vertical && Config.options.bar.bottom
+                top: true
+                left: true
             }
+            readonly property real cardMargin: Appearance.sizes.elevationMargin
+            readonly property real inset: Config.options.hyprland.general.gapsOut
+            readonly property var reserved: {
+                const monitor = HyprlandData.monitors.find(m => m.name === panelWindow.screen.name)
+                if (monitor?.reserved) return monitor.reserved
+                const bar = root.barThickness
+                return [root.barEdge === "left" ? bar : 0, root.barEdge === "top" ? bar : 0, root.barEdge === "right" ? bar : 0, root.barEdge === "bottom" ? bar : 0]
+            }
+            readonly property real minX: reserved[0] + inset - cardMargin
+            readonly property real maxX: panelWindow.screen.width - reserved[2] - inset - root.widgetWidth + cardMargin
+            readonly property real minY: reserved[1] + inset - cardMargin
+            readonly property real maxY: panelWindow.screen.height - reserved[3] - inset - playerColumnLayout.implicitHeight + cardMargin
+
             margins {
-                top: Config.options.bar.vertical ? ((panelWindow.screen.height / 2) - widgetHeight * 1.5) : Appearance.sizes.barHeight
-                bottom: Appearance.sizes.barHeight
-                left: Config.options.bar.vertical ? Appearance.sizes.barHeight : ((panelWindow.screen.width / 2) - (osdWidth / 2) - widgetWidth)
-                right: Appearance.sizes.barHeight
+                top: {
+                    if (root.barEdge === "top") return panelWindow.minY
+                    if (root.barEdge === "bottom") return panelWindow.maxY
+                    if (root.mediaPosition === "left") return panelWindow.minY
+                    if (root.mediaPosition === "right") return panelWindow.maxY
+                    return (panelWindow.minY + panelWindow.maxY) / 2
+                }
+                left: {
+                    if (root.barEdge === "left") return panelWindow.minX
+                    if (root.barEdge === "right") return panelWindow.maxX
+                    if (root.mediaPosition === "left") return panelWindow.minX
+                    if (root.mediaPosition === "right") return panelWindow.maxX
+                    return (panelWindow.minX + panelWindow.maxX) / 2
+                }
             }
 
             mask: Region {
-                item: playerColumnLayout
+                item: root.meaningfulPlayers.length === 1 && playerColumnLayout.firstCard ? playerColumnLayout.firstCard : playerColumnLayout
             }
 
             Component.onCompleted: {
-                GlobalFocusGrab.addDismissable(panelWindow);
+                HyprlandData.updateMonitors()
+                if (!Config.options.bar.media.alwaysVisible)
+                    GlobalFocusGrab.addDismissable(panelWindow);
             }
             Component.onDestruction: {
-                GlobalFocusGrab.removeDismissable(panelWindow);
+                if (!Config.options.bar.media.alwaysVisible)
+                    GlobalFocusGrab.removeDismissable(panelWindow);
             }
             Connections {
                 target: GlobalFocusGrab
                 function onDismissed() {
-                    GlobalStates.mediaControlsOpen = false;
+                    if (!Config.options.bar.media.alwaysVisible)
+                        GlobalStates.mediaControlsOpen = false;
                 }
             }
 
             ColumnLayout {
                 id: playerColumnLayout
+                property Item firstCard: null
                 anchors.fill: parent
                 spacing: -Appearance.sizes.elevationMargin // Shadow overlap okay
 
                 Repeater {
+                    id: playersRepeater
+                    onItemAdded: playerColumnLayout.firstCard = playersRepeater.itemAt(0)?.cardItem ?? null
+                    onItemRemoved: playerColumnLayout.firstCard = playersRepeater.itemAt(0)?.cardItem ?? null
                     model: ScriptModel {
                         values: root.meaningfulPlayers
                     }
-                    delegate: PlayerControl {
+                    delegate: Player {
+                        id: playerDelegate
                         required property MprisPlayer modelData
+                        readonly property real targetHeight: showLyrics ? 290 : Appearance.sizes.mediaControlsHeight
                         player: modelData
-                        visualizerPoints: root.visualizerPoints
+                        visualizerPoints: GlobalStates.visualizerPoints  
                         implicitWidth: root.widgetWidth
-                        implicitHeight: root.widgetHeight
+                        implicitHeight: root.meaningfulPlayers.length === 1 ? 290 : targetHeight
+                        designHeight: targetHeight
                         radius: root.popupRounding
+                        animateResize: true
+                        growFrom: root.growFrom
                     }
                 }
 
@@ -207,7 +280,7 @@ Scope {
         }
     }
 
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "mediaControlsToggle"
         description: "Toggles media controls on press"
 
@@ -215,7 +288,7 @@ Scope {
             GlobalStates.mediaControlsOpen = !GlobalStates.mediaControlsOpen;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "mediaControlsOpen"
         description: "Opens media controls on press"
 
@@ -223,7 +296,7 @@ Scope {
             GlobalStates.mediaControlsOpen = true;
         }
     }
-    GlobalShortcut {
+    CompositorGlobalShortcut {
         name: "mediaControlsClose"
         description: "Closes media controls on press"
 

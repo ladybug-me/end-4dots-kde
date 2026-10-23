@@ -9,49 +9,40 @@ CACHE_DIR="$XDG_CACHE_HOME/quickshell"
 STATE_DIR="$XDG_STATE_HOME/quickshell"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SHELL_CONFIG_FILE="$XDG_CONFIG_HOME/illogical-impulse/config.json"
+MATUGEN_DIR="$XDG_CONFIG_HOME/matugen"
+terminalscheme="$SCRIPT_DIR/terminal/scheme-base.json"
 
-find_caelestia_color() {
-    if command -v caelestia-color &>/dev/null; then
-        command -v caelestia-color
-    elif [[ -x "$HOME/.local/bin/caelestia-color" ]]; then
-        echo "$HOME/.local/bin/caelestia-color"
-    elif [[ -x "/usr/bin/caelestia-color" ]]; then
-        echo "/usr/bin/caelestia-color"
-    elif [[ -x "$SCRIPT_DIR/../../../../src/bin/caelestia-color" ]]; then
-        echo "$SCRIPT_DIR/../../../../src/bin/caelestia-color"
-    else
-        echo "caelestia-color"
+# shellcheck source=../lib/config.sh
+source "$SCRIPT_DIR/../lib/config.sh"
+
+handle_kde_material_you_colors() {
+    if [ -f "$SHELL_CONFIG_FILE" ]; then
+        enable_qt_apps=$(jq -r '.appearance.wallpaperTheming.enableQtApps' "$SHELL_CONFIG_FILE")
+        if [ "$enable_qt_apps" == "false" ]; then
+            return
+        fi
     fi
-}
-CAELESTIA_COLOR="$(find_caelestia_color)"
 
-map_variant() {
-    case "$1" in
-        scheme-tonal-spot|tonalspot) printf 'tonalspot' ;;
-        scheme-vibrant|vibrant) printf 'vibrant' ;;
-        scheme-expressive|expressive) printf 'expressive' ;;
-        scheme-fidelity|fidelity) printf 'fidelity' ;;
-        scheme-fruit-salad|fruitsalad) printf 'fruitsalad' ;;
-        scheme-monochrome|monochrome) printf 'monochrome' ;;
-        scheme-neutral|neutral) printf 'neutral' ;;
-        scheme-rainbow|rainbow) printf 'rainbow' ;;
-        scheme-content|content) printf 'content' ;;
-        auto|"") printf 'auto' ;;
-        *) printf 'tonalspot' ;;
+    local kde_scheme_variant=""
+    case "$type_flag" in
+        scheme-content|scheme-expressive|scheme-fidelity|scheme-fruit-salad|scheme-monochrome|scheme-neutral|scheme-rainbow|scheme-tonal-spot)
+            kde_scheme_variant="$type_flag"
+            ;;
+        *)
+            kde_scheme_variant="scheme-tonal-spot"
+            ;;
     esac
+    "$XDG_CONFIG_HOME"/matugen/templates/kde/kde-material-you-colors-wrapper.sh --scheme-variant "$kde_scheme_variant"
 }
 
 pre_process() {
     local mode_flag="$1"
-    # Set GNOME color-scheme if mode_flag is dark or light
-    if command -v gsettings &>/dev/null; then
-        if [[ "$mode_flag" == "dark" ]]; then
-            gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark' 2>/dev/null || true
-            gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark' 2>/dev/null || true
-        elif [[ "$mode_flag" == "light" ]]; then
-            gsettings set org.gnome.desktop.interface color-scheme 'prefer-light' 2>/dev/null || true
-            gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3' 2>/dev/null || true
-        fi
+    if [[ "$mode_flag" == "dark" ]]; then
+        gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+        gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3-dark'
+    elif [[ "$mode_flag" == "light" ]]; then
+        gsettings set org.gnome.desktop.interface color-scheme 'prefer-light'
+        gsettings set org.gnome.desktop.interface gtk-theme 'adw-gtk3'
     fi
 
     if [ ! -d "$CACHE_DIR"/user/generated ]; then
@@ -59,16 +50,60 @@ pre_process() {
     fi
 }
 
+post_process() {
+    local screen_width="$1"
+    local screen_height="$2"
+    local wallpaper_path="$3"
+    local colors_lock_flag="$4"
+
+    if [[ -n "$colors_lock_flag" ]]; then
+        return
+    fi
+
+    handle_kde_material_you_colors &
+    "$SCRIPT_DIR/code/material-code-set-color.sh" &
+}
+
+apply_named_scheme() {
+    local mode_flag="$1"
+    local wallpaper_path="$2"
+    python3 "$SCRIPT_DIR/named_scheme.py" \
+        --scheme "$named_scheme" \
+        --mode "$mode_flag" \
+        --image "$wallpaper_path" \
+        --primary "$named_primary" \
+        --secondary "$named_secondary" \
+        --scss "$STATE_DIR/user/generated/material_colors.scss" \
+        --cache "$STATE_DIR/user/generated/color.txt" || {
+            notify-send "Color scheme" "'$named_scheme' is invalid, going back to Material colors" -a "Shell"
+            config_json_update "$SHELL_CONFIG_FILE" '.appearance.palette.namedScheme = ""'
+            return 1
+        }
+    "$SCRIPT_DIR"/applycolor.sh
+    apply_named_qt &
+    "$SCRIPT_DIR/code/material-code-set-color.sh" &
+}
+
+apply_named_qt() {
+    if [ -f "$SHELL_CONFIG_FILE" ] && [ "$(jq -r '.appearance.wallpaperTheming.enableQtApps' "$SHELL_CONFIG_FILE")" == "false" ]; then
+        return
+    fi
+    command -v plasma-apply-colorscheme >/dev/null || return
+    plasma-apply-colorscheme IllogicalNamed2 >/dev/null 2>&1
+    plasma-apply-colorscheme IllogicalNamed >/dev/null 2>&1
+}
+
 check_and_prompt_upscale() {
     local img="$1"
-    command -v hyprctl &>/dev/null || return 0
-    command -v bc &>/dev/null || return 0
-    min_width_desired="$(hyprctl monitors -j | jq '([.[].width] | max)' | xargs)" # max monitor width
-    min_height_desired="$(hyprctl monitors -j | jq '([.[].height] | max)' | xargs)" # max monitor height
+    if [ -f "$SHELL_CONFIG_FILE" ] && [ "$(jq -r '.background.collage.enable // false' "$SHELL_CONFIG_FILE")" == "true" ]; then
+        return
+    fi
+    min_width_desired="$(hyprctl monitors -j | jq '([.[].width] | max)' | xargs)"
+    min_height_desired="$(hyprctl monitors -j | jq '([.[].height] | max)' | xargs)"
 
     if command -v identify &>/dev/null && [ -f "$img" ]; then
         local img_width img_height
-        if is_video "$img"; then # Not check resolution for videos, just let em pass
+        if is_video "$img"; then
             img_width=$min_width_desired
             img_height=$min_height_desired
         else
@@ -106,7 +141,12 @@ CUSTOM_DIR="$XDG_CONFIG_HOME/hypr/custom"
 RESTORE_SCRIPT_DIR="$CUSTOM_DIR/scripts"
 RESTORE_SCRIPT="$RESTORE_SCRIPT_DIR/__restore_video_wallpaper.sh"
 THUMBNAIL_DIR="$RESTORE_SCRIPT_DIR/mpvpaper_thumbnails"
+MPVPAPER_FLAGS="-p -a max"
 VIDEO_OPTS="no-audio loop hwdec=auto scale=bilinear interpolation=no video-sync=display-resample panscan=1.0 video-scale-x=1.0 video-scale-y=1.0 video-align-x=0.5 video-align-y=0.5 load-scripts=no"
+# One control socket per output, so the shell can pause and resume the live
+# wallpaper instead of only being able to kill it.
+MPV_SOCKET_DIR="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}"
+MPV_SOCKET_PREFIX="$MPV_SOCKET_DIR/mpvpaper-"
 
 is_video() {
     local extension="${1##*.}"
@@ -125,9 +165,10 @@ create_restore_script() {
 # Time: $(date)
 
 pkill -f -9 mpvpaper
+rm -f "$MPV_SOCKET_PREFIX"*.sock
 
 for monitor in \$(hyprctl monitors -j | jq -r '.[] | .name'); do
-    mpvpaper -o "$VIDEO_OPTS" "\$monitor" "$video_path" &
+    mpvpaper $MPVPAPER_FLAGS -o "$VIDEO_OPTS input-ipc-server=$MPV_SOCKET_PREFIX\$monitor.sock" "\$monitor" "$video_path" &
     sleep 0.1
 done
 EOF
@@ -136,39 +177,29 @@ EOF
 }
 
 remove_restore() {
-    if [[ -d "$RESTORE_SCRIPT_DIR" ]]; then
-        cat > "$RESTORE_SCRIPT.tmp" << EOF
+    cat > "$RESTORE_SCRIPT.tmp" << EOF
 #!/bin/bash
 # The content of this script will be generated by switchwall.sh - Don't modify it by yourself.
 EOF
-        mv "$RESTORE_SCRIPT.tmp" "$RESTORE_SCRIPT"
-    fi
+    mv "$RESTORE_SCRIPT.tmp" "$RESTORE_SCRIPT"
 }
 
 set_wallpaper_path() {
     local path="$1"
     if [ -f "$SHELL_CONFIG_FILE" ]; then
-        jq --arg path "$path" '.background.wallpaperPath = $path' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        config_json_update "$SHELL_CONFIG_FILE" --arg path "$path" '.background.wallpaperPath = $path'
     fi
 }
 
 set_thumbnail_path() {
     local path="$1"
     if [ -f "$SHELL_CONFIG_FILE" ]; then
-        jq --arg path "$path" '.background.thumbnailPath = $path' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
-    fi
-}
-
-set_palette_type() {
-    local type="$1"
-    if [ -f "$SHELL_CONFIG_FILE" ]; then
-        jq --arg type "$type" '.appearance.palette.type = $type' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        config_json_update "$SHELL_CONFIG_FILE" --arg path "$path" '.background.thumbnailPath = $path'
     fi
 }
 
 categorize_wallpaper() {
     img_cat=$("$SCRIPT_DIR/../ai/gemini-categorize-wallpaper.sh" "$1")
-    # notify-send "Wallpaper category" "$img_cat"
     echo "$img_cat" > "$STATE_DIR/user/generated/wallpaper/category.txt"
 }
 
@@ -178,22 +209,26 @@ switch() {
     type_flag="$3"
     color_flag="$4"
     color="$5"
+    colors_only_flag="$6"
+    colors_lock_flag="$7"
 
-    # Start Gemini auto-categorization if enabled
     aiStylingEnabled=$(jq -r '.background.widgets.clock.cookie.aiStyling' "$SHELL_CONFIG_FILE")
-    if [[ "$aiStylingEnabled" == "true" ]]; then
+    if [[ "$aiStylingEnabled" == "true" && -z "$colors_only_flag" ]]; then
         categorize_wallpaper "$imgpath" &
     fi
 
-    local variant
-    variant="$(map_variant "$type_flag")"
+    read scale screenx screeny screensizey < <(hyprctl monitors -j | jq '.[] | select(.focused) | .scale, .x, .y, .height' | xargs)
+    cursorposx=$(hyprctl cursorpos -j | jq '.x' 2>/dev/null) || cursorposx=960
+    cursorposx=$(bc <<< "scale=0; ($cursorposx - $screenx) * $scale / 1")
+    cursorposy=$(hyprctl cursorpos -j | jq '.y' 2>/dev/null) || cursorposy=540
+    cursorposy=$(bc <<< "scale=0; ($cursorposy - $screeny) * $scale / 1")
+    cursorposy_inverted=$((screensizey - cursorposy))
+
+    matugen_args=(--source-color-index 0)
 
     if [[ "$color_flag" == "1" ]]; then
-        pre_process "$mode_flag"
-        local scheme_cmd=("$CAELESTIA_COLOR" scheme set)
-        [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
-        [[ -n "$variant" && "$variant" != "auto" ]] && scheme_cmd+=(-v "$variant")
-        "${scheme_cmd[@]}"
+        matugen_args+=(color hex "$color")
+        generate_colors_material_args=(--color "$color")
     else
         if [[ -z "$imgpath" ]]; then
             echo 'Aborted'
@@ -201,7 +236,10 @@ switch() {
         fi
 
         check_and_prompt_upscale "$imgpath" &
-        kill_existing_mpvpaper
+
+        if [[ -z "$colors_only_flag" ]]; then
+            kill_existing_mpvpaper
+        fi
 
         if is_video "$imgpath"; then
             mkdir -p "$THUMBNAIL_DIR"
@@ -215,6 +253,7 @@ switch() {
             fi
             if [ ${#missing_deps[@]} -gt 0 ]; then
                 echo "Missing deps: ${missing_deps[*]}"
+                echo "Arch: sudo pacman -S ${missing_deps[*]}"
                 action=$(notify-send \
                     -a "Wallpaper switcher" \
                     -c "im.error" \
@@ -230,77 +269,150 @@ switch() {
                 exit 0
             fi
 
-            # Set wallpaper path
-            set_wallpaper_path "$imgpath"
+            if [[ -z "$colors_only_flag" ]]; then
+                set_wallpaper_path "$imgpath"
 
-            # Set video wallpaper
-            local video_path="$imgpath"
-            monitors=$(hyprctl monitors -j 2>/dev/null | jq -r '.[] | .name' 2>/dev/null || echo "")
-            for monitor in $monitors; do
-                mpvpaper -o "$VIDEO_OPTS" "$monitor" "$video_path" &
-                sleep 0.1
-            done
+                local video_path="$imgpath"
+                monitors=$(hyprctl monitors -j | jq -r '.[] | .name')
+                rm -f "$MPV_SOCKET_PREFIX"*.sock
+                for monitor in $monitors; do
+                    mpvpaper $MPVPAPER_FLAGS -o "$VIDEO_OPTS input-ipc-server=$MPV_SOCKET_PREFIX$monitor.sock" "$monitor" "$video_path" &
+                    sleep 0.1
+                done
+            fi
 
-            # Extract first frame for color generation
             thumbnail="$THUMBNAIL_DIR/$(basename "$imgpath").jpg"
             ffmpeg -y -i "$imgpath" -vframes 1 "$thumbnail" 2>/dev/null
 
-            # Set thumbnail path
-            set_thumbnail_path "$thumbnail"
+            if [[ -z "$colors_only_flag" ]]; then
+                set_thumbnail_path "$thumbnail"
+            fi
 
             if [ -f "$thumbnail" ]; then
-                create_restore_script "$video_path"
-                imgpath="$thumbnail"
+                matugen_args+=(image "$thumbnail")
+                generate_colors_material_args=(--path "$thumbnail")
+                if [[ -z "$colors_only_flag" ]]; then
+                    create_restore_script "$video_path"
+                fi
             else
                 echo "Cannot create image to colorgen"
-                remove_restore
+                if [[ -z "$colors_only_flag" ]]; then
+                    remove_restore
+                fi
                 exit 1
             fi
         else
-            # Update wallpaper path in config
-            set_wallpaper_path "$imgpath"
-            remove_restore
-        fi
-
-        pre_process "$mode_flag"
-
-        # Apply scheme/mode settings via caelestia-color
-        if [[ "$noswitch_flag" == "1" ]]; then
-            local current_wall
-            current_wall=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
-            if [[ -n "$imgpath" && "$imgpath" != "$current_wall" && -f "$imgpath" ]]; then
+            matugen_args+=(image "$imgpath")
+            generate_colors_material_args=(--path "$imgpath")
+            if [[ -z "$colors_only_flag" ]]; then
                 set_wallpaper_path "$imgpath"
-                "$CAELESTIA_COLOR" wallpaper -f "$imgpath"
-                if command -v plasma-apply-wallpaperimage &>/dev/null && ! is_video "$imgpath"; then
-                    plasma-apply-wallpaperimage "$imgpath" >/dev/null 2>&1 &
-                fi
-            fi
-            local scheme_cmd=("$CAELESTIA_COLOR" scheme set -n dynamic)
-            [[ -n "$mode_flag" ]] && scheme_cmd+=(-m "$mode_flag")
-            if [[ -n "$variant" && "$variant" != "auto" ]]; then
-                scheme_cmd+=(-v "$variant")
-            fi
-            "${scheme_cmd[@]}"
-        else
-            "$CAELESTIA_COLOR" wallpaper -f "$imgpath"
-            local scheme_cmd=("$CAELESTIA_COLOR" scheme set -n dynamic)
-            local need_scheme_set=0
-            if [[ -n "$mode_flag" ]]; then
-                scheme_cmd+=(-m "$mode_flag")
-                need_scheme_set=1
-            fi
-            if [[ -n "$variant" && "$variant" != "auto" ]]; then
-                scheme_cmd+=(-v "$variant")
-                need_scheme_set=1
-            fi
-            if [[ $need_scheme_set -eq 1 ]]; then
-                "${scheme_cmd[@]}"
-            fi
-            if command -v plasma-apply-wallpaperimage &>/dev/null && ! is_video "$imgpath"; then
-                plasma-apply-wallpaperimage "$imgpath" >/dev/null 2>&1 &
+                remove_restore
             fi
         fi
     fi
+
+    if [[ -z "$mode_flag" ]]; then
+        current_mode=$(gsettings get org.gnome.desktop.interface color-scheme 2>/dev/null | tr -d "'")
+        if [[ "$current_mode" == "prefer-dark" ]]; then
+            mode_flag="dark"
+        else
+            mode_flag="light"
+        fi
+    fi
+
+    if [[ -n "$mode_flag" ]]; then
+        matugen_args+=(--mode "$mode_flag")
+        if [[ $(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.forceDarkMode' "$SHELL_CONFIG_FILE") == "true" ]]; then
+            generate_colors_material_args+=(--mode "dark")
+        else
+            generate_colors_material_args+=(--mode "$mode_flag")
+        fi
+    fi
+    [[ -n "$type_flag" ]] && matugen_args+=(--type "$type_flag") && generate_colors_material_args+=(--scheme "$type_flag")
+    generate_colors_material_args+=(--termscheme "$terminalscheme" --blend_bg_fg)
+    generate_colors_material_args+=(--cache "$STATE_DIR/user/generated/color.txt")
+
+    if [[ -n "$named_scheme" && -z "$noswitch_flag" && -z "$colors_lock_flag" ]]; then
+        return
+    fi
+
+    pre_process "$mode_flag"
+
+    if [ -f "$SHELL_CONFIG_FILE" ]; then
+        enable_apps_shell=$(jq -r '.appearance.wallpaperTheming.enableAppsAndShell' "$SHELL_CONFIG_FILE")
+        if [ "$enable_apps_shell" == "false" ]; then
+            echo "App and shell theming disabled, skipping matugen and color generation"
+            return
+        fi
+    fi
+
+    if [ -f "$SHELL_CONFIG_FILE" ]; then
+        harmony=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.harmony' "$SHELL_CONFIG_FILE")
+        harmonize_threshold=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.harmonizeThreshold' "$SHELL_CONFIG_FILE")
+        term_fg_boost=$(jq -r '.appearance.wallpaperTheming.terminalGenerationProps.termFgBoost' "$SHELL_CONFIG_FILE")
+        [[ "$harmony" != "null" && -n "$harmony" ]] && generate_colors_material_args+=(--harmony "$harmony")
+        [[ "$harmonize_threshold" != "null" && -n "$harmonize_threshold" ]] && generate_colors_material_args+=(--harmonize_threshold "$harmonize_threshold")
+        [[ "$term_fg_boost" != "null" && -n "$term_fg_boost" ]] && generate_colors_material_args+=(--term_fg_boost "$term_fg_boost")
+    fi
+
+    colors_json_path="$STATE_DIR/user/generated/colors.json"
+    if [[ -n "$named_scheme" && -z "$colors_lock_flag" ]]; then
+        apply_named_scheme "$mode_flag" "$imgpath"
+        return
+    fi
+
+    colors_lock_json_path="$STATE_DIR/user/generated/colors-lock.json"
+    colors_lock_watch_paths=(
+        "$colors_json_path"
+        "$XDG_CONFIG_HOME/gtk-3.0/gtk.css"
+        "$XDG_CONFIG_HOME/gtk-4.0/gtk.css"
+    )
+    colors_lock_backups=()
+    if [[ -n "$colors_lock_flag" ]]; then
+        for i in "${!colors_lock_watch_paths[@]}"; do
+            watch_path="${colors_lock_watch_paths[$i]}"
+            if [[ -f "$watch_path" ]]; then
+                backup_path="$(mktemp)"
+                cp "$watch_path" "$backup_path"
+                colors_lock_backups[$i]="$backup_path"
+            fi
+        done
+    fi
+
+    matugen "${matugen_args[@]}"
+
+    if [[ -n "$colors_lock_flag" ]]; then
+        if [[ -f "$colors_json_path" ]]; then
+            cp "$colors_json_path" "$colors_lock_json_path"
+        fi
+        for i in "${!colors_lock_watch_paths[@]}"; do
+            watch_path="${colors_lock_watch_paths[$i]}"
+            backup_path="${colors_lock_backups[$i]:-}"
+            if [[ -n "$backup_path" ]]; then
+                mv "$backup_path" "$watch_path"
+            fi
+        done
+    fi
+
+    source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
+
+    if [[ -n "$colors_lock_flag" ]]; then
+        output_scss="$STATE_DIR/user/generated/material_colors_lock.scss"
+    else
+        output_scss="$STATE_DIR/user/generated/material_colors.scss"
+    fi
+
+    python3 "$SCRIPT_DIR/generate_colors_material.py" "${generate_colors_material_args[@]}" \
+        > "$output_scss"
+    deactivate
+
+    if [[ -z "$colors_lock_flag" ]]; then
+        "$SCRIPT_DIR"/applycolor.sh
+    fi
+
+    max_width_desired="$(hyprctl monitors -j | jq '([.[].width] | min)' | xargs)"
+    max_height_desired="$(hyprctl monitors -j | jq '([.[].height] | min)' | xargs)"
+    post_process "$max_width_desired" "$max_height_desired" "$imgpath" "$colors_lock_flag"
 }
 
 main() {
@@ -310,20 +422,47 @@ main() {
     color_flag=""
     color=""
     noswitch_flag=""
+    colors_only_flag=""
+    colors_lock_flag=""
+    explicit_image=""
+    start_dir_flag=""
 
     get_type_from_config() {
         jq -r '.appearance.palette.type' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "auto"
+    }
+    get_named_scheme_from_config() {
+        jq -r '.appearance.palette.namedScheme // ""' "$SHELL_CONFIG_FILE" 2>/dev/null || echo ""
+    }
+    set_named_scheme() {
+        local previous
+        previous="$(get_named_scheme_from_config)"
+        if [[ "$previous" != "$1" ]]; then
+            config_json_update "$SHELL_CONFIG_FILE" --arg name "$1" \
+                '.appearance.palette.namedScheme = $name | .appearance.palette.namedSchemePrimary = "" | .appearance.palette.namedSchemeSecondary = ""'
+        fi
+    }
+    set_named_accent() {
+        local slot="$1" value="$2"
+        [[ "$value" == "clear" ]] && value=""
+        config_json_update "$SHELL_CONFIG_FILE" --arg slot "$slot" --arg value "$value" \
+            '.appearance.palette["namedScheme" + $slot] = $value'
+    }
+    get_named_accent_from_config() {
+        jq -r --arg key "namedScheme$1" '.appearance.palette[$key] // ""' "$SHELL_CONFIG_FILE" 2>/dev/null || echo ""
     }
     get_accent_color_from_config() {
         jq -r '.appearance.palette.accentColor' "$SHELL_CONFIG_FILE" 2>/dev/null || echo ""
     }
     set_accent_color() {
         local color="$1"
-        jq --arg color "$color" '.appearance.palette.accentColor = $color' "$SHELL_CONFIG_FILE" > "$SHELL_CONFIG_FILE.tmp" && mv "$SHELL_CONFIG_FILE.tmp" "$SHELL_CONFIG_FILE"
+        config_json_update "$SHELL_CONFIG_FILE" --arg color "$color" '.appearance.palette.accentColor = $color'
     }
 
     detect_scheme_type_from_image() {
-        echo "auto"
+        local img="$1"
+        source "$(eval echo $ILLOGICAL_IMPULSE_VIRTUAL_ENV)/bin/activate"
+        "$SCRIPT_DIR"/scheme_for_image.py "$img" 2>/dev/null | tr -d '\n'
+        deactivate
     }
 
     while [[ $# -gt 0 ]]; do
@@ -334,7 +473,6 @@ main() {
                 ;;
             --type)
                 type_flag="$2"
-                set_palette_type "$type_flag"
                 shift 2
                 ;;
             --color)
@@ -345,19 +483,49 @@ main() {
                     set_accent_color ""
                     shift 2
                 else
-                    if command -v hyprpicker &>/dev/null; then
-                        set_accent_color $(hyprpicker --no-fancy)
-                    fi
+                    set_accent_color $(hyprpicker --no-fancy)
                     shift
                 fi
                 ;;
+            --scheme-name)
+                if [[ "$2" == "clear" ]]; then
+                    set_named_scheme ""
+                else
+                    set_named_scheme "$2"
+                fi
+                shift 2
+                ;;
+            --scheme-primary)
+                set_named_accent Primary "$2"
+                shift 2
+                ;;
+            --scheme-secondary)
+                set_named_accent Secondary "$2"
+                shift 2
+                ;;
             --image)
                 imgpath="$2"
+                explicit_image="1"
+                shift 2
+                ;;
+            --start-dir)
+                start_dir_flag="$2"
                 shift 2
                 ;;
             --noswitch)
                 noswitch_flag="1"
-                imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                if [[ -z "$imgpath" ]]; then
+                    imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                fi
+                shift
+                ;;
+            --colors_lock)
+                colors_lock_flag="1"
+                colors_only_flag="1"
+                noswitch_flag="1"
+                if [[ -z "$imgpath" ]]; then
+                    imgpath=$(jq -r '.background.wallpaperPath' "$SHELL_CONFIG_FILE" 2>/dev/null || echo "")
+                fi
                 shift
                 ;;
             *)
@@ -369,19 +537,29 @@ main() {
         esac
     done
 
-    # If accentColor is set in config, use it
+    if [[ -n "$noswitch_flag" && -n "$explicit_image" ]]; then
+        colors_only_flag="1"
+    fi
+
+    named_scheme="$(get_named_scheme_from_config)"
+    if [[ -n "$named_scheme" && ! -f "$SCRIPT_DIR/schemes/$named_scheme.json" && ! -f "$(dirname "$SHELL_CONFIG_FILE")/schemes/$named_scheme.json" ]]; then
+        echo "[switchwall.sh] Warning: Unknown named scheme '$named_scheme', ignoring" >&2
+        named_scheme=""
+    fi
+
+    named_primary="$(get_named_accent_from_config Primary)"
+    named_secondary="$(get_named_accent_from_config Secondary)"
+
     config_color="$(get_accent_color_from_config)"
     if [[ "$config_color" =~ ^#?[A-Fa-f0-9]{6}$ ]]; then
         color_flag="1"
         color="$config_color"
     fi
 
-    # If type_flag is not set, get it from config
     if [[ -z "$type_flag" ]]; then
         type_flag="$(get_type_from_config)"
     fi
 
-    # Validate type_flag (allow 'auto' as well)
     allowed_types=(scheme-content scheme-expressive scheme-fidelity scheme-fruit-salad scheme-monochrome scheme-neutral scheme-rainbow scheme-tonal-spot auto)
     valid_type=0
     for t in "${allowed_types[@]}"; do
@@ -397,63 +575,12 @@ main() {
 
     # Only prompt for wallpaper if not using --color and not using --noswitch and no imgpath set
     if [[ -z "$imgpath" && -z "$color_flag" && -z "$noswitch_flag" ]]; then
-        local start_dir
-        start_dir="$(xdg-user-dir PICTURES 2>/dev/null)/Wallpapers/showcase"
-        [[ -d "$start_dir" ]] || start_dir="$(xdg-user-dir PICTURES 2>/dev/null)/Wallpapers"
-        [[ -d "$start_dir" ]] || start_dir="$(xdg-user-dir PICTURES 2>/dev/null)"
-        [[ -d "$start_dir" ]] || start_dir="$HOME"
-
-        if command -v kdialog &>/dev/null; then
-            imgpath="$(kdialog --getopenfilename "$start_dir" --title 'Choose wallpaper' 2>/dev/null)"
-        elif command -v zenity &>/dev/null; then
-            imgpath="$(zenity --file-selection --filename="$start_dir/" --title='Choose wallpaper' 2>/dev/null)"
-        elif command -v python3 &>/dev/null; then
-            imgpath="$(python3 -c "
-import dbus, urllib.parse, sys
-from dbus.mainloop.glib import DBusGMainLoop
-from gi.repository import GLib
-
-try:
-    DBusGMainLoop(set_as_default=True)
-    bus = dbus.SessionBus()
-    portal = bus.get_object('org.freedesktop.portal.Desktop', '/org/freedesktop/portal/desktop')
-    iface = dbus.Interface(portal, 'org.freedesktop.portal.FileChooser')
-
-    loop = GLib.MainLoop()
-    selected = []
-
-    def on_response(response, results):
-        if response == 0 and 'uris' in results and len(results['uris']) > 0:
-            uri = str(results['uris'][0])
-            if uri.startswith('file://'):
-                selected.append(urllib.parse.unquote(uri[7:]))
-            else:
-                selected.append(uri)
-        loop.quit()
-
-    token = 'caelestia_picker'
-    sender_clean = bus.get_unique_name()[1:].replace('.', '_')
-    request_path = f'/org/freedesktop/portal/desktop/request/{sender_clean}/{token}'
-
-    bus.add_signal_receiver(
-        on_response,
-        signal_name='Response',
-        dbus_interface='org.freedesktop.portal.Request',
-        path=request_path
-    )
-
-    iface.OpenFile('', 'Choose wallpaper', {'handle_token': token, 'multiple': False})
-    loop.run()
-    if selected:
-        print(selected[0])
-except Exception:
-    pass
-")"
+        if [[ -n "$start_dir_flag" && -d "$start_dir_flag" ]]; then
+            cd "$start_dir_flag" || return 1
+        else
+            cd "$(xdg-user-dir PICTURES)/Wallpapers/showcase" 2>/dev/null || cd "$(xdg-user-dir PICTURES)/Wallpapers" 2>/dev/null || cd "$(xdg-user-dir PICTURES)" || return 1
         fi
-
-        if [[ -z "$imgpath" ]]; then
-            return 0 2>/dev/null || exit 0
-        fi
+        imgpath="$(kdialog --getopenfilename . --title 'Choose wallpaper')"
     fi
 
     if [[ -n "$imgpath" && -z "$noswitch_flag" ]]; then
@@ -462,28 +589,40 @@ except Exception:
         color=""
     fi
 
-    # If type_flag is 'auto' or empty, caelestia-color handles smart variant auto-detection natively
-    if [[ -z "$type_flag" ]]; then
-        type_flag="auto"
+    if [[ "$type_flag" == "auto" ]]; then
+        if [[ -n "$imgpath" && -f "$imgpath" ]]; then
+            detected_type="$(detect_scheme_type_from_image "$imgpath")"
+            valid_detected=0
+            for t in "${allowed_types[@]}"; do
+                if [[ "$detected_type" == "$t" && "$detected_type" != "auto" ]]; then
+                    valid_detected=1
+                    break
+                fi
+            done
+            if [[ $valid_detected -eq 1 ]]; then
+                type_flag="$detected_type"
+            else
+                echo "[switchwall] Warning: Could not auto-detect a valid scheme, defaulting to 'scheme-tonal-spot'" >&2
+                type_flag="scheme-tonal-spot"
+            fi
+        else
+            echo "[switchwall] Warning: No image to auto-detect scheme from, defaulting to 'scheme-tonal-spot'" >&2
+            type_flag="scheme-tonal-spot"
+        fi
     fi
 
-    # If mode_flag is dark or light, try to find a variant with that mode suffix
     if [[ "$mode_flag" == "dark" || "$mode_flag" == "light" ]]; then
-        # Get directory, filename without extension, and extension
         local imgdir="$(dirname "$imgpath")"
         local imgbase="$(basename "$imgpath")"
         local imgname="${imgbase%.*}"
         local imgext="${imgbase##*.}"
 
-        # Strip existing -dark or -light suffix
         local stripped_name="${imgname%-dark}"
         stripped_name="${stripped_name%-light}"
 
-        # Construct the new path with the requested mode suffix
         local new_imgpath="${imgdir}/${stripped_name}-${mode_flag}.${imgext}"
         local new_stripped_imgpath="${imgdir}/${stripped_name}.${imgext}"
 
-        # If the variant exists, use it
         if [[ -f "$new_imgpath" ]]; then
             imgpath="$new_imgpath"
         elif [[ -f "$new_stripped_imgpath" ]]; then
@@ -491,7 +630,7 @@ except Exception:
         fi
     fi
 
-    switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color"
+    switch "$imgpath" "$mode_flag" "$type_flag" "$color_flag" "$color" "$colors_only_flag" "$colors_lock_flag"
 }
 
 main "$@"

@@ -10,6 +10,12 @@ import Quickshell.Services.UPower
 
 Rectangle {
     id: root
+    WindowGlass {
+        anchors.fill: parent
+        glassEnabled: (parent?.color.a ?? 0) > 0
+        cardRadius: parent?.radius ?? 0
+        tint: parent?.color ?? 'transparent'
+    }
 
     property var screen: root.QsWindow.window?.screen
     property var brightnessMonitor: Brightness.getMonitorForScreen(screen)
@@ -39,7 +45,7 @@ Rectangle {
             visible: active
             active: Config.options.sidebar.quickSliders.showBrightness
             sourceComponent: QuickSlider {
-                materialSymbol: "light_mode"
+                materialSymbol: "brightness_medium"
                 secondaryMaterialSymbol: "wb_twilight"
                 stopIndicatorValues: Hyprsunset.gamma !== 100 && root.brightnessMonitor?.brightness !== 0 ? [0.3 + root.brightnessMonitor?.brightness * 0.7] : []
                 value: Hyprsunset.gamma === 100? 0.3 + root.brightnessMonitor?.brightness * 0.7 : (Hyprsunset.gamma - Hyprsunset.gammaLowerLimit) / (100 - Hyprsunset.gammaLowerLimit) * 0.3
@@ -63,33 +69,29 @@ Rectangle {
         }
 
         Loader {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            anchors { left: parent.left; right: parent.right }
             visible: active
             active: Config.options.sidebar.quickSliders.showVolume
             sourceComponent: QuickSlider {
                 materialSymbol: "volume_up"
-                value: Audio.sink.audio.volume
+                value: Audio.sink?.audio?.volume ?? 0
                 onMoved: {
-                    Audio.sink.audio.volume = value
+                    if (Audio.sink?.audio)
+                        Audio.sink.audio.volume = value
                 }
             }
         }
 
         Loader {
-            anchors {
-                left: parent.left
-                right: parent.right
-            }
+            anchors { left: parent.left; right: parent.right }
             visible: active
             active: Config.options.sidebar.quickSliders.showMic
             sourceComponent: QuickSlider {
                 materialSymbol: "mic"
-                value: Audio.source.audio.volume
+                value: Audio.source?.audio?.volume ?? 0
                 onMoved: {
-                    Audio.source.audio.volume = value
+                    if (Audio.source?.audio)
+                        Audio.source.audio.volume = value
                 }
             }
         }

@@ -1,5 +1,5 @@
 pragma Singleton
-
+import qs
 import qs.modules.common
 import qs.modules.common.functions
 import QtQuick
@@ -42,16 +42,22 @@ Singleton {
         command: ["which", "checkupdates"]
         onExited: (exitCode, exitStatus) => {
             root.available = (exitCode === 0);
-            root.refresh();
+            firstCheckTimer.start();
         }
+    }
+
+    Timer {
+        id: firstCheckTimer
+        interval: 60 * 1000
+        onTriggered: root.refresh()
     }
 
     Process {
         id: checkUpdatesProc
-        command: ["bash", "-c", "checkupdates | wc -l"]
+        command: ["bash", "-c", "pacman=$(checkupdates 2>/dev/null | wc -l); aur=$(yay -Qua 2>/dev/null | wc -l || paru -Qua 2>/dev/null | wc -l || echo 0); echo $((pacman + aur))"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.count = parseInt(text.trim());
+                root.count = parseInt(text.trim())
             }
         }
     }

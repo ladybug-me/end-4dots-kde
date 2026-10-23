@@ -83,6 +83,10 @@ Singleton {
                 property bool inhibit: false
             }
 
+            property JsonObject record: JsonObject {
+                property bool enable: false
+            }
+
             property JsonObject overlay: JsonObject {
                 property list<string> open: ["crosshair", "recorder", "volumeMixer", "resources"]
                 property JsonObject crosshair: JsonObject {
@@ -156,6 +160,11 @@ Singleton {
                     property bool running: false
                     property int start: 0
                     property list<var> laps: []
+                }
+                property JsonObject countdown: JsonObject {
+                    property bool running: false
+                    property int duration: 0
+                    property int start: 0
                 }
             }
         }

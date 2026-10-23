@@ -36,17 +36,19 @@ Item {
                 text: root.node?.audio.muted ? Translation.tr("Click to unmute") : Translation.tr("Click to mute")
             }
 
-            StyledImage {
+            Image {
                 id: iconImg
                 anchors.fill: parent
                 visible: false
+                sourceSize.width: parent.size
+                sourceSize.height: parent.size
                 source: {
                     let icon;
                     icon = AppSearch.guessIcon(root.node?.properties["application.icon-name"] ?? "");
                     if (AppSearch.iconExists(icon))
-                        return Quickshell.iconPath(icon, "image-missing");
+                        return SystemAppearance.iconPath(icon, "image-missing");
                     icon = AppSearch.guessIcon(root.node?.properties["node.name"] ?? "");
-                    return Quickshell.iconPath(icon, "image-missing");
+                    return SystemAppearance.iconPath(icon, "image-missing");
                 }
             }
 

@@ -25,7 +25,7 @@ Singleton {
     property string imageSearchEngineBaseUrl: Config.options.search.imageSearch.imageSearchEngineBaseUrl
     property string fileUploadApiEndpoint: "https://uguu.se/upload"
 
-    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "") {
+    function getCommand(x, y, width, height, screenshotPath, action, saveDir = "", systemAudio = false, microphone = false) {
         // Set command for action
         const rx = Math.round(x);
         const ry = Math.round(y);
@@ -40,6 +40,7 @@ Singleton {
         const uploadAndGetUrl = (filePath) => {
             return `curl -sF files[]=@'${StringUtils.shellSingleQuoteEscape(filePath)}' ${root.fileUploadApiEndpoint} | jq -r '.files[0].url'`
         }
+        const audioFlags = (systemAudio ? " --sound" : "") + (microphone ? " --mic" : "")
         const annotationCommand = `${Config.options.regionSelector.annotation.useSatty ? "satty" : "swappy"} -f -`;
         switch (action) {
             case ScreenshotAction.Action.Copy:
@@ -68,10 +69,10 @@ Singleton {
                 return ["bash", "-c", `${cropInPlace} && tesseract '${StringUtils.shellSingleQuoteEscape(screenshotPath)}' stdout -l $(tesseract --list-langs | awk 'NR>1{print $1}' | tr '\\n' '+' | sed 's/\\+$/\\n/') | wl-copy && ${cleanup}`]
                 break;
             case ScreenshotAction.Action.Record:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}'`]
+                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}'${audioFlags}`]
                 break;
             case ScreenshotAction.Action.RecordWithSound:
-                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}' --sound`]
+                return ["bash", "-c", `${Directories.recordScriptPath} --region '${slurpRegion}' --sound${microphone ? " --mic" : ""}`]
                 break;
             default:
                 console.warn("[Region Selector] Unknown snip action, skipping snip.");

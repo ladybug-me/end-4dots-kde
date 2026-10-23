@@ -10,7 +10,9 @@ ColumnLayout {
     spacing: 4
 
     property bool isVertical: Config.options.background.widgets.clock.digital.vertical
-    property color colText: Appearance.colors.colOnSecondaryContainer
+    property color colText: Config.options.background.widgets.clock.color !== ""
+        ? Config.options.background.widgets.clock.color
+        : Appearance.colors.colOnSecondaryContainer
     property var textHorizontalAlignment: Text.AlignHCenter
 
     // Time
@@ -24,9 +26,9 @@ ColumnLayout {
             weight: Config.options.background.widgets.clock.digital.font.weight
             family: Config.options.background.widgets.clock.digital.font.family
             variableAxes: ({
-                    "wdth": Config.options.background.widgets.clock.digital.font.width,
-                    "ROND": Config.options.background.widgets.clock.digital.font.roundness
-                })
+                "wdth": Config.options.background.widgets.clock.digital.font.width,
+                "ROND": Config.options.background.widgets.clock.digital.font.roundness
+            })
         }
     }
 

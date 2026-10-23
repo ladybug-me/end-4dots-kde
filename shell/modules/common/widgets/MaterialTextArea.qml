@@ -1,4 +1,5 @@
 import qs.modules.common
+import qs.modules.common.functions
 import QtQuick
 import QtQuick.Controls.Material
 import QtQuick.Controls
@@ -17,6 +18,7 @@ TextArea {
     Material.foreground: Appearance.m3colors.m3onSurface
     Material.containerStyle: Material.Filled
     renderType: Text.QtRendering
+    ContextMenu.menu: StyledTextEditMenu { editor: root }
 
     selectedTextColor: Appearance.m3colors.m3onSecondaryContainer
     selectionColor: Appearance.colors.colSecondaryContainer
@@ -24,7 +26,7 @@ TextArea {
 
     background: Rectangle {
         implicitHeight: 56
-        color: Appearance.m3colors.m3surface
+        color: Appearance.colors.colLayer1 
         topLeftRadius: 4
         topRightRadius: 4
         Rectangle {

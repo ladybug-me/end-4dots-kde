@@ -1,6 +1,5 @@
 pragma ComponentBehavior: Bound
 import QtQuick
-import Quickshell
 import Qt5Compat.GraphicalEffects
 import qs.modules.common
 import qs.modules.common.functions
@@ -72,10 +71,8 @@ StyledOverlayWidget {
             anchors.centerIn: parent
             width: root.imageWidth * root.scaleFactor
             height: root.imageHeight * root.scaleFactor
-            sourceSize: {
-                const dpr = (QsWindow.window as QsWindow)?.devicePixelRatio ?? 1;
-                return Qt.size(width * dpr, height * dpr);
-            }
+            sourceSize.width: width
+            sourceSize.height: height
 
             playing: visible
             asynchronous: true

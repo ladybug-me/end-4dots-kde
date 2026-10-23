@@ -9,10 +9,11 @@ import QtQuick.Layouts
  */
 Rectangle {
     id: root
-    default property alias groupData: rowLayout.data
+    default property alias data: rowLayout.data
     property alias uniformCellSizes: rowLayout.uniformCellSizes
     property real spacing: 5
     property real padding: 0
+    property bool glass: false
     property alias clickIndex: rowLayout.clickIndex
     property alias childrenCount: rowLayout.childrenCount
 
@@ -26,19 +27,19 @@ Rectangle {
         return total + rowLayout.spacing * (rowLayout.children.length - 1);
     }
 
-    topLeftRadius: rowLayout.children.length > 0 ? (rowLayout.children[0].radius + padding) : 
-        Appearance?.rounding?.small
-    bottomLeftRadius: topLeftRadius
-    topRightRadius: rowLayout.children.length > 0 ? (rowLayout.children[rowLayout.children.length - 1].radius + padding) : 
-        Appearance?.rounding?.small
-    bottomRightRadius: topRightRadius
+    radius: Appearance.rounding.normal
 
     color: "transparent"
     width: root.contentWidth + padding * 2
     implicitHeight: rowLayout.implicitHeight + padding * 2
     implicitWidth: root.contentWidth + padding * 2
     
-    children: [RowLayout {
+    children: [WindowGlass {
+        anchors.fill: parent
+        glassEnabled: root.glass && root.color.a > 0
+        cardRadius: root.radius
+        tint: root.color
+    }, RowLayout {
         id: rowLayout
         anchors.fill: parent
         anchors.margins: root.padding

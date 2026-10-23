@@ -14,11 +14,15 @@ DelegateChooser {
     required property real baseCellHeight
     required property real spacing
     required property int startingIndex
+    property var dropIndicatorRef: null 
+    property bool isUnused: false
+    property var gridRef: null 
     signal openAudioOutputDialog()
     signal openAudioInputDialog()
     signal openBluetoothDialog()
     signal openNightLightDialog()
     signal openWifiDialog()
+    signal openVpnDialog()
 
     role: "type"
 
@@ -28,14 +32,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openNightLightDialog()
-        }
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
+        onOpenMenu: root.openNightLightDialog()
     } }
 
     DelegateChoice { roleValue: "audio"; AndroidAudioToggle {
@@ -44,14 +49,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openAudioOutputDialog()
-        }
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
+        onOpenMenu: root.openAudioOutputDialog()
     } }
 
     DelegateChoice { roleValue: "bluetooth"; AndroidBluetoothToggle {
@@ -60,14 +66,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openBluetoothDialog()
-        }
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
+        onOpenMenu: root.openBluetoothDialog()
     } }
 
     DelegateChoice { roleValue: "cloudflareWarp"; AndroidCloudflareWarpToggle {
@@ -76,11 +83,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "colorPicker"; AndroidColorPickerToggle {
@@ -89,11 +99,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "darkMode"; AndroidDarkModeToggle {
@@ -102,11 +115,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "easyEffects"; AndroidEasyEffectsToggle {
@@ -115,11 +131,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "gameMode"; AndroidGameModeToggle {
@@ -128,11 +147,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "idleInhibitor"; AndroidIdleInhibitorToggle {
@@ -141,11 +163,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "mic"; AndroidMicToggle {
@@ -154,14 +179,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openAudioInputDialog()
-        }
+        isUnused: root.isUnused
+        dropIndicatorRef: root.dropIndicatorRef
+        onOpenMenu: root.openAudioInputDialog()
     } }
 
     DelegateChoice { roleValue: "musicRecognition"; AndroidMusicRecognition {
@@ -170,11 +196,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "network"; AndroidNetworkToggle {
@@ -183,14 +212,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openWifiDialog()
-        }
+        isUnused: root.isUnused
+        dropIndicatorRef: root.dropIndicatorRef
+        onOpenMenu: root.openWifiDialog()
     } }
 
     DelegateChoice { roleValue: "nightLight"; AndroidNightLightToggle {
@@ -199,14 +229,15 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
-        onOpenMenu: {
-            root.openNightLightDialog()
-        }
+        isUnused: root.isUnused
+        dropIndicatorRef: root.dropIndicatorRef
+        onOpenMenu: root.openNightLightDialog()
     } }
 
     DelegateChoice { roleValue: "notifications"; AndroidNotificationToggle {
@@ -215,11 +246,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "onScreenKeyboard"; AndroidOnScreenKeyboardToggle {
@@ -228,11 +262,14 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 
     DelegateChoice { roleValue: "powerProfile"; AndroidPowerProfileToggle {
@@ -241,11 +278,31 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
+    } }
+
+    DelegateChoice { roleValue: "vpn"; AndroidVpnToggle {
+        required property int index
+        required property var modelData
+        buttonIndex: root.startingIndex + index
+        buttonData: modelData
+        editMode: root.editMode
+        gridRef: root.gridRef
+        expandedSize: modelData.size > 1
+        baseCellWidth: root.baseCellWidth
+        baseCellHeight: root.baseCellHeight
+        cellSpacing: root.spacing
+        cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
+        onOpenMenu: root.openVpnDialog()
     } }
 
     DelegateChoice { roleValue: "screenSnip"; AndroidScreenSnipToggle {
@@ -254,10 +311,13 @@ DelegateChooser {
         buttonIndex: root.startingIndex + index
         buttonData: modelData
         editMode: root.editMode
+        gridRef: root.gridRef
         expandedSize: modelData.size > 1
         baseCellWidth: root.baseCellWidth
         baseCellHeight: root.baseCellHeight
         cellSpacing: root.spacing
         cellSize: modelData.size
+        dropIndicatorRef: root.dropIndicatorRef
+        isUnused: root.isUnused
     } }
 }

@@ -6,7 +6,7 @@ import QtQuick.Layouts
 StyledText {
     Layout.fillWidth: true
     font {
-        family: Appearance.font.family.expressive
+        family: Config.options.background.widgets.clock.quote.followClock ? Config.options.background.widgets.clock.digital.font.family : Appearance.font.family.expressive
         pixelSize: 20
         weight: 350
         // Set empty to prevent conflicts, not meaningless
