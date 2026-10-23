@@ -8,7 +8,7 @@ OSDValue {
     property var focusedScreen: Quickshell.screens.find(s => s.name === Kwin.focusedMonitor?.name)
     property var brightnessMonitor: Brightness.getMonitorForScreen(focusedScreen)
     iconName: "weather-sunny"
-    value: brightnessMonitor?.brightness ?? 0
+    value: brightnessMonitor?.effectiveBrightness ?? (brightnessMonitor?.brightness ?? 0)
     showNumber: false
 
     Connections {
