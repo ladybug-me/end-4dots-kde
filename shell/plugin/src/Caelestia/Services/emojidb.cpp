@@ -14,14 +14,15 @@
 
 #include <algorithm>
 
+#include "../Config/common.hpp"
+
 Q_LOGGING_CATEGORY(lcEmojiDb, "caelestia.services.emojidb", QtInfoMsg)
 
 namespace caelestia::services {
 
 EmojiDb::EmojiDb(QObject* parent)
     : QObject(parent) {
-    const auto configDir = qEnvironmentVariable("XDG_CONFIG_HOME", QDir::homePath() + QStringLiteral("/.config"));
-    m_freqPath = configDir + QStringLiteral("/caelestia/emoji-frequencies.json");
+    m_freqPath = caelestia::config::configFile(QStringLiteral("emoji-frequencies.json"));
 
     loadEmojis();
     loadFrequencies();

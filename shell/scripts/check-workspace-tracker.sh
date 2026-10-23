@@ -18,7 +18,13 @@ command -v qdbus6 >/dev/null 2>&1 || exit 0
 enabled="$(kreadconfig6 --file kwinrc --group Plugins --key kwin_workspace_trackerEnabled 2>/dev/null || true)"
 [[ "$enabled" == "true" ]] || exit 0
 
-# The effect registers this object on KWin's bus as it loads.
+# The effect registers this object on KWin's bus as it loads. If not yet loaded,
+# attempt to load it before declaring failure (e.g. after a rebuild or late startup).
+if ! qdbus6 org.kde.KWin /Caelestia/Workspaces org.freedesktop.DBus.Introspectable.Introspect >/dev/null 2>&1; then
+    qdbus6 org.kde.KWin /Effects org.kde.kwin.Effects.loadEffect kwin_workspace_tracker >/dev/null 2>&1 || true
+fi
+
 qdbus6 org.kde.KWin /Caelestia/Workspaces org.freedesktop.DBus.Introspectable.Introspect >/dev/null 2>&1 || exit 3
 
 exit 0
+

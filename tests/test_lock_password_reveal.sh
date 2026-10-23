@@ -67,4 +67,24 @@ test_reopening_the_lockscreen_restores_input_focus() {
     assert_contains "$qml" 'lockScreenUi.activePasswordPill.forceActiveFocus();' "reopening the lockscreen should focus the password pill"
 }
 
+test_auth_handler_defers_respond_to_avoid_dbus_prompt_race() {
+    local auth_handler="$REPO_ROOT/src/kde/shells/caelestia.desktop/contents/lockscreen/components/AuthHandler.qml"
+    local qml
+    qml="$(cat "$auth_handler")"
+
+    assert_contains "$qml" 'Qt.callLater(() => {' "AuthHandler should defer response via Qt.callLater"
+    assert_contains "$qml" 'activeAuthenticator.respond(pass)' "AuthHandler should respond with password"
+}
+
+test_auth_handler_maintains_backend_heartbeat_and_clean_cleanup() {
+    local auth_handler="$REPO_ROOT/src/kde/shells/caelestia.desktop/contents/lockscreen/components/AuthHandler.qml"
+    local qml
+    qml="$(cat "$auth_handler")"
+
+    assert_contains "$qml" 'id: backendHeartbeatTimer' "AuthHandler should maintain a backend heartbeat timer"
+    assert_contains "$qml" 'root.ensureAuthenticating()' "heartbeat timer should trigger ensureAuthenticating"
+    assert_contains "$qml" 'activeAuthenticator.stopAuthenticating()' "AuthHandler should stop pending authenticator processes on success"
+    assert_contains "$qml" '!root.pendingPassword' "onBusyChanged should not cancel while password is queued"
+}
+
 run_tests

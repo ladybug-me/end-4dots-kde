@@ -50,9 +50,15 @@ void Memory::tick() {
     }
     m_lastTotal = totalKib;
     m_lastUsed = usedKib;
-    m_total = static_cast<qreal>(totalKib);
-    m_used = static_cast<qreal>(usedKib);
-    emit changed();
+
+    QMetaObject::invokeMethod(
+        this,
+        [this, totalKib, usedKib] {
+            m_total = static_cast<qreal>(totalKib);
+            m_used = static_cast<qreal>(usedKib);
+            emit changed();
+        },
+        Qt::QueuedConnection);
 }
 
 } // namespace caelestia::services

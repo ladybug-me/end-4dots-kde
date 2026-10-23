@@ -31,6 +31,8 @@ class DashboardConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, colorizeMediaGif, true)
     CONFIG_PROPERTY(bool, useMediaShapes, false)
     CONFIG_PROPERTY(bool, showClockSeconds, false)
+    CONFIG_PROPERTY(bool, ambientColor, true)
+    CONFIG_PROPERTY(qreal, ambientOpacity, 0.30)
     CONFIG_GLOBAL_PROPERTY(int, profilePicShape, 9)
     CONFIG_GLOBAL_PROPERTY(int, mediaUpdateInterval, 500)
     CONFIG_GLOBAL_PROPERTY(int, resourceUpdateInterval, 1000)

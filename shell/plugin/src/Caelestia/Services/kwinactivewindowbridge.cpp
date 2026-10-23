@@ -278,22 +278,15 @@ void KWinActiveWindowBridge::sendToOutput(const QString& address, const QString&
     });
 }
 
-static QRect physicalGeometry(const QScreen* screen) {
-    const QRect logical = screen->geometry();
-    const qreal dpr = screen->devicePixelRatio();
-    return QRect(QPoint(qRound(logical.x() * dpr), qRound(logical.y() * dpr)),
-        QSize(qRound(logical.width() * dpr), qRound(logical.height() * dpr)));
-}
-
 QString KWinActiveWindowBridge::getOutputNameForGeometry(int x, int y, int w, int h) const {
     const QRect windowRect(x, y, w, h);
 
     QScreen* bestScreen = nullptr;
-    qreal maxIntersectArea = 0;
+    int maxIntersectArea = 0;
 
     for (QScreen* screen : QGuiApplication::screens()) {
-        const QRect intersect = physicalGeometry(screen).intersected(windowRect);
-        const qreal area = static_cast<qreal>(intersect.width()) * static_cast<qreal>(intersect.height());
+        const QRect intersect = screen->geometry().intersected(windowRect);
+        const int area = intersect.width() * intersect.height();
         if (area > maxIntersectArea) {
             maxIntersectArea = area;
             bestScreen = screen;
@@ -304,7 +297,7 @@ QString KWinActiveWindowBridge::getOutputNameForGeometry(int x, int y, int w, in
         qreal bestDistance = -1;
         const QPoint windowCentre = windowRect.center();
         for (QScreen* screen : QGuiApplication::screens()) {
-            const QPoint delta = physicalGeometry(screen).center() - windowCentre;
+            const QPoint delta = screen->geometry().center() - windowCentre;
             const qreal distance =
                 static_cast<qreal>(delta.x()) * delta.x() + static_cast<qreal>(delta.y()) * delta.y();
             if (bestDistance < 0 || distance < bestDistance) {

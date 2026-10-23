@@ -6,7 +6,6 @@
 #include <qhash.h>
 #include <qloggingcategory.h>
 #include <qstorageinfo.h>
-#include <qtconcurrentrun.h>
 
 #include <sys/stat.h>
 #include <sys/sysmacros.h>
@@ -95,12 +94,7 @@ QStringList resolveByDevt(uint major, uint minor, int depth) {
 } // namespace
 
 Storage::Storage(QObject* parent)
-    : TickingService(parent)
-    , m_futureWatcher(new QFutureWatcher<AccumHash>(this)) {
-    QObject::connect(m_futureWatcher, &QFutureWatcher<AccumHash>::finished, this, [this] {
-        applyDisks(m_futureWatcher->result());
-    });
-}
+    : TickingService(parent) {}
 
 qreal Storage::percentage() const {
     qreal totalUsed = 0.0;
@@ -206,13 +200,13 @@ QStringList Storage::resolveToPhysicalDisks(const QString& devicePath) {
 }
 
 void Storage::tick() {
-    if (m_futureWatcher->isRunning()) {
-        return;
-    }
-
-    m_futureWatcher->setFuture(QtConcurrent::run([] {
-        return foldToDisks(collectDevices());
-    }));
+    const AccumHash disks = foldToDisks(collectDevices());
+    QMetaObject::invokeMethod(
+        this,
+        [this, disks] {
+            applyDisks(disks);
+        },
+        Qt::QueuedConnection);
 }
 
 QHash<QByteArray, Storage::DeviceEntry> Storage::collectDevices() {

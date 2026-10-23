@@ -18,6 +18,8 @@ class GeneralApps : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(QStringList, audio, { u"xdg-open"_s })
     CONFIG_GLOBAL_PROPERTY(QStringList, playback, { u"xdg-open"_s })
     CONFIG_GLOBAL_PROPERTY(QStringList, explorer, { u"xdg-open"_s })
+    CONFIG_GLOBAL_PROPERTY(QStringList, browser, QStringList({ u"xdg-open"_s, u"about:blank"_s }))
+    CONFIG_GLOBAL_PROPERTY(QStringList, editor, { u"kate"_s })
 };
 
 class GeneralBatteryWarnLevel : public settings::ObjectNode {

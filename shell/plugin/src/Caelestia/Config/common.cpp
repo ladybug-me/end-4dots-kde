@@ -12,6 +12,10 @@ QString configDir() {
     return QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation) + u"/caelestia"_s;
 }
 
+QString configFile(const QString& name) {
+    return configDir() + QLatin1Char('/') + name;
+}
+
 QString monitorConfigDir() {
     return configDir() + u"/monitors"_s;
 }

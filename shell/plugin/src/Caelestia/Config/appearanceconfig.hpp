@@ -15,6 +15,7 @@ class RoundingTokens;
 class SpacingTokens;
 class PaddingTokens;
 class AnimDurationTokens;
+class AppearanceAnim;
 
 class AppearanceRounding : public settings::ObjectNode {
     CONFIG_NODE(AppearanceRounding, settings::ObjectNode)
@@ -277,6 +278,7 @@ class AnimDurations : public settings::ObjectNode {
 
 public:
     void bindTokens(AnimDurationTokens* tokens);
+    void bindAnim(AppearanceAnim* anim);
 
     [[nodiscard]] int small() const;
     [[nodiscard]] int normal() const;
@@ -293,13 +295,25 @@ signals:
     void valuesChanged();
 
 private:
+    // Scales a token duration, or collapses it while animations are switched off.
+    [[nodiscard]] int duration(int token) const;
+
     AnimDurationTokens* m_tokens = nullptr;
+    AppearanceAnim* m_anim = nullptr;
 };
 
 class AppearanceAnim : public settings::ObjectNode {
     CONFIG_NODE(AppearanceAnim, settings::ObjectNode)
 
+    // Off makes every duration the shell reads from the tokens zero, so each animated
+    // state change lands immediately while still changing state.
+    CONFIG_GLOBAL_PROPERTY(bool, enabled, true)
     CONFIG_SUBOBJECT(AnimDurations, durations)
+
+public:
+    // The duration getters read the switch through this rather than the property, which
+    // warns on every read of a global-layer key.
+    [[nodiscard]] bool animationsEnabled() const { return m_enabled; }
 };
 
 class AppearanceTransparency : public settings::ObjectNode {
@@ -325,8 +339,6 @@ class AppearanceConfig : public settings::ObjectNode {
     CONFIG_GLOBAL_PROPERTY(bool, islands, false)
     CONFIG_GLOBAL_PROPERTY(bool, blur, true)
     CONFIG_GLOBAL_PROPERTY(bool, blurMask, true)
-    CONFIG_GLOBAL_PROPERTY(bool, ambientColor, true)
-    CONFIG_GLOBAL_PROPERTY(qreal, ambientOpacity, 0.45)
 };
 
 } // namespace caelestia::config

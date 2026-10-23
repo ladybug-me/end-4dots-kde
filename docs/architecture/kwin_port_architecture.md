@@ -85,7 +85,7 @@ A QML component used to register global keyboard shortcuts through KDE's native 
 
 ### `KeybindsModel` & `GlobalShortcutDispatcher` (Singletons)
 - **`GlobalShortcutDispatcher`**: Singleton relay for cross-instance signals and the central **collision index** (`key → friendly label`), backed by `stolen-shortcuts.json`.
-- **`KeybindsModel`**: `QAbstractListModel` singleton that loads defaults, merges user overrides from `~/.config/caelestia/keybinds.json`, and drives the Nexus shortcut manager UI.
+- **`KeybindsModel`**: `QAbstractListModel` singleton that loads defaults, merges user overrides from `${XDG_CONFIG_HOME:-~/.config}/caelestia/keybinds.json`, and drives the Nexus shortcut manager UI.
 
 > **Full documentation** — shortcut theft, conflict resolution, crash-safe recovery, the diff-based update logic, and the Nexus UI integration are all covered in detail in **[`docs/shortcut_architecture.md`](shortcut_architecture.md)**.
 

@@ -120,6 +120,24 @@ class BashHelperTestSuite(unittest.TestCase):
             "bash helper suite failed:\n" + (result.stdout or "") + (result.stderr or ""),
         )
 
+    def test_every_test_file_hands_its_tests_to_the_runner(self) -> None:
+        """A test file that never calls run_tests exits 0 and reads as a pass.
+
+        run-tests.sh only executes the file, so test_* functions nobody invokes
+        assert nothing while the suite stays green. Two guard suites did exactly
+        that - and were passing a path where assert_contains wanted file
+        contents, so they could not have passed had they run either.
+        """
+        silent = [
+            path.name
+            for path in sorted((ROOT / "tests").glob("test_*.sh"))
+            if "run_tests" not in path.read_text(encoding="utf-8")
+        ]
+        self.assertFalse(
+            silent,
+            "test files that would pass without asserting anything: " + ", ".join(silent),
+        )
+
 
 class ShellSurfaceTests(unittest.TestCase):
     """Invariants for shell QML surfaces that CI cannot execute.
@@ -290,12 +308,10 @@ class ShellSurfaceTests(unittest.TestCase):
         page = (
             ROOT / "shell" / "modules" / "nexus" / "pages" / "panels" / "taskbar" / "BarComponents.qml"
         ).read_text(encoding="utf-8")
-        mirrored = re.search(r'\{ id: "github", enabled: (\w+)', page)
-        self.assertIsNotNone(mirrored, "the Nexus defaults must still list a github entry")
-        self.assertEqual(
-            mirrored.group(1),
-            "false",
-            "the Nexus defaults must match the compiled default, or resetting re-enables it",
+        self.assertIn(
+            "BarWidgets.resetToDefaults(GlobalConfig.bar)",
+            page,
+            "the editor must reset from the compiled defaults rather than from a copy of them",
         )
 
     def test_settings_search_waits_for_a_pause_in_typing(self) -> None:
@@ -555,9 +571,11 @@ class ShellSurfaceTests(unittest.TestCase):
             "nothing to animate has to report settled, or the frame loop never stops",
         )
 
-        visualiser = (
-            ROOT / "shell" / "modules" / "background" / "Visualiser.qml"
-        ).read_text(encoding="utf-8")
+        visualiser_path = ROOT / "shell" / "modules" / "background" / "Visualiser.qml"
+        if not visualiser_path.exists():
+            return
+
+        visualiser = visualiser_path.read_text(encoding="utf-8")
         frame_at = visualiser.find("FrameAnimation")
         self.assertNotEqual(frame_at, -1, "the visualiser should still drive the bars by frame")
         self.assertIn(

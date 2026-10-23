@@ -92,21 +92,26 @@ void NetworkUsage::tick() {
     const quint64 rxDelta = totalRx >= m_prevRx ? totalRx - m_prevRx : 0;
     const quint64 txDelta = totalTx >= m_prevTx ? totalTx - m_prevTx : 0;
 
-    m_downloadTotal += static_cast<qreal>(rxDelta);
-    m_uploadTotal += static_cast<qreal>(txDelta);
-
-    if (elapsed > 0.0) {
-        m_downloadSpeed = static_cast<qreal>(rxDelta) / elapsed;
-        m_uploadSpeed = static_cast<qreal>(txDelta) / elapsed;
-
-        m_downloadBuffer->push(m_downloadSpeed);
-        m_uploadBuffer->push(m_uploadSpeed);
-    }
-
     m_prevRx = totalRx;
     m_prevTx = totalTx;
 
-    emit changed();
+    QMetaObject::invokeMethod(
+        this,
+        [this, rxDelta, txDelta, elapsed] {
+            m_downloadTotal += static_cast<qreal>(rxDelta);
+            m_uploadTotal += static_cast<qreal>(txDelta);
+
+            if (elapsed > 0.0) {
+                m_downloadSpeed = static_cast<qreal>(rxDelta) / elapsed;
+                m_uploadSpeed = static_cast<qreal>(txDelta) / elapsed;
+
+                m_downloadBuffer->push(m_downloadSpeed);
+                m_uploadBuffer->push(m_uploadSpeed);
+            }
+
+            emit changed();
+        },
+        Qt::QueuedConnection);
 }
 
 } // namespace caelestia::services

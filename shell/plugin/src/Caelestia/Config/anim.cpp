@@ -111,4 +111,27 @@ void AnimTokens::bindDurations(AnimDurations* durations) {
     emit durationsChanged();
 }
 
+void AnimTokens::bindAnim(AppearanceAnim* anim) {
+    if (m_anim == anim)
+        return;
+
+    if (m_anim)
+        disconnect(m_anim, nullptr, this, nullptr);
+
+    m_anim = anim;
+
+    if (m_anim)
+        connect(m_anim, &AppearanceAnim::enabledChanged, this, &AnimTokens::enabledChanged);
+
+    emit enabledChanged();
+}
+
+bool AnimTokens::enabled() const {
+    return !m_anim || m_anim->animationsEnabled();
+}
+
+int AnimTokens::duration(int ms) const {
+    return enabled() ? ms : 0;
+}
+
 } // namespace caelestia::config

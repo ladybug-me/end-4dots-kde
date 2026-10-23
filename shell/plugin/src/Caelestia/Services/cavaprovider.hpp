@@ -60,6 +60,7 @@ signals:
 private:
     int m_bars;
     QVector<double> m_values;
+    bool m_emitPending = false;
 
     void updateValues(const QVector<double>& values);
 };

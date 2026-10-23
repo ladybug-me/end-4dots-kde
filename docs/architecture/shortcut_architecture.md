@@ -43,7 +43,7 @@ A singleton that acts as the central coordinator.
 
 Manages saving and loading your shortcut preferences.
 1. Loads defaults from `keybindsdefaults.hpp`.
-2. Applies user customizations from `~/.config/caelestia/keybinds.json`.
+2. Applies user customizations from `${XDG_CONFIG_HOME:-~/.config}/caelestia/keybinds.json`.
 3. Communicates with the UI to update the list of active shortcuts.
 
 ---
@@ -53,7 +53,7 @@ Manages saving and loading your shortcut preferences.
 If the shell crashes or is force-killed, we don't want your KDE shortcuts to be permanently broken because we stole them and never gave them back.
 
 **How it works:**
-1. Whenever Caelestia steals a shortcut, it immediately writes this to a recovery file: `~/.config/caelestia/stolen-shortcuts.json`.
+1. Whenever Caelestia steals a shortcut, it immediately writes this to a recovery file: `${XDG_CONFIG_HOME:-~/.config}/caelestia/stolen-shortcuts.json`.
 2. When the shell closes normally, it restores the shortcuts and deletes the file.
 3. If the shell crashes, the file remains on disk. On the **next startup**, Caelestia reads this file, restores all the stolen shortcuts, and cleans up.
 

@@ -140,44 +140,65 @@ void AnimDurations::bindTokens(AnimDurationTokens* tokens) {
     connectTokenSignals(tokens, this);
 }
 
+void AnimDurations::bindAnim(AppearanceAnim* anim) {
+    if (m_anim == anim)
+        return;
+
+    if (m_anim)
+        disconnect(m_anim, nullptr, this, nullptr);
+
+    m_anim = anim;
+
+    if (m_anim)
+        connect(m_anim, &AppearanceAnim::enabledChanged, this, &AnimDurations::valuesChanged);
+
+    Q_EMIT valuesChanged();
+}
+
 int AnimDurations::small() const {
-    return m_tokens ? static_cast<int>(m_tokens->small() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->small() : 0);
 }
 
 int AnimDurations::normal() const {
-    return m_tokens ? static_cast<int>(m_tokens->normal() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->normal() : 0);
 }
 
 int AnimDurations::large() const {
-    return m_tokens ? static_cast<int>(m_tokens->large() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->large() : 0);
 }
 
 int AnimDurations::extraLarge() const {
-    return m_tokens ? static_cast<int>(m_tokens->extraLarge() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->extraLarge() : 0);
 }
 
 int AnimDurations::expressiveFastSpatial() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveFastSpatial() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveFastSpatial() : 0);
 }
 
 int AnimDurations::expressiveDefaultSpatial() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveDefaultSpatial() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveDefaultSpatial() : 0);
 }
 
 int AnimDurations::expressiveSlowSpatial() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveSlowSpatial() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveSlowSpatial() : 0);
 }
 
 int AnimDurations::expressiveFastEffects() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveFastEffects() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveFastEffects() : 0);
 }
 
 int AnimDurations::expressiveDefaultEffects() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveDefaultEffects() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveDefaultEffects() : 0);
 }
 
 int AnimDurations::expressiveSlowEffects() const {
-    return m_tokens ? static_cast<int>(m_tokens->expressiveSlowEffects() * m_scale) : 0;
+    return duration(m_tokens ? m_tokens->expressiveSlowEffects() : 0);
+}
+
+int AnimDurations::duration(int token) const {
+    if (m_anim && !m_anim->animationsEnabled())
+        return 0;
+    return static_cast<int>(token * m_scale);
 }
 
 } // namespace caelestia::config

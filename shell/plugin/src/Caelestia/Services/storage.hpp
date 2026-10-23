@@ -2,7 +2,6 @@
 
 #include <qbytearray.h>
 #include <qbytearrayview.h>
-#include <qfuturewatcher.h>
 #include <qhash.h>
 #include <qpointer.h>
 #include <qqmlintegration.h>
@@ -75,7 +74,6 @@ private:
 
     QList<DiskInfo*> m_disks;
     QPointer<DiskInfo> m_manualPrimaryDisk;
-    QFutureWatcher<AccumHash>* const m_futureWatcher;
 };
 
 } // namespace caelestia::services

@@ -50,11 +50,16 @@ void Cpu::readNameOnce() {
 
     const QString cleaned = cleanName(match.captured(1));
     m_nameLoaded = true;
-    if (cleaned == m_name) {
-        return;
-    }
-    m_name = cleaned;
-    emit nameChanged();
+    QMetaObject::invokeMethod(
+        this,
+        [this, cleaned] {
+            if (cleaned == m_name) {
+                return;
+            }
+            m_name = cleaned;
+            emit nameChanged();
+        },
+        Qt::QueuedConnection);
 }
 
 void Cpu::refreshPercentage() {
@@ -89,19 +94,29 @@ void Cpu::refreshPercentage() {
     m_lastTotal = total;
     m_lastIdle = idle;
 
-    if (std::abs(newPerc - m_percentage) > 0.0001) {
-        m_percentage = newPerc;
-        emit percentageChanged();
-    }
+    QMetaObject::invokeMethod(
+        this,
+        [this, newPerc] {
+            if (std::abs(newPerc - m_percentage) > 0.0001) {
+                m_percentage = newPerc;
+                emit percentageChanged();
+            }
+        },
+        Qt::QueuedConnection);
 }
 
 void Cpu::refreshTemperature() {
     const auto t = sensorslib::cpuPackageTemp();
     const qreal newTemp = t.value_or(0.0);
-    if (std::abs(newTemp - m_temperature) > 0.05) {
-        m_temperature = newTemp;
-        emit temperatureChanged();
-    }
+    QMetaObject::invokeMethod(
+        this,
+        [this, newTemp] {
+            if (std::abs(newTemp - m_temperature) > 0.05) {
+                m_temperature = newTemp;
+                emit temperatureChanged();
+            }
+        },
+        Qt::QueuedConnection);
 }
 
 QString Cpu::cleanName(QString s) {

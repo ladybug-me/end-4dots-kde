@@ -4,7 +4,7 @@ Type=Application
 NoDisplay=true
 
 Name=Quickshell
-Icon=org.quickshell
+Icon=caelestia
 
 # Installed to ~/.local/share/applications, overriding the packaged
 # /usr/share/applications/org.quickshell.desktop.

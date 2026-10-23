@@ -1,10 +1,15 @@
 {
     "KPlugin": {
-        "Id": "kwin_workspace_tracker",
         "Name": "Workspace Tracker",
         "Description": "Tracks workspace gestures for Caelestia",
         "Icon": "preferences-system-windows",
         "Category": "Window Management",
+        "Authors": [
+            {
+                "Name": "Caelestia-KDE development team"
+            }
+        ],
+        "License": "GPL-3.0-or-later",
         "EnabledByDefault": true
     }
 }

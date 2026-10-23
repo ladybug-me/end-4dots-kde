@@ -69,6 +69,7 @@ void ConfigRoot::bindTokens() {
     m_appearance->spacing()->bindTokens(tokens->spacing());
     m_appearance->padding()->bindTokens(tokens->padding());
     m_appearance->anim()->durations()->bindTokens(tokens->animDurations());
+    m_appearance->anim()->durations()->bindAnim(m_appearance->anim());
 }
 
 TokensRoot::TokensRoot(const QString& path, TokensRoot* fallback, QObject* parent)

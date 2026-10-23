@@ -128,6 +128,21 @@ jobs:
       - name: Check QML structural syntax
         run: python3 .github/scripts/check_qml_syntax.py --source-root shell
 
+
+  qml-finals:
+    name: Check QML final-member shadows
+    runs-on: ubuntu-latest
+    container: archlinux:base-devel
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - name: Install the Qt tooling
+        uses: ./.github/actions/install-build-deps
+
+      - name: Check that no component shadows a final member
+        run: python3 .github/scripts/check_qml_finals.py --source-root shell
+
   embedded-bash:
     runs-on: ubuntu-latest
     steps:
@@ -460,6 +475,7 @@ jobs:
       - json-validation
       - file-hygiene
       - qml-conventions
+      - qml-finals
       - embedded-bash
       - config-cross-ref
       - actionlint

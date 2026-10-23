@@ -1,6 +1,9 @@
 #pragma once
 
+#include <qthread.h>
 #include <qtimer.h>
+
+#include <atomic>
 
 #include "service.hpp"
 
@@ -13,6 +16,7 @@ class TickingService : public Service {
 
 public:
     explicit TickingService(QObject* parent = nullptr);
+    ~TickingService() override;
 
     [[nodiscard]] int updateInterval() const;
 
@@ -27,10 +31,11 @@ protected:
 
 private:
     void applyInterval(int ms);
+    static QThread* sharedWorkerThread();
 
-    QTimer* m_timer;
-    int m_interval = 1000;
-    bool m_running = false;
+    QTimer* m_workerTimer = nullptr;
+    std::atomic<int> m_interval = 1000;
+    std::atomic<bool> m_running = false;
 };
 
 } // namespace caelestia::services

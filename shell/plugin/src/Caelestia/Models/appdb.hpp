@@ -136,6 +136,7 @@ private:
 
     QString regexifyString(const QString& original) const;
     void rebuildRankTree();
+    void reorderCachedSorted();
     [[nodiscard]] AppRankKey makeKey(const AppEntry* app) const;
     QList<AppEntry*> getSortedApps() const;
     bool isFavourite(const AppEntry* app) const;

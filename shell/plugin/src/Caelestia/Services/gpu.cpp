@@ -306,12 +306,12 @@ void Gpu::tick() {
     } else if (t == Nvidia) {
         // nvidia-smi would wake a suspended card; the sysfs check does not (#588, #595).
         if (pciPowerState(m_nvidiaPciPath) == PciPower::Active) {
-            startNvidiaUsage();
+            QMetaObject::invokeMethod(this, &Gpu::startNvidiaUsage, Qt::QueuedConnection);
         } else {
-            resetReadings();
+            QMetaObject::invokeMethod(this, &Gpu::resetReadings, Qt::QueuedConnection);
         }
     } else {
-        resetReadings();
+        QMetaObject::invokeMethod(this, &Gpu::resetReadings, Qt::QueuedConnection);
     }
 }
 
@@ -511,10 +511,15 @@ void Gpu::readGenericUsage() {
     }
 
     const qreal newPerc = maxPerc >= 0.0 ? maxPerc / 100.0 : 0.0;
-    if (std::abs(newPerc - m_percentage) > 0.0001) {
-        m_percentage = newPerc;
-        Q_EMIT percentageChanged();
-    }
+    QMetaObject::invokeMethod(
+        this,
+        [this, newPerc] {
+            if (std::abs(newPerc - m_percentage) > 0.0001) {
+                m_percentage = newPerc;
+                Q_EMIT percentageChanged();
+            }
+        },
+        Qt::QueuedConnection);
 }
 
 void Gpu::startNvidiaUsage() {
@@ -556,10 +561,15 @@ void Gpu::startNvidiaUsage() {
 void Gpu::readGpuTemperature() {
     const auto t = sensorslib::gpuPciAverageTemp();
     const qreal newTemp = t.value_or(0.0);
-    if (std::abs(newTemp - m_temperature) > 0.05) {
-        m_temperature = newTemp;
-        Q_EMIT temperatureChanged();
-    }
+    QMetaObject::invokeMethod(
+        this,
+        [this, newTemp] {
+            if (std::abs(newTemp - m_temperature) > 0.05) {
+                m_temperature = newTemp;
+                Q_EMIT temperatureChanged();
+            }
+        },
+        Qt::QueuedConnection);
 }
 
 Gpu::Type Gpu::parseType(const QString& s) {

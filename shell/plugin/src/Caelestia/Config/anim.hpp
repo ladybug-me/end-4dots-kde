@@ -8,6 +8,7 @@ namespace caelestia::config {
 
 class AnimCurves;
 class AnimDurations;
+class AppearanceAnim;
 
 class AnimTokens : public QObject {
     Q_OBJECT
@@ -15,6 +16,7 @@ class AnimTokens : public QObject {
     Q_MOC_INCLUDE("appearanceconfig.hpp")
     QML_ANONYMOUS
 
+    Q_PROPERTY(bool enabled READ enabled NOTIFY enabledChanged)
     Q_PROPERTY(QEasingCurve emphasized READ emphasized NOTIFY curvesChanged)
     Q_PROPERTY(QEasingCurve emphasizedAccel READ emphasizedAccel NOTIFY curvesChanged)
     Q_PROPERTY(QEasingCurve emphasizedDecel READ emphasizedDecel NOTIFY curvesChanged)
@@ -35,7 +37,12 @@ public:
 
     void bindCurves(AnimCurves* curves);
     void bindDurations(AnimDurations* durations);
+    void bindAnim(AppearanceAnim* anim);
 
+    [[nodiscard]] bool enabled() const;
+    // A duration the tokens do not have a name for, such as a hand-tuned bloom, that
+    // still lands immediately while animations are switched off.
+    [[nodiscard]] Q_INVOKABLE int duration(int ms) const;
     [[nodiscard]] QEasingCurve emphasized() const;
     [[nodiscard]] QEasingCurve emphasizedAccel() const;
     [[nodiscard]] QEasingCurve emphasizedDecel() const;
@@ -53,6 +60,7 @@ public:
 signals:
     void curvesChanged();
     void durationsChanged();
+    void enabledChanged();
 
 private:
     void rebuildCurves();
@@ -60,6 +68,7 @@ private:
 
     AnimCurves* m_curves = nullptr;
     AnimDurations* m_durations = nullptr;
+    AppearanceAnim* m_anim = nullptr;
 
     QEasingCurve m_emphasized;
     QEasingCurve m_emphasizedAccel;

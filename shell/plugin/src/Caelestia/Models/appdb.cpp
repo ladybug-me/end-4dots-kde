@@ -202,9 +202,16 @@ QString AppDb::regexifyString(const QString& original) const {
 }
 
 QQmlListProperty<AppEntry> AppDb::apps() {
-    auto sorted = getSortedApps();
-    m_cachedSorted = std::move(sorted);
+    reorderCachedSorted();
     return QQmlListProperty<AppEntry>(this, &m_cachedSorted);
+}
+
+void AppDb::reorderCachedSorted() {
+    m_cachedSorted.clear();
+    m_cachedSorted.reserve(static_cast<qsizetype>(m_rankTree.size()));
+    for (const auto& [key, entry] : m_rankTree) {
+        m_cachedSorted.append(entry);
+    }
 }
 
 QVariantList AppDb::alphaApps() const {
@@ -226,6 +233,7 @@ void AppDb::incrementFrequency(const QString& id) {
         m_rankTree.erase(makeKey(app));
         app->incrementFrequency();
         m_rankTree.insert({ makeKey(app), app });
+        reorderCachedSorted();
         emit appsChanged();
     } else {
         qCWarning(lcAppDb) << "incrementFrequency: could not find app with id" << id;
@@ -284,6 +292,7 @@ void AppDb::updateAppFrequencies() {
         app->setFrequency(getFrequency(app->id()));
     }
     rebuildRankTree();
+    reorderCachedSorted();
     emit appsChanged();
 }
 
@@ -324,6 +333,7 @@ void AppDb::updateApps() {
 
     if (dirty) {
         rebuildRankTree();
+        reorderCachedSorted();
 
         QList<AppEntry*> alphaList = m_apps.values();
         std::sort(alphaList.begin(), alphaList.end(), [](AppEntry* a, AppEntry* b) {

@@ -135,7 +135,11 @@ Item {
         if (activeAuthenticator) {
             var hasPrompt = Boolean(activeAuthenticator.promptForSecret || activeAuthenticator.prompt);
             if (typeof activeAuthenticator.respond === "function" && hasPrompt) {
-                activeAuthenticator.respond(pass);
+                Qt.callLater(() => {
+                    if (activeAuthenticator && typeof activeAuthenticator.respond === "function") {
+                        activeAuthenticator.respond(pass);
+                    }
+                });
             } else {
                 root.pendingPassword = pass;
                 if (typeof activeAuthenticator.startAuthenticating === "function") {
@@ -168,7 +172,9 @@ Item {
                 root.localGraceLocked = false;
                 root.pendingPassword = "";
                 root.clearPasswordRequested();
-                if (activeAuthenticator && typeof activeAuthenticator.cancel === "function") {
+                if (activeAuthenticator && typeof activeAuthenticator.stopAuthenticating === "function") {
+                    activeAuthenticator.stopAuthenticating();
+                } else if (activeAuthenticator && typeof activeAuthenticator.cancel === "function") {
                     activeAuthenticator.cancel();
                 }
                 if (activeAuthenticator && typeof activeAuthenticator.startAuthenticating === "function") {
@@ -178,6 +184,17 @@ Item {
                     root.handleMessage(i18ndc("plasma_shell_org.kde.plasma.desktop", "@info:status", "Authentication timed out"));
                 }
             }
+        }
+    }
+
+    Timer {
+        id: backendHeartbeatTimer
+
+        interval: 1000
+        repeat: true
+        running: Boolean(activeAuthenticator) && !root.isAuthenticating && !root.graceLocked && !root.lockoutActive && !(activeAuthenticator && activeAuthenticator.unlocked)
+        onTriggered: {
+            root.ensureAuthenticating();
         }
     }
 
@@ -282,11 +299,17 @@ Item {
             root.localGraceLocked = false;
             root.pendingPassword = "";
             root.lockoutSecondsRemaining = 0;
+            backendHeartbeatTimer.stop();
             authTimeoutTimer.stop();
             graceLockTimer.stop();
             fallbackUnlockTimer.stop();
             lockoutCountdownTimer.stop();
             root.fprintTries = 0;
+            if (activeAuthenticator && typeof activeAuthenticator.stopAuthenticating === "function") {
+                activeAuthenticator.stopAuthenticating();
+            } else if (activeAuthenticator && typeof activeAuthenticator.cancel === "function") {
+                activeAuthenticator.cancel();
+            }
             root.succeeded();
             Qt.quit();
         }
@@ -312,9 +335,11 @@ Item {
                 root.pendingPassword = "";
                 root.isAuthenticating = true;
                 authTimeoutTimer.restart();
-                if (activeAuthenticator && typeof activeAuthenticator.respond === "function") {
-                    activeAuthenticator.respond(pass);
-                }
+                Qt.callLater(() => {
+                    if (activeAuthenticator && typeof activeAuthenticator.respond === "function") {
+                        activeAuthenticator.respond(pass);
+                    }
+                });
             }
         }
 
@@ -327,9 +352,11 @@ Item {
                 root.pendingPassword = "";
                 root.isAuthenticating = true;
                 authTimeoutTimer.restart();
-                if (activeAuthenticator && typeof activeAuthenticator.respond === "function") {
-                    activeAuthenticator.respond(pass);
-                }
+                Qt.callLater(() => {
+                    if (activeAuthenticator && typeof activeAuthenticator.respond === "function") {
+                        activeAuthenticator.respond(pass);
+                    }
+                });
                 return;
             }
             root.isAuthenticating = false;
@@ -359,7 +386,7 @@ Item {
 
         function onBusyChanged() {
             if (activeAuthenticator && typeof activeAuthenticator.busy !== "undefined" && !activeAuthenticator.busy) {
-                if (root.isAuthenticating && !root.graceLocked && !graceLockTimer.running) {
+                if (root.isAuthenticating && !root.graceLocked && !graceLockTimer.running && !root.pendingPassword) {
                     root.isAuthenticating = false;
                     authTimeoutTimer.stop();
                 }

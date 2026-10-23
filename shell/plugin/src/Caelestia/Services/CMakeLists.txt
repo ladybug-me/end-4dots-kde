@@ -128,3 +128,11 @@ set_source_files_properties(
 )
 
 add_subdirectory(QuickShare)
+
+if(CAELESTIA_BUILD_LYRICS_TESTS)
+    qt_add_executable(caelestia-lyrics-test ../../../tests/lyrics-test.cpp)
+    target_include_directories(caelestia-lyrics-test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+    target_link_libraries(caelestia-lyrics-test PRIVATE caelestia-services caelestia-config Qt6::Test Qt6::Network Qt6::Qml)
+    add_test(NAME lyrics-regressions COMMAND caelestia-lyrics-test)
+    set_tests_properties(lyrics-regressions PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
+endif()

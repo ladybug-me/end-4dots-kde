@@ -72,6 +72,39 @@ assert_not_contains() {
     fi
 }
 
+assert_file_contains() {
+    local path="$1" needle="$2" message="${3:-substring not found}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if ! grep -qF -- "$needle" "$path"; then
+        fail "$message ($(basename "$path") does not contain $(printf '%q' "$needle"))"
+    fi
+}
+
+assert_file_not_contains() {
+    local path="$1" needle="$2" message="${3:-unexpected substring found}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if grep -qF -- "$needle" "$path"; then
+        fail "$message ($(basename "$path") still contains $(printf '%q' "$needle"))"
+    fi
+}
+
+assert_file_matches() {
+    local path="$1" pattern="$2" message="${3:-no line matches}"
+    if [[ ! -f "$path" ]]; then
+        fail "$message (no such file: $path)"
+        return 0
+    fi
+    if ! grep -qE -- "$pattern" "$path"; then
+        fail "$message ($(basename "$path") has no line matching $(printf '%q' "$pattern"))"
+    fi
+}
+
 new_tmpdir() {
     local dir
     dir="$(mktemp -d "${TMPDIR:-/tmp}/caelestia-test.XXXXXX")"

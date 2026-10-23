@@ -11,6 +11,8 @@ class OverviewConfig : public settings::ObjectNode {
     CONFIG_PROPERTY(bool, enabled, true)
     CONFIG_PROPERTY(bool, disableWallpaperBlur, true)
     CONFIG_PROPERTY(bool, enableOverviewBlur, true)
+    CONFIG_PROPERTY(bool, ambientColor, true)
+    CONFIG_PROPERTY(qreal, ambientOpacity, 0.45)
     CONFIG_PROPERTY(bool, showOnHover, true)
     CONFIG_PROPERTY(int, dragThreshold, 30)
     CONFIG_PROPERTY(int, hoverThickness, 20)

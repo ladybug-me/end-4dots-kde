@@ -14,6 +14,8 @@
 #include <QJsonDocument>
 #include <QTextStream>
 
+#include "../Config/common.hpp"
+
 namespace caelestia::services {
 
 namespace {
@@ -21,7 +23,7 @@ namespace {
 constexpr auto kwinService = "org.kde.KWin";
 
 QString stolenEdgesPath() {
-    return QDir::homePath() + QStringLiteral("/.config/caelestia/stolen-screen-edges.json");
+    return caelestia::config::configFile(QStringLiteral("stolen-screen-edges.json"));
 }
 
 /// The [ElectricBorders] key that names a corner, or empty if not a corner.

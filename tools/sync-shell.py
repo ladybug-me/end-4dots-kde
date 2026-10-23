@@ -112,6 +112,18 @@ ADAPTED_FILES = {
     "tests/test_hidden_animations.sh",
     "tests/test_notif_sanitization.sh",
     "tests/test_streaming_dnd.sh",
+    "tests/test_security_hardening.sh",
+    "tests/test_services_guards.sh",
+    "tests/test_bar_widget_plugin.sh",
+    "tests/test_bar_widgets.sh",
+    "tests/test_desktop_perf.sh",
+    "tests/test_gsf_loader.sh",
+    "tests/test_motion_policy.sh",
+    "tests/test_nexus_back_navigation.sh",
+    "tests/test_plasma_visualizer_geometry.sh",
+    "tests/test_plugin_settings.sh",
+    "tests/test_preview_colours.sh",
+    "tests/test_tray_registry.sh",
 }
 
 # Upstream paths that are part of Caelestia UI but replaced by end-4 UI

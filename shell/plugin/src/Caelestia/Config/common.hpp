@@ -29,6 +29,8 @@ namespace caelestia::config {
 Q_DECLARE_LOGGING_CATEGORY(lcConfig)
 
 QString configDir();
+/// The file called `name` inside configDir().
+QString configFile(const QString& name);
 QString monitorConfigDir();
 
 class ListEntry : public settings::ObjectNode {

@@ -173,7 +173,16 @@ QVector<double> CavaProvider::values() const {
 void CavaProvider::updateValues(const QVector<double>& values) {
     if (values != m_values) {
         m_values = values;
-        emit valuesChanged();
+        if (!m_emitPending) {
+            m_emitPending = true;
+            QMetaObject::invokeMethod(
+                this,
+                [this] {
+                    m_emitPending = false;
+                    emit valuesChanged();
+                },
+                Qt::QueuedConnection);
+        }
     }
 }
 

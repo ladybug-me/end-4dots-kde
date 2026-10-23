@@ -1,7 +1,7 @@
 # ========================== CONFIG FOR FULL THEME ===========================
 [General]
 #! SystemInfo (overriden by sync script ignore)
-os=Arch
+os=Linux
 host=localhost
 
 # ============================================================================
